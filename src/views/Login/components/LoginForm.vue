@@ -49,20 +49,25 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'username',
-    label: t('login.username'),
+    field: 'email',
+    // label: t('login.username'),
     // value: 'admin',
     component: 'Input',
     colProps: {
       span: 24
     },
     componentProps: {
-      placeholder: 'admin or test'
+      placeholder: t('login.emailPlaceholder'),
+      slots: {
+        prefix: () => {
+          return <Icon icon="vi-line-md:email-alt-filled" size={22} />
+        }
+      }
     }
   },
   {
     field: 'password',
-    label: t('login.password'),
+    // label: t('login.password'),
     // value: 'admin',
     component: 'InputPassword',
     colProps: {
@@ -72,7 +77,12 @@ const schema = reactive<FormSchema[]>([
       style: {
         width: '100%'
       },
-      placeholder: 'admin or test'
+      placeholder: t('login.passwordPlaceholder'),
+      slots: {
+        prefix: () => {
+          return <Icon icon="vi-carbon:password" size={22} />
+        }
+      }
     }
   },
   {

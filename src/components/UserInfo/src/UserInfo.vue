@@ -52,7 +52,7 @@ const toPage = (path: string) => {
         class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
       />
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">{{
-        userStore.getUserInfo?.username
+        userStore.getUserInfo?.email
       }}</span>
     </div>
     <template #dropdown>

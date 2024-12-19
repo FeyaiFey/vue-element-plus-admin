@@ -4,7 +4,7 @@ import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox, ElLink } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
-import { loginApi, getTestRoleApi, getAdminRoleApi } from '@/api/login'
+import { loginApi, getRoleApi } from '@/api/login'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
@@ -60,7 +60,7 @@ const schema = reactive<FormSchema[]>([
       placeholder: t('login.emailPlaceholder'),
       slots: {
         prefix: () => {
-          return <Icon icon="vi-line-md:email-alt-filled" size={22} />
+          return <Icon icon="vi-weui:email-filled" size={22} />
         }
       }
     }
@@ -69,15 +69,14 @@ const schema = reactive<FormSchema[]>([
     field: 'password',
     // label: t('login.password'),
     // value: 'admin',
-    component: 'InputPassword',
+    component: 'Input',
     colProps: {
       span: 24
     },
     componentProps: {
-      style: {
-        width: '100%'
-      },
       placeholder: t('login.passwordPlaceholder'),
+      type: 'password',
+      showPassword: true,
       slots: {
         prefix: () => {
           return <Icon icon="vi-carbon:password" size={22} />
@@ -137,72 +136,16 @@ const schema = reactive<FormSchema[]>([
         }
       }
     }
-  },
-  {
-    field: 'other',
-    component: 'Divider',
-    label: t('login.otherLogin'),
-    componentProps: {
-      contentPosition: 'center'
-    }
-  },
-  {
-    field: 'otherIcon',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <>
-              <div class="flex justify-between w-[100%]">
-                <Icon
-                  icon="vi-ant-design:github-filled"
-                  size={iconSize}
-                  class="cursor-pointer ant-icon"
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                />
-                <Icon
-                  icon="vi-ant-design:wechat-filled"
-                  size={iconSize}
-                  class="cursor-pointer ant-icon"
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                />
-                <Icon
-                  icon="vi-ant-design:alipay-circle-filled"
-                  size={iconSize}
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                  class="cursor-pointer ant-icon"
-                />
-                <Icon
-                  icon="vi-ant-design:weibo-circle-filled"
-                  size={iconSize}
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                  class="cursor-pointer ant-icon"
-                />
-              </div>
-            </>
-          )
-        }
-      }
-    }
   }
 ])
-
-const iconSize = 30
 
 const remember = ref(userStore.getRememberMe)
 
 const initLoginInfo = () => {
   const loginInfo = userStore.getLoginInfo
   if (loginInfo) {
-    const { username, password } = loginInfo
-    setValues({ username, password })
+    const { email, password } = loginInfo
+    setValues({ email, password })
   }
 }
 onMounted(() => {
@@ -213,10 +156,6 @@ const { formRegister, formMethods } = useForm()
 const { getFormData, getElFormExpose, setValues } = formMethods
 
 const loading = ref(false)
-
-const iconColor = '#999'
-
-const hoverColor = 'var(--el-color-primary)'
 
 const redirect = ref<string>('')
 
@@ -245,7 +184,7 @@ const signIn = async () => {
           // 是否记住我
           if (unref(remember)) {
             userStore.setLoginInfo({
-              username: formData.username,
+              email: formData.email,
               password: formData.password
             })
           } else {
@@ -276,12 +215,9 @@ const signIn = async () => {
 const getRole = async () => {
   const formData = await getFormData<UserType>()
   const params = {
-    roleName: formData.username
+    email: formData.email
   }
-  const res =
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await getAdminRoleApi(params)
-      : await getTestRoleApi(params)
+  const res = await getRoleApi(params)
   if (res) {
     const routers = res.data || []
     userStore.setRoleRouters(routers)

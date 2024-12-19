@@ -2,11 +2,15 @@ import request from '@/axios'
 import type { UserType } from './types'
 
 interface RoleParams {
-  roleName: string
+  email: string
 }
 
 export const loginApi = (data: UserType): Promise<IResponse<UserType>> => {
   return request.post({ url: '/mock/user/login', data })
+}
+
+export const getRoleApi = (params: RoleParams): Promise<IResponse<string[]>> => {
+  return request.get({ url: '/mock/role/list2', params })
 }
 
 export const loginOutApi = (): Promise<IResponse> => {
@@ -23,12 +27,12 @@ export const getUserListApi = ({ params }: AxiosConfig) => {
   }>({ url: '/mock/user/list', params })
 }
 
-export const getAdminRoleApi = (
-  params: RoleParams
-): Promise<IResponse<AppCustomRouteRecordRaw[]>> => {
-  return request.get({ url: '/mock/role/list', params })
-}
+// export const getAdminRoleApi = (
+//   params: RoleParams
+// ): Promise<IResponse<AppCustomRouteRecordRaw[]>> => {
+//   return request.get({ url: '/mock/role/list', params })
+// }
 
-export const getTestRoleApi = (params: RoleParams): Promise<IResponse<string[]>> => {
-  return request.get({ url: '/mock/role/list2', params })
-}
+// export const getTestRoleApi = (params: RoleParams): Promise<IResponse<string[]>> => {
+//   return request.get({ url: '/mock/role/list2', params })
+// }

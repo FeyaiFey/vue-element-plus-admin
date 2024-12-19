@@ -461,3 +461,39 @@ git push origin feature-my-customization
 6. （可选）提交 Pull Request 或发布自定义版本。
 
 通过以上步骤，你可以顺利对开源项目进行自定义开发，同时与原项目保持良好的同步关系。
+
+我看到这是一个 Git commit 提交时的错误，问题不在代码本身，而是在 commit message 的格式上。
+
+这个项目使用了 commitlint 来规范 commit message 的格式。根据错误信息，有两个问题：
+
+1. `subject may not be empty` - 提交信息的主题不能为空
+2. `type may not be empty` - 提交类型不能为空
+
+正确的 commit message 格式应该是：
+
+```
+type(scope?): subject
+```
+
+对于你的情况，应该这样修改 commit message：
+
+```bash
+git commit -m "feat(login): 更新登录样式和用户登录信息"
+```
+
+这里：
+
+- `feat` 是类型，表示新功能
+- `login` 是可选的范围
+- 冒号后面是具体的提交描述
+
+常用的 type 类型包括：
+
+- `feat`: 新功能
+- `fix`: 修复bug
+- `docs`: 文档更新
+- `style`: 代码格式修改
+- `refactor`: 代码重构
+- `perf`: 性能优化
+- `test`: 测试相关
+- `chore`: 构建过程或辅助工具的变动

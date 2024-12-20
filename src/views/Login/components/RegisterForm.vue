@@ -1,35 +1,24 @@
 <script setup lang="tsx">
 import { Form, FormSchema } from '@/components/Form'
-import { reactive, ref, unref } from 'vue'
+import { reactive, ref } from 'vue'
+import { getDepartDataApi, registerApi } from '@/api/login'
+import { SUCCESS_CODE } from '@/constants'
+import { ElMessage } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useForm } from '@/hooks/web/useForm'
-import { ElInput, FormRules } from 'element-plus'
+import { FormRules } from 'element-plus'
 import { useValidator } from '@/hooks/web/useValidator'
 import { BaseButton } from '@/components/Button'
 import { IAgree } from '@/components/IAgree'
-
+import { Icon } from '@/components/Icon'
 const emit = defineEmits(['to-login'])
 
 const { formRegister, formMethods } = useForm()
-const { getElFormExpose } = formMethods
+const { getFormData, getElFormExpose } = formMethods
 
 const { t } = useI18n()
 
 const { required, check } = useValidator()
-
-const getCodeTime = ref(60)
-const getCodeLoading = ref(false)
-const getCode = () => {
-  getCodeLoading.value = true
-  const timer = setInterval(() => {
-    getCodeTime.value--
-    if (getCodeTime.value <= 0) {
-      clearInterval(timer)
-      getCodeTime.value = 60
-      getCodeLoading.value = false
-    }
-  }, 1000)
-}
 
 const schema = reactive<FormSchema[]>([
   {
@@ -46,77 +35,92 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'username',
-    label: t('login.username'),
+    field: 'nickname',
+    label: t('login.nickname'),
     value: '',
     component: 'Input',
     colProps: {
       span: 24
     },
     componentProps: {
-      placeholder: t('login.usernamePlaceholder')
+      placeholder: t('login.nicknamePlaceholder'),
+      slots: {
+        prefix: () => {
+          return <Icon icon="vi-mingcute:user-hide-line" size={22} />
+        }
+      }
+    }
+  },
+  {
+    field: 'email',
+    label: t('login.email'),
+    value: '',
+    component: 'Input',
+    colProps: {
+      span: 24
+    },
+    componentProps: {
+      placeholder: t('login.emailPlaceholder'),
+      slots: {
+        prefix: () => {
+          return <Icon icon="vi-line-md:email-filled" size={22} />
+        }
+      }
     }
   },
   {
     field: 'password',
     label: t('login.password'),
     value: '',
-    component: 'InputPassword',
+    component: 'Input',
     colProps: {
       span: 24
     },
     componentProps: {
-      style: {
-        width: '100%'
-      },
-      strength: true,
-      placeholder: t('login.passwordPlaceholder')
+      type: 'password',
+      showPassword: true,
+      placeholder: t('login.passwordPlaceholder'),
+      slots: {
+        prefix: () => {
+          return <Icon icon="vi-carbon:password" size={22} />
+        }
+      }
     }
   },
   {
     field: 'check_password',
     label: t('login.checkPassword'),
     value: '',
-    component: 'InputPassword',
+    component: 'Input',
     colProps: {
       span: 24
     },
     componentProps: {
-      style: {
-        width: '100%'
-      },
-      strength: true,
-      placeholder: t('login.passwordPlaceholder')
-    }
-  },
-  {
-    field: 'code',
-    label: t('login.code'),
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
+      type: 'password',
+      showPassword: true,
+      placeholder: t('login.passwordPlaceholder'),
       slots: {
-        default: (formData) => {
-          return (
-            <div class="w-[100%] flex">
-              <ElInput v-model={formData.code} placeholder={t('login.codePlaceholder')} />
-              <BaseButton
-                type="primary"
-                disabled={unref(getCodeLoading)}
-                class="ml-10px"
-                onClick={getCode}
-              >
-                {t('login.getCode')}
-                {unref(getCodeLoading) ? `(${unref(getCodeTime)})` : ''}
-              </BaseButton>
-            </div>
-          )
+        prefix: () => {
+          return <Icon icon="vi-carbon:password" size={22} />
         }
       }
     }
   },
-
+  {
+    field: 'department',
+    label: t('login.department'),
+    component: 'Select',
+    colProps: {
+      span: 12
+    },
+    componentProps: {
+      placeholder: t('login.departmentPlaceholder')
+    },
+    optionApi: async () => {
+      const res = await getDepartDataApi()
+      return res.data
+    }
+  },
   {
     field: 'iAgree',
     colProps: {
@@ -133,7 +137,7 @@ const schema = reactive<FormSchema[]>([
                 link={[
                   {
                     text: '《用户协议》',
-                    url: 'https://element-plus.org/'
+                    url: 'https://www.china-chip.com/'
                   }
                 ]}
               />
@@ -177,10 +181,24 @@ const schema = reactive<FormSchema[]>([
 ])
 
 const rules: FormRules = {
-  username: [required()],
+  nickname: [required()],
+  email: [required()],
   password: [required()],
-  check_password: [required()],
-  code: [required()],
+  check_password: [
+    required(),
+    {
+      asyncValidator: async (_, val, callback) => {
+        const formData = await getFormData()
+        const { password } = formData
+        if (val !== password) {
+          callback(new Error('密码不一致'))
+        } else {
+          callback()
+        }
+      }
+    }
+  ],
+  department: [required()],
   iAgree: [required(), check()]
 }
 
@@ -196,7 +214,13 @@ const loginRegister = async () => {
     if (valid) {
       try {
         loading.value = true
-        toLogin()
+        const formData = await getFormData()
+        const { nickname, email, password, department_id } = formData
+        const res = await registerApi({ nickname, email, password, department_id })
+        if (res.code === SUCCESS_CODE) {
+          ElMessage.success(res.data[0])
+          toLogin()
+        }
       } finally {
         loading.value = false
       }

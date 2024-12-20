@@ -9,3 +9,15 @@ export interface UserType {
   nickname: string
   department: string
 }
+
+export interface DepartmentType {
+  label: string
+  value: string
+}
+
+export interface RegisterType {
+  nickname: string
+  email: string
+  password: string
+  department_id: number
+}

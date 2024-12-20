@@ -107,10 +107,13 @@ export default {
     small: 'Small'
   },
   login: {
-    welcome: 'Welcome to the system',
-    message: 'Backstage management system',
+    welcome: 'Suzhou Hsun Microelectronics Management System',
+    message:
+      'Support E10 database, realize data analysis, delivery date reply and data visualization functions.',
+    nickname: 'Nickname',
     username: 'Username',
     email: 'Email',
+    department: 'Department',
     password: 'Password',
     register: 'Register',
     checkPassword: 'Confirm password',
@@ -120,8 +123,10 @@ export default {
     hasUser: 'Existing account? Go to login',
     forgetPassword: 'Forget password',
     usernamePlaceholder: 'Please input username',
+    nicknamePlaceholder: 'Please input nickname',
     emailPlaceholder: 'Please input email',
     passwordPlaceholder: 'Please input password',
+    departmentPlaceholder: 'Please select department',
     code: 'Verification code',
     codePlaceholder: 'Please input verification code',
     getCode: 'Get code'

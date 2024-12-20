@@ -86,5 +86,31 @@ export default [
         data: null
       }
     }
+  },
+  // 获取部门列表
+  {
+    url: '/mock/user/departList',
+    method: 'get',
+    response: () => {
+      return {
+        code: SUCCESS_CODE,
+        data: [
+          { label: '研发部', value: 1 },
+          { label: '市场部', value: 2 },
+          { label: '销售部', value: 3 }
+        ]
+      }
+    }
+  },
+  // 注册接口
+  {
+    url: '/mock/user/register',
+    method: 'post',
+    response: () => {
+      return {
+        code: SUCCESS_CODE,
+        data: ['注册成功']
+      }
+    }
   }
 ]

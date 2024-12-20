@@ -105,10 +105,12 @@ export default {
     small: '小'
   },
   login: {
-    welcome: '欢迎使用本系统',
-    message: '开箱即用的中后台管理系统',
+    welcome: '苏州华芯微电子管理系统',
+    message: '支持E10数据库,实现数据分析,交期回复和数据可视化等功能。',
     username: '用户名',
+    nickname: '昵称',
     email: '邮箱',
+    department: '部门',
     password: '密码',
     register: '注册',
     checkPassword: '确认密码',
@@ -118,8 +120,10 @@ export default {
     hasUser: '已有账号？去登录',
     forgetPassword: '忘记密码',
     usernamePlaceholder: '请输入用户名',
+    nicknamePlaceholder: '请输入昵称',
     emailPlaceholder: '请输入邮箱',
     passwordPlaceholder: '请输入密码',
+    departmentPlaceholder: '请选择部门',
     code: '验证码',
     codePlaceholder: '请输入验证码',
     getCode: '获取验证码'

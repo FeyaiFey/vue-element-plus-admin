@@ -4,7 +4,7 @@ import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox, ElLink } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
-import { loginApi, getRoleApi } from '@/api/login'
+import { loginApi, getPermissionApi } from '@/api/login'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
@@ -60,7 +60,7 @@ const schema = reactive<FormSchema[]>([
       placeholder: t('login.emailPlaceholder'),
       slots: {
         prefix: () => {
-          return <Icon icon="vi-weui:email-filled" size={22} />
+          return <Icon icon="vi-weui:email-filled" />
         }
       }
     }
@@ -79,7 +79,7 @@ const schema = reactive<FormSchema[]>([
       showPassword: true,
       slots: {
         prefix: () => {
-          return <Icon icon="vi-carbon:password" size={22} />
+          return <Icon icon="vi-carbon:password" />
         }
       }
     }
@@ -191,7 +191,8 @@ const signIn = async () => {
             userStore.setLoginInfo(undefined)
           }
           userStore.setRememberMe(unref(remember))
-          userStore.setUserInfo(res.data)
+          userStore.setUserInfo(res.data.userinfo)
+          userStore.setToken(res.data.token)
           // 是否使用动态路由
           if (appStore.getDynamicRouter) {
             getRole()
@@ -217,7 +218,7 @@ const getRole = async () => {
   const params = {
     email: formData.email
   }
-  const res = await getRoleApi(params)
+  const res = await getPermissionApi(params)
   if (res) {
     const routers = res.data || []
     userStore.setRoleRouters(routers)

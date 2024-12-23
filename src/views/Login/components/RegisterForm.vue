@@ -36,7 +36,6 @@ const schema = reactive<FormSchema[]>([
   },
   {
     field: 'nickname',
-    label: t('login.nickname'),
     value: '',
     component: 'Input',
     colProps: {
@@ -46,14 +45,13 @@ const schema = reactive<FormSchema[]>([
       placeholder: t('login.nicknamePlaceholder'),
       slots: {
         prefix: () => {
-          return <Icon icon="vi-mingcute:user-hide-line" size={22} />
+          return <Icon icon="vi-mingcute:user-hide-line" />
         }
       }
     }
   },
   {
     field: 'email',
-    label: t('login.email'),
     value: '',
     component: 'Input',
     colProps: {
@@ -63,14 +61,13 @@ const schema = reactive<FormSchema[]>([
       placeholder: t('login.emailPlaceholder'),
       slots: {
         prefix: () => {
-          return <Icon icon="vi-line-md:email-filled" size={22} />
+          return <Icon icon="vi-line-md:email-filled" />
         }
       }
     }
   },
   {
     field: 'password',
-    label: t('login.password'),
     value: '',
     component: 'Input',
     colProps: {
@@ -82,14 +79,13 @@ const schema = reactive<FormSchema[]>([
       placeholder: t('login.passwordPlaceholder'),
       slots: {
         prefix: () => {
-          return <Icon icon="vi-carbon:password" size={22} />
+          return <Icon icon="vi-carbon:password" />
         }
       }
     }
   },
   {
     field: 'check_password',
-    label: t('login.checkPassword'),
     value: '',
     component: 'Input',
     colProps: {
@@ -101,14 +97,13 @@ const schema = reactive<FormSchema[]>([
       placeholder: t('login.passwordPlaceholder'),
       slots: {
         prefix: () => {
-          return <Icon icon="vi-carbon:password" size={22} />
+          return <Icon icon="vi-carbon:password" />
         }
       }
     }
   },
   {
     field: 'department',
-    label: t('login.department'),
     component: 'Select',
     colProps: {
       span: 12

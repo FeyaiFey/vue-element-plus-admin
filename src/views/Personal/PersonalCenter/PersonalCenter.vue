@@ -12,13 +12,10 @@ const userInfo = ref()
 const fetchDetailUserApi = async () => {
   // 这里可以调用接口获取用户信息
   const data = {
-    id: 1,
-    username: 'admin',
-    realName: 'admin',
-    phoneNumber: '18888888888',
-    email: '502431556@qq.com',
-    avatarUrl: '',
-    roleList: ['超级管理员']
+    email: 'admin@admin.com',
+    nickname: 'admin',
+    department: ['生产部'],
+    avatarUrl: ''
   }
   userInfo.value = data
 }
@@ -64,30 +61,20 @@ const saveAvatar = async () => {
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>账号：</div>
-        <div>{{ userInfo?.username }}</div>
+        <div>邮箱：</div>
+        <div>{{ userInfo?.email }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
         <div>昵称：</div>
-        <div>{{ userInfo?.realName }}</div>
+        <div>{{ userInfo?.nickname }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>手机号码：</div>
-        <div>{{ userInfo?.phoneNumber ?? '-' }}</div>
-      </div>
-      <ElDivider />
-      <div class="flex justify-between items-center">
-        <div>用户邮箱：</div>
-        <div>{{ userInfo?.email ?? '-' }}</div>
-      </div>
-      <ElDivider />
-      <div class="flex justify-between items-center">
-        <div>所属角色：</div>
+        <div>所属部门：</div>
         <div>
-          <template v-if="userInfo?.roleList?.length">
-            <ElTag v-for="item in userInfo?.roleList || []" :key="item" class="ml-2 mb-w"
+          <template v-if="userInfo?.department?.length">
+            <ElTag v-for="item in userInfo?.department || []" :key="item" class="ml-2 mb-w"
               >{{ item }}
             </ElTag>
           </template>

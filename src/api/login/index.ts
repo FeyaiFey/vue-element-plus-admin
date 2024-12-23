@@ -1,12 +1,17 @@
 import request from '@/axios'
-import type { UserType, DepartmentType, RegisterType } from './types'
+import type { UserType, DepartmentType, RegisterType, UserInfoType } from './types'
 
 interface DepartmentParams {
   email: string
 }
 
+// 获取部门列表
+export const getDepartDataApi = (): Promise<IResponse<DepartmentType[]>> => {
+  return request.get({ url: '/mock/user/departments' })
+}
+
 // 登录接口
-export const loginApi = (data: UserType): Promise<IResponse<UserType>> => {
+export const loginApi = (data: UserType): Promise<IResponse<UserInfoType>> => {
   return request.post({ url: '/mock/user/login', data })
 }
 
@@ -16,18 +21,13 @@ export const registerApi = (data: RegisterType): Promise<IResponse<string[]>> =>
 }
 
 // 获取角色列表
-export const getRoleApi = (params: DepartmentParams): Promise<IResponse<string[]>> => {
-  return request.get({ url: '/mock/role/list2', params })
+export const getPermissionApi = (params: DepartmentParams): Promise<IResponse<string[]>> => {
+  return request.get({ url: '/mock/role/list', params })
 }
 
 // 退出登录
 export const loginOutApi = (): Promise<IResponse> => {
-  return request.get({ url: '/mock/user/loginOut' })
-}
-
-// 获取部门列表
-export const getDepartDataApi = (): Promise<IResponse<DepartmentType[]>> => {
-  return request.get({ url: '/mock/user/departList' })
+  return request.get({ url: '/mock/user/loginout' })
 }
 
 export const getUserListApi = ({ params }: AxiosConfig) => {

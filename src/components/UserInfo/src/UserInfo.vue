@@ -35,7 +35,7 @@ const lockScreen = () => {
 }
 
 const toDocument = () => {
-  window.open('https://element-plus-admin-doc.cn/')
+  window.open('https://github.com/FeyaiFey/vue-element-plus-admin')
 }
 
 const toPage = (path: string) => {
@@ -52,7 +52,7 @@ const toPage = (path: string) => {
         class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
       />
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">{{
-        userStore.getUserInfo?.email
+        userStore.getUserInfo?.nickname
       }}</span>
     </div>
     <template #dropdown>

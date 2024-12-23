@@ -8,6 +8,12 @@ export interface UserType {
   password: string
   nickname: string
   department: string
+  avatarUrl: string
+}
+
+export interface UserInfoType {
+  userinfo: UserType
+  token: string
 }
 
 export interface DepartmentType {

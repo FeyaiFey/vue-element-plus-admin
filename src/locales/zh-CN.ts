@@ -129,6 +129,9 @@ export default {
     getCode: '获取验证码'
   },
   router: {
+    // 进度管理
+    progress: '进度管理',
+    purchase: '采购进度',
     login: '登录',
     level: '多级菜单',
     menu: '菜单',

@@ -132,6 +132,9 @@ export default {
     getCode: 'Get code'
   },
   router: {
+    // 进度管理
+    progress: 'Progress',
+    purchase: 'Purchase',
     login: 'Login',
     level: 'Multi level menu',
     menu: 'Menu',

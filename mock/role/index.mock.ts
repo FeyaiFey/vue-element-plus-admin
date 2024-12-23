@@ -39,6 +39,27 @@ const adminList = [
     ]
   },
   {
+    path: '/progress',
+    component: '#',
+    redirect: '/progress/purchase',
+    name: 'progress',
+    meta: {
+      title: 'router.progress',
+      icon: 'vi-clarity:factory-line'
+    },
+    children: [
+      {
+        path: 'purchase',
+        component: 'views/Progress/Purchase',
+        name: 'Purchase',
+        meta: {
+          title: 'router.purchase',
+          icon: 'vi-bx:purchase-tag'
+        }
+      }
+    ]
+  },
+  {
     path: '/external-link',
     component: '#',
     meta: {},

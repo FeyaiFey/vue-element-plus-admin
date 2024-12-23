@@ -3,24 +3,27 @@ import { SUCCESS_CODE } from '@/constants'
 const timeout = 1000
 
 const List: {
-  username: string
+  email: string
   password: string
-  role: string
-  roleId: string
+  nickname: string
+  department: string
+  avatarUrl: string
   permissions: string | string[]
 }[] = [
   {
-    username: 'admin',
+    email: 'admin@admin.com',
     password: 'admin',
-    role: 'admin',
-    roleId: '1',
+    nickname: 'admin',
+    department: '生产部',
+    avatarUrl: '',
     permissions: ['*.*.*']
   },
   {
-    username: 'test',
+    email: 'test@test.com',
     password: 'test',
-    role: 'test',
-    roleId: '2',
+    nickname: 'test',
+    department: '财务部',
+    avatarUrl: '',
     permissions: ['example:dialog:create', 'example:dialog:delete']
   }
 ]
@@ -31,10 +34,10 @@ export default [
     url: '/mock/user/list',
     method: 'get',
     response: ({ query }) => {
-      const { username, pageIndex, pageSize } = query
+      const { email, pageIndex, pageSize } = query
 
       const mockList = List.filter((item) => {
-        if (username && item.username.indexOf(username) < 0) return false
+        if (email && item.email.indexOf(email) < 0) return false
         return true
       })
       const pageList = mockList.filter(
@@ -59,11 +62,11 @@ export default [
       const data = body
       let hasUser = false
       for (const user of List) {
-        if (user.username === data.username && user.password === data.password) {
+        if (user.email === data.email && user.password === data.password) {
           hasUser = true
           return {
             code: SUCCESS_CODE,
-            data: user
+            data: { userinfo: user, token: '1234567890' }
           }
         }
       }
@@ -89,7 +92,7 @@ export default [
   },
   // 获取部门列表
   {
-    url: '/mock/user/departList',
+    url: '/mock/user/departments',
     method: 'get',
     response: () => {
       return {

@@ -195,7 +195,7 @@ defineExpose({
 </template>
 
 <style lang="less" scoped>
-
+@prefix-cls: ~'@{adminNamespace}-stock-search';
 
 // 响应式调整
 @media screen and (width <= 768px) {
@@ -311,7 +311,7 @@ defineExpose({
       border-top-color: var(--el-border-color-darker);
     }
   }
-}@prefix-cls: ~'@{adminNamespace}-stock-search';
+}
 </style>
 
 <style>

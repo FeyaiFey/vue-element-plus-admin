@@ -590,5 +590,20 @@ export default {
   avatarsDemo: {
     title:
       'Avatar component for avatar list, secondary packaging based on element plus Avatar component'
+  },
+  // 自定义内容
+  stock: {
+    // 品号
+    itemCode: 'Item code',
+    // 品名
+    itemName: 'Item name',
+    // 仓库
+    warehouse: 'Warehouse',
+    // 批号
+    lotCode: 'Lot code',
+    // 类别
+    category: 'Category',
+    // 品号群组
+    itemCodeGroup: 'Item code group'
   }
 }

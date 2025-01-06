@@ -56,6 +56,15 @@ const adminList = [
           title: 'router.purchase',
           icon: 'vi-bx:purchase-tag'
         }
+      },
+      {
+        path: 'stock',
+        component: 'views/Stock/Stock',
+        name: 'Stock',
+        meta: {
+          title: 'router.stock',
+          icon: 'vi-bx:purchase-tag'
+        }
       }
     ]
   },

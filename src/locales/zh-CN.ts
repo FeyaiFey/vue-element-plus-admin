@@ -577,5 +577,20 @@ export default {
   },
   avatarsDemo: {
     title: '头像列表组件，基于element-plus的Avatar组件二次封装'
+  },
+  // 自定义内容
+  stock: {
+    // 品号
+    itemCode: '品号',
+    // 品名
+    itemName: '品名',
+    // 仓库
+    warehouse: '仓库',
+    // 批号
+    lotCode: '批号',
+    // 类别
+    category: '类别',
+    // 品号群组
+    itemCodeGroup: '品号群组'
   }
 }

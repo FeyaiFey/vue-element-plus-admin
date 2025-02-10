@@ -9,11 +9,12 @@ import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
-import { UserType } from '@/api/login/types'
+import { UserLoginType, UserType } from '@/api/login/types'
 import { useValidator } from '@/hooks/web/useValidator'
 import { Icon } from '@/components/Icon'
 import { useUserStore } from '@/store/modules/user'
 import { BaseButton } from '@/components/Button'
+import { SUCCESS_CODE } from '@/constants'
 
 const { required } = useValidator()
 
@@ -30,7 +31,7 @@ const { currentRoute, addRoute, push } = useRouter()
 const { t } = useI18n()
 
 const rules = {
-  username: [required()],
+  email: [required()],
   password: [required()]
 }
 
@@ -50,8 +51,6 @@ const schema = reactive<FormSchema[]>([
   },
   {
     field: 'email',
-    // label: t('login.username'),
-    // value: 'admin',
     component: 'Input',
     colProps: {
       span: 24
@@ -67,8 +66,6 @@ const schema = reactive<FormSchema[]>([
   },
   {
     field: 'password',
-    // label: t('login.password'),
-    // value: 'admin',
     component: 'Input',
     colProps: {
       span: 24
@@ -175,12 +172,12 @@ const signIn = async () => {
   await formRef?.validate(async (isValid) => {
     if (isValid) {
       loading.value = true
-      const formData = await getFormData<UserType>()
+      const formData = await getFormData<UserLoginType>()
 
       try {
         const res = await loginApi(formData)
 
-        if (res) {
+        if (res.code === SUCCESS_CODE) {
           // 是否记住我
           if (unref(remember)) {
             userStore.setLoginInfo({

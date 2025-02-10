@@ -1,5 +1,5 @@
 import request from '@/axios'
-import type { UserType, DepartmentType, RegisterType, UserInfoType } from './types'
+import type { UserLoginType, UserType, DepartmentType, RegisterType, UserInfoType } from './types'
 
 interface DepartmentParams {
   email: string
@@ -7,17 +7,17 @@ interface DepartmentParams {
 
 // 获取部门列表
 export const getDepartDataApi = (): Promise<IResponse<DepartmentType[]>> => {
-  return request.get({ url: '/mock/user/departments' })
+  return request.get({ url: '/auth/department' })
 }
 
 // 登录接口
-export const loginApi = (data: UserType): Promise<IResponse<UserInfoType>> => {
-  return request.post({ url: '/mock/user/login', data })
+export const loginApi = (data: UserLoginType): Promise<IResponse<UserInfoType>> => {
+  return request.post({ url: '/auth/login', data })
 }
 
 // 注册接口
 export const registerApi = (data: RegisterType): Promise<IResponse<string[]>> => {
-  return request.post({ url: '/mock/user/register', data })
+  return request.post({ url: '/auth/register', data })
 }
 
 // 获取角色列表

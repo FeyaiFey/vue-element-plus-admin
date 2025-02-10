@@ -35,7 +35,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'nickname',
+    field: 'username',
     value: '',
     component: 'Input',
     colProps: {
@@ -104,12 +104,17 @@ const schema = reactive<FormSchema[]>([
   },
   {
     field: 'department',
-    component: 'Select',
+    component: 'TreeSelect',
     colProps: {
       span: 12
     },
     componentProps: {
-      placeholder: t('login.departmentPlaceholder')
+      placeholder: t('login.departmentPlaceholder'),
+      props: {
+        value: 'value',
+        label: 'label',
+        children: 'children'
+      }
     },
     optionApi: async () => {
       const res = await getDepartDataApi()
@@ -210,10 +215,15 @@ const loginRegister = async () => {
       try {
         loading.value = true
         const formData = await getFormData()
-        const { nickname, email, password, department_id } = formData
-        const res = await registerApi({ nickname, email, password, department_id })
+        const { username, email, password, department } = formData
+        const res = await registerApi({
+          username,
+          email,
+          password,
+          department_id: Number(department)
+        })
         if (res.code === SUCCESS_CODE) {
-          ElMessage.success(res.data[0])
+          ElMessage.success('注册成功')
           toLogin()
         }
       } finally {

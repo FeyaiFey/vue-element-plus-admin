@@ -32,9 +32,9 @@ axiosInstance.interceptors.response.use(
     // 这里不能做任何处理，否则后面的 interceptors 拿不到完整的上下文了
     return res
   },
-  (error: AxiosError) => {
-    console.log('err： ' + error) // for debug
-    ElMessage.error(error.message)
+  (error: AxiosError<{ detail: string }>) => {
+    console.log('err： ' + error)
+    ElMessage.error(error.response?.data?.detail || error.message)
     return Promise.reject(error)
   }
 )

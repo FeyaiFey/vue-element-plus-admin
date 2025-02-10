@@ -6,9 +6,9 @@ export interface UserLoginType {
 export interface UserType {
   email: string
   password: string
-  nickname: string
-  department: string
-  avatarUrl: string
+  username: string
+  department_name: string
+  avatar_url: string
 }
 
 export interface UserInfoType {
@@ -18,11 +18,13 @@ export interface UserInfoType {
 
 export interface DepartmentType {
   label: string
-  value: string
+  value: number
+  children?: DepartmentType[]
+  parentId?: string | null
 }
 
 export interface RegisterType {
-  nickname: string
+  username: string
   email: string
   password: string
   department_id: number

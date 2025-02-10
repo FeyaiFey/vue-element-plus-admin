@@ -7,17 +7,17 @@ interface DepartmentParams {
 
 // 获取部门列表
 export const getDepartDataApi = (): Promise<IResponse<DepartmentType[]>> => {
-  return request.get({ url: '/auth/department' })
+  return request.get({ url: '/mock/auth/department' })
 }
 
 // 登录接口
 export const loginApi = (data: UserLoginType): Promise<IResponse<UserInfoType>> => {
-  return request.post({ url: '/auth/login', data })
+  return request.post({ url: '/mock/auth/login', data })
 }
 
 // 注册接口
 export const registerApi = (data: RegisterType): Promise<IResponse<string[]>> => {
-  return request.post({ url: '/auth/register', data })
+  return request.post({ url: '/mock/auth/register', data })
 }
 
 // 获取角色列表

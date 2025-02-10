@@ -173,9 +173,11 @@ const signIn = async () => {
     if (isValid) {
       loading.value = true
       const formData = await getFormData<UserLoginType>()
+      console.log('formData： ' + JSON.stringify(formData))
 
       try {
         const res = await loginApi(formData)
+        console.log('res： ' + JSON.stringify(res))
 
         if (res.code === SUCCESS_CODE) {
           // 是否记住我

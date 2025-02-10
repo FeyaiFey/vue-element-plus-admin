@@ -18,10 +18,15 @@ axiosInstance.interceptors.request.use((res: InternalAxiosRequestConfig) => {
   const controller = new AbortController()
   const url = res.url || ''
   res.signal = controller.signal
-  abortControllerMap.set(
-    import.meta.env.VITE_USE_MOCK === 'true' ? url.replace('/mock', '') : url,
-    controller
-  )
+
+  // 只有在VITE_USE_MOCK为false时才移除/mock前缀
+  const shouldRemoveMock = import.meta.env.VITE_USE_MOCK === 'false' && url.startsWith('/mock')
+  const finalUrl = shouldRemoveMock ? url.replace('/mock', '') : url
+  abortControllerMap.set(finalUrl, controller)
+
+  if (shouldRemoveMock) {
+    res.url = finalUrl
+  }
   return res
 })
 
@@ -32,9 +37,11 @@ axiosInstance.interceptors.response.use(
     // 这里不能做任何处理，否则后面的 interceptors 拿不到完整的上下文了
     return res
   },
-  (error: AxiosError<{ detail: string }>) => {
+  (error: AxiosError<{ message: string; code: number; name: string }>) => {
     console.log('err： ' + error)
-    ElMessage.error(error.response?.data?.detail || error.message)
+    console.log('error.response?.data?.message： ' + error.response?.data?.message)
+    console.log('error.message： ' + error.message)
+    ElMessage.error(error.response?.data?.message || error.message)
     return Promise.reject(error)
   }
 )

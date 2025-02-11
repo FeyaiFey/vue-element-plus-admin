@@ -8,6 +8,7 @@ export interface UserType {
   password: string
   username: string
   department_name: string
+  roles: string[]
   avatar_url: string
 }
 

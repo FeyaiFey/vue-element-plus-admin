@@ -7,18 +7,20 @@ import UploadAvatar from './components/UploadAvatar.vue'
 import { Dialog } from '@/components/Dialog'
 import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
+import { getUserInfoApi } from '@/api/login'
+import { UserType } from '@/api/login/types'
 
-const userInfo = ref()
+const userInfo = ref<UserType>()
+
 const fetchDetailUserApi = async () => {
-  // 这里可以调用接口获取用户信息
-  const data = {
-    email: 'admin@admin.com',
-    nickname: 'admin',
-    department: ['生产部'],
-    avatarUrl: ''
+  try {
+    const res = await getUserInfoApi()
+    userInfo.value = res.data
+  } catch (error) {
+    console.log(error)
   }
-  userInfo.value = data
 }
+
 fetchDetailUserApi()
 
 const activeName = ref('first')
@@ -54,7 +56,7 @@ const saveAvatar = async () => {
         >
           <ElImage
             class="w-[150px] h-[150px] rounded-full"
-            :src="userInfo?.avatarUrl || defaultAvatar"
+            :src="`http://localhost:8000/${userInfo?.avatar_url}` || defaultAvatar"
             fit="fill"
           />
         </div>
@@ -66,22 +68,31 @@ const saveAvatar = async () => {
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>昵称：</div>
-        <div>{{ userInfo?.nickname }}</div>
+        <div>用户名：</div>
+        <div>{{ userInfo?.username }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
         <div>所属部门：</div>
         <div>
-          <template v-if="userInfo?.department?.length">
-            <ElTag v-for="item in userInfo?.department || []" :key="item" class="ml-2 mb-w"
+          <template v-if="userInfo?.department_name?.length">
+            <ElTag class="ml-2 mb-w"> {{ userInfo?.department_name }} </ElTag>
+          </template>
+          <template v-else>-</template>
+        </div>
+      </div>
+      <ElDivider />
+      <div class="flex justify-between items-center">
+        <div>角色信息：</div>
+        <div>
+          <template v-if="userInfo?.roles?.length">
+            <ElTag v-for="item in userInfo?.roles || []" :key="item" class="ml-2 mb-w"
               >{{ item }}
             </ElTag>
           </template>
           <template v-else>-</template>
         </div>
       </div>
-      <ElDivider />
     </ContentWrap>
     <ContentWrap title="基本资料" class="flex-[3] ml-20px">
       <ElTabs v-model="activeName">
@@ -96,7 +107,7 @@ const saveAvatar = async () => {
   </div>
 
   <Dialog v-model="dialogVisible" title="修改头像" width="800px">
-    <UploadAvatar ref="uploadAvatarRef" :url="userInfo?.avatarUrl || defaultAvatar" />
+    <UploadAvatar ref="uploadAvatarRef" :url="userInfo?.avatar_url || defaultAvatar" />
 
     <template #footer>
       <ElButton type="primary" :loading="avatarLoading" @click="saveAvatar"> 保存 </ElButton>

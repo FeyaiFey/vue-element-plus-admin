@@ -3,7 +3,7 @@ import { store } from '../index'
 import { UserLoginType, UserType } from '@/api/login/types'
 import { ElMessageBox } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
-import { loginOutApi } from '@/api/login'
+import { logOutApi } from '@/api/login'
 import { useTagsViewStore } from './tagsView'
 import router from '@/router'
 
@@ -69,8 +69,7 @@ export const useUserStore = defineStore('user', {
         type: 'warning'
       })
         .then(async () => {
-          const res = await loginOutApi().catch(() => {})
-          console.log(res)
+          const res = await logOutApi().catch(() => {})
           if (res) {
             this.reset()
           }

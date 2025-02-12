@@ -28,8 +28,13 @@ export const getRoleRouterApi = (
 }
 
 // 退出登录
-export const loginOutApi = (): Promise<IResponse> => {
-  return request.get({ url: '/mock/user/loginout' })
+export const logOutApi = (): Promise<IResponse> => {
+  return request.post({ url: '/mock/auth/logout' })
+}
+
+// 获取当前用户信息
+export const getUserInfoApi = (): Promise<IResponse<UserType>> => {
+  return request.get({ url: '/mock/auth/userinfo' })
 }
 
 export const getUserListApi = ({ params }: AxiosConfig) => {

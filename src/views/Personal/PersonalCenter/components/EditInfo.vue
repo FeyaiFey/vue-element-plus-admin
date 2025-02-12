@@ -16,8 +16,8 @@ const { required, maxlength, email } = useValidator()
 
 const formSchema = reactive<FormSchema[]>([
   {
-    field: 'nickname',
-    label: '昵称',
+    field: 'username',
+    label: '用户名',
     component: 'Input',
     colProps: {
       span: 24
@@ -32,7 +32,7 @@ const formSchema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'department',
+    field: 'department_name',
     label: '部门',
     component: 'Input',
     colProps: {
@@ -42,7 +42,7 @@ const formSchema = reactive<FormSchema[]>([
 ])
 
 const rules = reactive({
-  nickname: [required(), maxlength(50)],
+  username: [required(), maxlength(50)],
   email: [email()],
   department: [required()]
 })

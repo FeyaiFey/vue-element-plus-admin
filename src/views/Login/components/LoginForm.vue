@@ -4,12 +4,12 @@ import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox, ElLink } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
-import { loginApi, getPermissionApi } from '@/api/login'
+import { loginApi, getRoleRouterApi } from '@/api/login'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
-import { UserLoginType, UserType } from '@/api/login/types'
+import { UserLoginType } from '@/api/login/types'
 import { useValidator } from '@/hooks/web/useValidator'
 import { Icon } from '@/components/Icon'
 import { useUserStore } from '@/store/modules/user'
@@ -192,7 +192,8 @@ const signIn = async () => {
           userStore.setToken(res.data.token)
           // 是否使用动态路由
           if (appStore.getDynamicRouter) {
-            getRole()
+            const first_role = res.data.userinfo.roles[0]
+            getRole(first_role)
           } else {
             await permissionStore.generateRoutes('static').catch(() => {})
             permissionStore.getAddRouters.forEach((route) => {
@@ -210,12 +211,11 @@ const signIn = async () => {
 }
 
 // 获取角色信息
-const getRole = async () => {
-  const formData = await getFormData<UserType>()
+const getRole = async (role: string) => {
   const params = {
-    email: formData.email
+    role: role
   }
-  const res = await getPermissionApi(params)
+  const res = await getRoleRouterApi(params)
   if (res) {
     const routers = res.data || []
     userStore.setRoleRouters(routers)

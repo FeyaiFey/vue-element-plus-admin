@@ -1,8 +1,8 @@
 import request from '@/axios'
 import type { UserLoginType, UserType, DepartmentType, RegisterType, UserInfoType } from './types'
 
-interface DepartmentParams {
-  email: string
+interface RoleParams {
+  role: string
 }
 
 // 获取部门列表
@@ -21,8 +21,10 @@ export const registerApi = (data: RegisterType): Promise<IResponse<string[]>> =>
 }
 
 // 获取角色列表
-export const getPermissionApi = (params: DepartmentParams): Promise<IResponse<string[]>> => {
-  return request.get({ url: '/mock/role/list', params })
+export const getRoleRouterApi = (
+  params: RoleParams
+): Promise<IResponse<AppCustomRouteRecordRaw[]>> => {
+  return request.get({ url: '/mock/auth/routes', params })
 }
 
 // 退出登录

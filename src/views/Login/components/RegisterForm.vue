@@ -1,7 +1,8 @@
 <script setup lang="tsx">
 import { Form, FormSchema } from '@/components/Form'
 import { reactive, ref } from 'vue'
-import { getDepartDataApi, registerApi } from '@/api/login'
+import { registerApi } from '@/api/login'
+import { getDepartmentApi } from '@/api/department'
 import { SUCCESS_CODE } from '@/constants'
 import { ElMessage } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -111,14 +112,14 @@ const schema = reactive<FormSchema[]>([
     componentProps: {
       placeholder: t('login.departmentPlaceholder'),
       props: {
-        value: 'value',
-        label: 'label',
+        value: 'id',
+        label: 'department_name',
         children: 'children'
       }
     },
     optionApi: async () => {
-      const res = await getDepartDataApi()
-      return res.data
+      const res = await getDepartmentApi()
+      return res.data.list
     }
   },
   {

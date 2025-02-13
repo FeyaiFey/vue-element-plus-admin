@@ -30,7 +30,7 @@ const { tableRegister, tableState, tableMethods } = useTable({
       pageSize: unref(pageSize),
       ...unref(searchParams)
     })
-    const tree_data = listToTree(res.data)
+    const tree_data = listToTree(res.data.list)
     return {
       list: tree_data,
       total: res.data.total
@@ -83,7 +83,7 @@ const crudSchemas = reactive<CrudSchema[]>([
     }
   },
   {
-    field: 'id',
+    field: 'department_name',
     label: t('userDemo.departmentName'),
     table: {
       slots: {

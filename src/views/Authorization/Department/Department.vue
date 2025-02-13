@@ -6,10 +6,10 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ElTag } from 'element-plus'
 import { Table } from '@/components/Table'
 import {
-  getDepartmentApi,
   getDepartmentTableApi,
   saveDepartmentApi,
-  deleteDepartmentApi
+  deleteDepartmentApi,
+  getDepartmentApi
 } from '@/api/department'
 import type { DepartmentItem } from '@/api/department/types'
 import { useTable } from '@/hooks/web/useTable'
@@ -18,6 +18,7 @@ import Write from './components/Write.vue'
 import Detail from './components/Detail.vue'
 import { CrudSchema, useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { BaseButton } from '@/components/Button'
+import { listToTree } from '@/utils/tree'
 
 const ids = ref<string[]>([])
 
@@ -29,8 +30,9 @@ const { tableRegister, tableState, tableMethods } = useTable({
       pageSize: unref(pageSize),
       ...unref(searchParams)
     })
+    const tree_data = listToTree(res.data)
     return {
-      list: res.data.list,
+      list: tree_data,
       total: res.data.total
     }
   },
@@ -86,7 +88,7 @@ const crudSchemas = reactive<CrudSchema[]>([
     table: {
       slots: {
         default: (data: any) => {
-          return <>{data.row.departmentName}</>
+          return <>{data.row.department_name}</>
         }
       }
     },
@@ -95,18 +97,18 @@ const crudSchemas = reactive<CrudSchema[]>([
       componentProps: {
         nodeKey: 'id',
         props: {
-          label: 'departmentName'
+          label: 'department_name'
         }
       },
       optionApi: async () => {
         const res = await getDepartmentApi()
-        return res.data.list
+        return res.data
       }
     },
     detail: {
       slots: {
         default: (data: any) => {
-          return <>{data.departmentName}</>
+          return <>{data.department_name}</>
         }
       }
     }
@@ -161,37 +163,13 @@ const crudSchemas = reactive<CrudSchema[]>([
     }
   },
   {
-    field: 'createTime',
+    field: 'created_at',
     label: t('tableDemo.displayTime'),
     search: {
       hidden: true
     },
     form: {
       hidden: true
-    }
-  },
-  {
-    field: 'remark',
-    label: t('userDemo.remark'),
-    search: {
-      hidden: true
-    },
-    form: {
-      component: 'Input',
-      componentProps: {
-        type: 'textarea',
-        rows: 5
-      },
-      colProps: {
-        span: 24
-      }
-    },
-    detail: {
-      slots: {
-        default: (data: any) => {
-          return <>{data.remark}</>
-        }
-      }
     }
   },
   {

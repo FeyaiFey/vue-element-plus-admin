@@ -229,7 +229,7 @@ const currentChange = (data: DepartmentItem) => {
 
 const filterNode = (value: string, data: DepartmentItem) => {
   if (!value) return true
-  return data.departmentName.includes(value)
+  return data.department_name.includes(value)
 }
 
 const dialogVisible = ref(false)

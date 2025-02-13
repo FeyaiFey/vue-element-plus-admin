@@ -1,6 +1,6 @@
 export interface DepartmentItem {
   id: string
-  departmentName: string
+  department_name: string
   children?: DepartmentItem[]
 }
 

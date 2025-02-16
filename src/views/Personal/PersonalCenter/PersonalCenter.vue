@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ref, unref } from 'vue'
+import { ref, unref, onMounted } from 'vue'
 import { ElDivider, ElImage, ElTag, ElTabPane, ElTabs, ElButton, ElMessage } from 'element-plus'
 import defaultAvatar from '@/assets/imgs/avatar.jpg'
 import UploadAvatar from './components/UploadAvatar.vue'
@@ -9,19 +9,40 @@ import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
 import { getUserInfoApi } from '@/api/login'
 import { UserType } from '@/api/login/types'
+import { useUserStore } from '@/store/modules/user'
 
+const userStore = useUserStore()
 const userInfo = ref<UserType>()
 
 const fetchDetailUserApi = async () => {
   try {
     const res = await getUserInfoApi()
-    userInfo.value = res.data
+    if (res.code === 200) {
+      userInfo.value = res.data
+      // 同步更新store中的用户信息
+      await userStore.setUserInfo(res.data)
+    } else {
+      ElMessage.error(res.message || '获取用户信息失败')
+    }
   } catch (error) {
-    console.log(error)
+    console.error('获取用户信息失败:', error)
+    ElMessage.error('获取用户信息失败')
   }
 }
 
-fetchDetailUserApi()
+// 更新用户信息
+const handleUpdateUserInfo = async (newUserInfo) => {
+  // 更新本地数据
+  userInfo.value = { ...userInfo.value, ...newUserInfo }
+  // 同步更新store中的用户信息
+  await userStore.setUserInfo(userInfo.value)
+  // 重新获取最新的用户信息
+  await fetchDetailUserApi()
+}
+
+onMounted(() => {
+  fetchDetailUserApi()
+})
 
 const activeName = ref('first')
 
@@ -35,11 +56,12 @@ const saveAvatar = async () => {
     const base64 = unref(uploadAvatarRef)?.getBase64()
     console.log(base64)
     // 这里可以调用修改头像接口
-    fetchDetailUserApi()
+    await fetchDetailUserApi()
     ElMessage.success('修改成功')
     dialogVisible.value = false
   } catch (error) {
-    console.log(error)
+    console.error('更新头像失败:', error)
+    ElMessage.error('修改失败')
   } finally {
     avatarLoading.value = false
   }
@@ -97,7 +119,7 @@ const saveAvatar = async () => {
     <ContentWrap title="基本资料" class="flex-[3] ml-20px">
       <ElTabs v-model="activeName">
         <ElTabPane label="基本信息" name="first">
-          <EditInfo :user-info="userInfo" />
+          <EditInfo :user-info="userInfo" @update:userInfo="handleUpdateUserInfo" />
         </ElTabPane>
         <ElTabPane label="修改密码" name="second">
           <EditPassword />

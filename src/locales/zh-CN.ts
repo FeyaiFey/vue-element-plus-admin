@@ -593,5 +593,54 @@ export default {
     category: '类别',
     // 品号群组
     itemCodeGroup: '品号群组'
+  },
+  department: {
+    id: 'ID',
+    name: '部门名称',
+    isSubDepartment: '是否为子部门',
+    parentDepartment: '父部门',
+    status: '状态',
+    enable: '启用',
+    disable: '禁用',
+    created_at: '创建时间',
+    placeholder: {
+      name: '请输入部门名称',
+      parent: '请选择父部门',
+      status: '请选择状态'
+    },
+    rules: {
+      name: '请输入部门名称',
+      status: '请选择状态',
+      nameLength: '部门名称长度在3-5个字符之间'
+    },
+    new: '新建',
+    batchDelete: '批量删除',
+    search: '搜索',
+    edit: '编辑',
+    view: '查看',
+    delete: '删除',
+    save: '保存',
+    departmentDetail: '部门详情',
+    editDepartment: '编辑部门',
+    parent_id: '父部门ID',
+    parent_department: '父部门',
+    close: '关闭',
+    cancel: '取消',
+    yes: '是',
+    no: '否',
+    updateSuccess: '更新成功',
+    updateError: '更新失败',
+    newDepartment: '新增部门',
+    createSuccess: '新增成功',
+    createError: '新增失败',
+    batchDeleteConfirm: '确定删除 {count} 个部门吗？',
+    batchDeleteSuccess: '批量删除成功',
+    batchDeleteError: '批量删除失败',
+    deleteConfirm: '确定删除 {name} 部门吗？',
+    deleteSuccess: '删除成功',
+    deleteError: '删除失败',
+    selectItemsTip: '请选择要删除的部门',
+    confirmTitle: '提示',
+    confirm: '确定'
   }
 }

@@ -1,319 +1,424 @@
-<script setup lang="tsx">
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ContentWrap } from '@/components/ContentWrap'
-import { Search } from '@/components/Search'
+import {
+  ElInput,
+  ElTag,
+  ElTable,
+  ElTableColumn,
+  ElPagination,
+  ElMessage,
+  ElMessageBox
+} from 'element-plus'
+import { BaseButton } from '@/components/Button'
+import { Icon } from '@/components/Icon'
 import { Dialog } from '@/components/Dialog'
-import { useI18n } from '@/hooks/web/useI18n'
-import { ElTag } from 'element-plus'
-import { Table } from '@/components/Table'
 import {
   getDepartmentTableApi,
   saveDepartmentApi,
   deleteDepartmentApi,
-  getDepartmentApi
+  batchDeleteDepartmentApi
 } from '@/api/department'
-import type { DepartmentItem } from '@/api/department/types'
-import { useTable } from '@/hooks/web/useTable'
-import { ref, unref, reactive } from 'vue'
-import Write from './components/Write.vue'
-import Detail from './components/Detail.vue'
-import { CrudSchema, useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { BaseButton } from '@/components/Button'
+import type { DepartmentTableItem } from '@/api/department/types'
+import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
 import { listToTree } from '@/utils/tree'
-
-const ids = ref<string[]>([])
-
-const { tableRegister, tableState, tableMethods } = useTable({
-  fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
-    const res = await getDepartmentTableApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
-      ...unref(searchParams)
-    })
-    const tree_data = listToTree(res.data.list)
-    return {
-      list: tree_data,
-      total: res.data.total
-    }
-  },
-  fetchDelApi: async () => {
-    const res = await deleteDepartmentApi(unref(ids))
-    return !!res
-  }
-})
-const { loading, dataList, total, currentPage, pageSize } = tableState
-const { getList, getElTableExpose, delList } = tableMethods
-
-const searchParams = ref({})
-const setSearchParams = (params: any) => {
-  searchParams.value = params
-  getList()
-}
+import DepartmentView from './components/view.vue'
+import DepartmentEdit from './components/edit.vue'
+import DepartmentCreate from './components/new.vue'
 
 const { t } = useI18n()
 
-const crudSchemas = reactive<CrudSchema[]>([
+// 扩展 DepartmentTableItem 类型以支持树形结构
+interface TreeDepartmentItem extends DepartmentTableItem {
+  children?: TreeDepartmentItem[]
+}
+
+const tableData = ref<TreeDepartmentItem[]>([])
+
+interface ColumnType extends Partial<TableColumnCtx<TreeDepartmentItem>> {
+  hidden?: boolean
+}
+
+const columns = ref<ColumnType[]>([
   {
-    field: 'selection',
-    search: {
-      hidden: true
-    },
-    form: {
-      hidden: true
-    },
-    detail: {
-      hidden: true
-    },
-    table: {
-      type: 'selection'
-    }
+    label: t('department.id'),
+    prop: 'id',
+    hidden: true
   },
   {
-    field: 'index',
     label: t('tableDemo.index'),
     type: 'index',
-    search: {
-      hidden: true
-    },
-    form: {
-      hidden: true
-    },
-    detail: {
-      hidden: true
-    }
+    align: 'center',
+    width: 100
   },
   {
-    field: 'department_name',
-    label: t('userDemo.departmentName'),
-    table: {
-      slots: {
-        default: (data: any) => {
-          return <>{data.row.department_name}</>
-        }
-      }
-    },
-    form: {
-      component: 'TreeSelect',
-      componentProps: {
-        nodeKey: 'id',
-        props: {
-          label: 'department_name'
-        }
-      },
-      optionApi: async () => {
-        const res = await getDepartmentApi()
-        return res.data
-      }
-    },
-    detail: {
-      slots: {
-        default: (data: any) => {
-          return <>{data.department_name}</>
-        }
-      }
-    }
+    label: t('department.name'),
+    prop: 'department_name',
+    align: 'left'
   },
   {
-    field: 'status',
-    label: t('userDemo.status'),
-    search: {
-      hidden: true
-    },
-    table: {
-      slots: {
-        default: (data: any) => {
-          const status = data.row.status
-          return (
-            <>
-              <ElTag type={status === 0 ? 'danger' : 'success'}>
-                {status === 1 ? t('userDemo.enable') : t('userDemo.disable')}
-              </ElTag>
-            </>
-          )
-        }
-      }
-    },
-    form: {
-      component: 'Select',
-      componentProps: {
-        options: [
-          {
-            value: 0,
-            label: t('userDemo.disable')
-          },
-          {
-            value: 1,
-            label: t('userDemo.enable')
-          }
-        ]
-      }
-    },
-    detail: {
-      slots: {
-        default: (data: any) => {
-          return (
-            <>
-              <ElTag type={data.status === 0 ? 'danger' : 'success'}>
-                {data.status === 1 ? t('userDemo.enable') : t('userDemo.disable')}
-              </ElTag>
-            </>
-          )
-        }
-      }
-    }
+    label: t('department.status'),
+    prop: 'status',
+    align: 'center'
   },
   {
-    field: 'created_at',
-    label: t('tableDemo.displayTime'),
-    search: {
-      hidden: true
-    },
-    form: {
-      hidden: true
-    }
-  },
-  {
-    field: 'action',
-    width: '260px',
-    label: t('tableDemo.action'),
-    search: {
-      hidden: true
-    },
-    form: {
-      hidden: true
-    },
-    detail: {
-      hidden: true
-    },
-    table: {
-      slots: {
-        default: (data: any) => {
-          return (
-            <>
-              <BaseButton type="primary" onClick={() => action(data.row, 'edit')}>
-                {t('exampleDemo.edit')}
-              </BaseButton>
-              <BaseButton type="success" onClick={() => action(data.row, 'detail')}>
-                {t('exampleDemo.detail')}
-              </BaseButton>
-              <BaseButton type="danger" onClick={() => delData(data.row)}>
-                {t('exampleDemo.del')}
-              </BaseButton>
-            </>
-          )
-        }
-      }
-    }
+    label: t('department.created_at'),
+    prop: 'created_at',
+    align: 'center'
   }
 ])
 
-// @ts-ignore
-const { allSchemas } = useCrudSchemas(crudSchemas)
+// 搜索
+const search = ref('')
 
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
+const filterTableData = computed(() => {
+  if (!search.value) return tableData.value
 
-const currentRow = ref<DepartmentItem | null>(null)
-const actionType = ref('')
+  const filterTree = (data: TreeDepartmentItem[]): TreeDepartmentItem[] => {
+    return data.filter((item) => {
+      // 当前节点是否匹配
+      const isMatch = item.department_name.toLowerCase().includes(search.value.toLowerCase())
 
-const AddAction = () => {
-  dialogTitle.value = t('exampleDemo.add')
-  currentRow.value = null
-  dialogVisible.value = true
-  actionType.value = ''
+      // 处理子节点
+      if (item.children) {
+        item.children = filterTree(item.children)
+        // 如果子节点有匹配项，保留父节点
+        return isMatch || item.children.length > 0
+      }
+
+      return isMatch
+    })
+  }
+
+  return filterTree(JSON.parse(JSON.stringify(tableData.value)))
+})
+
+// 选中的行
+const selectedRows = ref<TreeDepartmentItem[]>([])
+
+const handleSelect = (selection: TreeDepartmentItem[]) => {
+  selectedRows.value = selection
 }
 
-const delLoading = ref(false)
+// 计算可见的列
+const visibleColumns = computed(() => {
+  return columns.value.filter((column) => !column.hidden)
+})
 
-const delData = async (row: DepartmentItem | null) => {
-  const elTableExpose = await getElTableExpose()
-  ids.value = row
-    ? [row.id]
-    : elTableExpose?.getSelectionRows().map((v: DepartmentItem) => v.id) || []
-  delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
-    delLoading.value = false
-  })
+// 新增对话框
+const createDialogVisible = ref(false)
+const createFormRef = ref()
+
+// 新增部门
+const newDepartment = () => {
+  createDialogVisible.value = true
 }
 
-const action = (row: DepartmentItem, type: string) => {
-  dialogTitle.value = t(type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail')
-  actionType.value = type
-  currentRow.value = row
-  dialogVisible.value = true
+// 保存新增
+const saveCreate = async () => {
+  if (!createFormRef.value) return
+
+  try {
+    // 获取表单组件实例并验证
+    const valid = await createFormRef.value.validate()
+    if (!valid) return
+
+    const formData = createFormRef.value.formData
+    // 调用保存API
+    const res = await saveDepartmentApi({
+      department_name: formData.department_name,
+      parent_id: formData.is_child ? formData.pid : null,
+      status: formData.status
+    })
+
+    if (res.code === 200) {
+      ElMessage.success(t('department.createSuccess'))
+      createDialogVisible.value = false
+      // 重置表单
+      createFormRef.value.resetForm()
+      // 刷新列表
+      await fetchDepartmentList()
+    } else {
+      ElMessage.error(res.message || t('department.createError'))
+    }
+  } catch (error) {
+    console.error('Failed to create department:', error)
+    ElMessage.error(t('department.createError'))
+  }
 }
 
-const writeRef = ref<ComponentRef<typeof Write>>()
+// 批量删除
+const batchDelete = async () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning(t('department.selectItemsTip'))
+    return
+  }
 
-const saveLoading = ref(false)
+  try {
+    await ElMessageBox.confirm(
+      t('department.batchDeleteConfirm', { count: selectedRows.value.length }),
+      t('department.confirmTitle'),
+      {
+        confirmButtonText: t('department.confirm'),
+        cancelButtonText: t('department.cancel'),
+        type: 'warning'
+      }
+    )
 
-const save = async () => {
-  const write = unref(writeRef)
-  const formData = await write?.submit()
-  if (formData) {
-    saveLoading.value = true
-    const res = await saveDepartmentApi(formData)
-      .catch(() => {})
-      .finally(() => {
-        saveLoading.value = false
-      })
-    if (res) {
-      dialogVisible.value = false
-      currentPage.value = 1
-      getList()
+    const ids = selectedRows.value.map((item) => item.id)
+    const res = await batchDeleteDepartmentApi(ids)
+
+    if (res.code === 200) {
+      ElMessage.success(t('department.batchDeleteSuccess'))
+      // 刷新列表
+      await fetchDepartmentList()
+    } else {
+      ElMessage.error(res.message || t('department.batchDeleteError'))
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Failed to batch delete departments:', error)
+      ElMessage.error(t('department.batchDeleteError'))
     }
   }
+}
+
+// 分页参数
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
+// 添加 loading 状态
+const tableLoading = ref(false)
+
+// 获取部门列表
+onMounted(async () => {
+  try {
+    await fetchDepartmentList()
+  } catch (error) {
+    console.error('Failed to fetch departments:', error)
+  }
+})
+
+const fetchDepartmentList = async () => {
+  tableLoading.value = true
+  try {
+    const res = await getDepartmentTableApi({
+      pageIndex: currentPage.value,
+      pageSize: pageSize.value,
+      use_cache: false
+    })
+    if (res.code === 200) {
+      tableData.value = listToTree(res.data.list) as TreeDepartmentItem[]
+      total.value = res.data.total
+    }
+  } catch (error) {
+    console.error('Failed to fetch departments:', error)
+  } finally {
+    tableLoading.value = false
+  }
+}
+
+// 编辑对话框
+const editDialogVisible = ref(false)
+const currentEditDepartment = ref<TreeDepartmentItem | null>(null)
+const editFormRef = ref()
+
+// 处理编辑
+const handleEdit = (row: TreeDepartmentItem) => {
+  currentEditDepartment.value = { ...row }
+  editDialogVisible.value = true
+}
+
+// 保存编辑
+const saveEdit = async () => {
+  if (!editFormRef.value) return
+
+  try {
+    // 获取表单组件实例并验证
+    const valid = await editFormRef.value.validate()
+    if (!valid) return
+
+    const formData = currentEditDepartment.value!
+    // 调用保存API
+    const res = await saveDepartmentApi({
+      id: formData.id,
+      department_name: formData.department_name,
+      parent_id: formData.pid,
+      status: formData.status
+    })
+
+    if (res.code === 200) {
+      ElMessage.success(t('department.updateSuccess'))
+      editDialogVisible.value = false
+      // 刷新列表
+      await fetchDepartmentList()
+    } else {
+      ElMessage.error(res.message || t('department.updateError'))
+    }
+  } catch (error) {
+    console.error('Failed to update department:', error)
+    ElMessage.error(t('department.updateError'))
+  }
+}
+
+// 查看对话框
+const viewDialogVisible = ref(false)
+const currentViewDepartment = ref<TreeDepartmentItem | null>(null)
+
+// 处理查看
+const handleView = (row: TreeDepartmentItem) => {
+  currentViewDepartment.value = row
+  viewDialogVisible.value = true
+}
+
+// 处理删除
+const handleDelete = async (row: TreeDepartmentItem) => {
+  try {
+    await ElMessageBox.confirm(
+      t('department.deleteConfirm', { name: row.department_name }),
+      t('department.confirmTitle'),
+      {
+        confirmButtonText: t('department.confirm'),
+        cancelButtonText: t('department.cancel'),
+        type: 'warning'
+      }
+    )
+
+    const res = await deleteDepartmentApi(row.id)
+
+    if (res.code === 200) {
+      ElMessage.success(t('department.deleteSuccess'))
+      // 刷新列表
+      await fetchDepartmentList()
+    } else {
+      ElMessage.error(res.message || t('department.deleteError'))
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Failed to delete department:', error)
+      ElMessage.error(t('department.deleteError'))
+    }
+  }
+}
+
+// 处理分页变化
+const handleSizeChange = (val: number) => {
+  pageSize.value = val
+  fetchDepartmentList()
+}
+
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val
+  fetchDepartmentList()
 }
 </script>
 
 <template>
   <ContentWrap>
-    <Search :schema="allSchemas.searchSchema" @search="setSearchParams" @reset="setSearchParams" />
-
-    <div class="mb-10px">
-      <BaseButton type="primary" @click="AddAction">{{ t('exampleDemo.add') }}</BaseButton>
-      <BaseButton :loading="delLoading" type="danger" @click="delData(null)">
-        {{ t('exampleDemo.del') }}
+    <div class="flex flex-col md:flex-row gap-10px mb-10px">
+      <BaseButton
+        type="primary"
+        class="flex items-center gap-10px justify-center md:justify-start w-[120px]"
+        @click="newDepartment"
+      >
+        <Icon icon="mingcute:add-fill" :size="16" />
+        <span>{{ t('department.new') }}</span>
+      </BaseButton>
+      <BaseButton
+        type="danger"
+        class="flex items-center gap-10px justify-center md:justify-start w-[120px]"
+        @click="batchDelete"
+      >
+        <Icon icon="mingcute:delete-fill" :size="16" />
+        <span>{{ t('department.batchDelete') }}</span>
       </BaseButton>
     </div>
 
-    <Table
-      v-model:pageSize="pageSize"
-      v-model:currentPage="currentPage"
-      :columns="allSchemas.tableColumns"
-      :data="dataList"
-      :loading="loading"
-      :pagination="{
-        total: total
-      }"
-      @register="tableRegister"
-    />
+    <ElTable
+      v-loading="tableLoading"
+      :data="filterTableData"
+      row-key="id"
+      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      @selection-change="handleSelect"
+      border
+    >
+      <ElTableColumn type="selection" width="55" align="center" />
+      <ElTableColumn v-for="column in visibleColumns" :key="column.prop" v-bind="column">
+        <template #default="scope" v-if="column.prop === 'status'">
+          <ElTag :type="scope.row.status === 1 ? 'success' : 'danger'">
+            {{ scope.row.status === 1 ? t('department.enable') : t('department.disable') }}
+          </ElTag>
+        </template>
+      </ElTableColumn>
+      <ElTableColumn label="操作" align="left" fixed="right">
+        <template #header>
+          <ElInput v-model="search" size="default" :placeholder="t('department.search')" />
+        </template>
+        <template #default="scope">
+          <BaseButton type="primary" @click="handleEdit(scope.row)">{{
+            t('department.edit')
+          }}</BaseButton>
+          <BaseButton type="success" @click="handleView(scope.row)">{{
+            t('department.view')
+          }}</BaseButton>
+          <BaseButton type="danger" @click="handleDelete(scope.row)">{{
+            t('department.delete')
+          }}</BaseButton>
+        </template>
+      </ElTableColumn>
+    </ElTable>
+
+    <!-- 添加分页组件 -->
+    <div class="flex justify-left mt-10px">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        layout="total, sizes, prev, pager, next, jumper"
+      />
+    </div>
   </ContentWrap>
 
-  <Dialog v-model="dialogVisible" :title="dialogTitle">
-    <Write
-      v-if="actionType !== 'detail'"
-      ref="writeRef"
-      :form-schema="allSchemas.formSchema"
-      :current-row="currentRow"
-    />
-
-    <Detail
-      v-if="actionType === 'detail'"
-      :detail-schema="allSchemas.detailSchema"
-      :current-row="currentRow"
-    />
-
+  <!-- 使用封装的 Dialog 组件 -->
+  <!-- 查看 -->
+  <Dialog v-model="viewDialogVisible" :title="t('department.departmentDetail')">
+    <DepartmentView :data="currentViewDepartment" v-if="currentViewDepartment" />
     <template #footer>
-      <BaseButton
-        v-if="actionType !== 'detail'"
-        type="primary"
-        :loading="saveLoading"
-        @click="save"
-      >
-        {{ t('exampleDemo.save') }}
-      </BaseButton>
-      <BaseButton @click="dialogVisible = false">{{ t('dialogDemo.close') }}</BaseButton>
+      <BaseButton type="info" @click="viewDialogVisible = false">{{
+        t('department.close')
+      }}</BaseButton>
+    </template>
+  </Dialog>
+
+  <!-- 编辑 -->
+  <Dialog v-model="editDialogVisible" :title="t('department.editDepartment')">
+    <DepartmentEdit
+      ref="editFormRef"
+      :data="currentEditDepartment"
+      v-if="currentEditDepartment"
+      @update:data="(val) => (currentEditDepartment = val)"
+    />
+    <template #footer>
+      <BaseButton type="primary" @click="saveEdit">{{ t('department.save') }}</BaseButton>
+      <BaseButton type="info" @click="editDialogVisible = false">{{
+        t('department.cancel')
+      }}</BaseButton>
+    </template>
+  </Dialog>
+
+  <!-- 新增 -->
+  <Dialog v-model="createDialogVisible" :title="t('department.newDepartment')">
+    <DepartmentCreate ref="createFormRef" />
+    <template #footer>
+      <BaseButton type="primary" @click="saveCreate">{{ t('department.save') }}</BaseButton>
+      <BaseButton type="info" @click="createDialogVisible = false">{{
+        t('department.cancel')
+      }}</BaseButton>
     </template>
   </Dialog>
 </template>

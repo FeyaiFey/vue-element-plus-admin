@@ -2,8 +2,11 @@
 import { FormSchema, Form } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
-import { reactive, ref, watch } from 'vue'
+import { reactive, ref, watch, onMounted } from 'vue'
 import { ElDivider, ElMessage, ElMessageBox } from 'element-plus'
+import { getDepartmentApi } from '@/api/department'
+import { updateUserInfoApi } from '@/api/user'
+import type { DepartmentItem } from '@/api/department/types'
 
 const props = defineProps({
   userInfo: {
@@ -13,6 +16,20 @@ const props = defineProps({
 })
 
 const { required, maxlength, email } = useValidator()
+
+const departmentList = ref<DepartmentItem[]>([])
+
+// 获取部门列表
+onMounted(async () => {
+  try {
+    const res = await getDepartmentApi()
+    if (res.code === 200) {
+      departmentList.value = res.data.list
+    }
+  } catch (error) {
+    console.error('Failed to fetch departments:', error)
+  }
+})
 
 const formSchema = reactive<FormSchema[]>([
   {
@@ -34,7 +51,18 @@ const formSchema = reactive<FormSchema[]>([
   {
     field: 'department_name',
     label: '部门',
-    component: 'Input',
+    component: 'TreeSelect',
+    componentProps: {
+      data: departmentList,
+      props: {
+        value: 'id',
+        label: 'department_name',
+        children: 'children'
+      },
+      checkStrictly: true,
+      defaultExpandAll: true,
+      placeholder: '请选择部门'
+    },
     colProps: {
       span: 24
     }
@@ -48,7 +76,7 @@ const rules = reactive({
 })
 
 const { formRegister, formMethods } = useForm()
-const { setValues, getElFormExpose } = formMethods
+const { setValues, getElFormExpose, getFormData } = formMethods
 
 watch(
   () => props.userInfo,
@@ -76,10 +104,26 @@ const save = async () => {
       .then(async () => {
         try {
           saveLoading.value = true
-          // 这里可以调用修改用户信息接口
-          ElMessage.success('修改成功')
+          // 获取表单数据
+          const formData = await getFormData()
+
+          // 调用更新API
+          const res = await updateUserInfoApi({
+            username: formData.username,
+            email: formData.email,
+            department_id: formData.department_name // 这里使用选中的部门ID
+          })
+
+          if (res.code === 200) {
+            ElMessage.success('修改成功')
+            // 触发父组件更新
+            emit('update:userInfo', formData)
+          } else {
+            ElMessage.error(res.message || '修改失败')
+          }
         } catch (error) {
-          console.log(error)
+          console.error('更新用户信息失败:', error)
+          ElMessage.error('修改失败')
         } finally {
           saveLoading.value = false
         }
@@ -87,6 +131,9 @@ const save = async () => {
       .catch(() => {})
   }
 }
+
+// 定义 emit
+const emit = defineEmits(['update:userInfo'])
 </script>
 
 <template>

@@ -606,5 +606,53 @@ export default {
     category: 'Category',
     // 品号群组
     itemCodeGroup: 'Item code group'
+  },
+  department: {
+    id: 'ID',
+    name: 'Department Name',
+    isSubDepartment: 'Is Sub Department',
+    parentDepartment: 'Parent Department',
+    status: 'Status',
+    enable: 'Enable',
+    disable: 'Disable',
+    created_at: 'Created at',
+    placeholder: {
+      name: 'Please enter department name',
+      parent: 'Please select parent department',
+      status: 'Please select status'
+    },
+    rules: {
+      name: 'Please enter department name',
+      status: 'Please select status'
+    },
+    new: 'New',
+    batchDelete: 'Batch delete',
+    search: 'Search',
+    edit: 'Edit',
+    view: 'View',
+    delete: 'Delete',
+    save: 'Save',
+    departmentDetail: 'Department detail',
+    editDepartment: 'Edit department',
+    parent_id: 'Parent department ID',
+    parent_department: 'Parent department',
+    close: 'Close',
+    cancel: 'Cancel',
+    yes: 'Yes',
+    no: 'No',
+    updateSuccess: 'Update success',
+    updateError: 'Update error',
+    newDepartment: 'New department',
+    createSuccess: 'Create success',
+    createError: 'Create error',
+    batchDeleteConfirm: 'Are you sure you want to delete {count} departments?',
+    batchDeleteSuccess: 'Batch delete success',
+    batchDeleteError: 'Batch delete error',
+    deleteConfirm: 'Are you sure you want to delete the department {name}?',
+    deleteSuccess: 'Delete success',
+    deleteError: 'Delete error',
+    selectItemsTip: 'Please select the departments to delete',
+    confirmTitle: 'Confirm',
+    confirm: 'Confirm'
   }
 }

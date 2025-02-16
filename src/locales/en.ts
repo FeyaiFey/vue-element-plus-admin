@@ -654,5 +654,85 @@ export default {
     selectItemsTip: 'Please select the departments to delete',
     confirmTitle: 'Confirm',
     confirm: 'Confirm'
+  },
+  user: {
+    // Basic Information
+    title: 'User Management',
+    id: 'ID',
+    username: 'Username',
+    email: 'Email',
+    department: 'Department',
+    role: 'Role',
+    status: 'Status',
+    enable: 'Enable',
+    disable: 'Disable',
+    created_at: 'Created At',
+    // Form Placeholders
+    placeholder: {
+      username: 'Please enter username',
+      email: 'Please enter email',
+      password: 'Please enter password',
+      department: 'Please select department',
+      role: 'Please select roles',
+      status: 'Please select status',
+      search: 'Search by username/email/department'
+    },
+    // Form Validation Rules
+    rules: {
+      username: 'Please enter username',
+      email: 'Please enter a valid email address',
+      department: 'Please select department',
+      role: 'Please select roles',
+      status: 'Please select status',
+      usernameLength: 'Username length should be between 3-50 characters',
+      emailFormat: 'Please enter a valid email format'
+    },
+    // Password Related
+    password: {
+      label: 'Password',
+      old: 'Old Password',
+      new: 'New Password',
+      confirm: 'Confirm Password',
+      rules: {
+        required: 'Please enter password',
+        length: 'Password length cannot be less than 6 characters',
+        notSame: 'New password cannot be the same as old password',
+        notMatch: 'The two passwords do not match',
+        format: 'Password must contain letters and numbers'
+      },
+      update: {
+        success: 'Password updated successfully, please login again',
+        error: 'Failed to update password'
+      }
+    },
+    // Action Buttons
+    new: 'New User',
+    batchDelete: 'Batch Delete',
+    search: 'Search',
+    edit: 'Edit',
+    view: 'View',
+    delete: 'Delete',
+    save: 'Save',
+    cancel: 'Cancel',
+    close: 'Close',
+    confirm: 'Confirm',
+    // Dialog Titles
+    userDetail: 'User Detail',
+    editUser: 'Edit User',
+    newUser: 'New User',
+    confirmTitle: 'Confirm Operation',
+    // Operation Tips
+    deleteConfirm: 'Are you sure to delete user {name}?',
+    batchDeleteConfirm: 'Are you sure to delete {count} selected users?',
+    selectItemsTip: 'Please select users to delete',
+    // Operation Results
+    createSuccess: 'User created successfully',
+    createError: 'Failed to create user',
+    updateSuccess: 'User information updated successfully',
+    updateError: 'Failed to update user information',
+    deleteSuccess: 'User deleted successfully',
+    deleteError: 'Failed to delete user',
+    batchDeleteSuccess: 'Batch delete successful',
+    batchDeleteError: 'Failed to batch delete'
   }
 }

@@ -642,5 +642,85 @@ export default {
     selectItemsTip: '请选择要删除的部门',
     confirmTitle: '提示',
     confirm: '确定'
+  },
+  user: {
+    // 基本信息
+    title: '用户管理',
+    id: 'ID',
+    username: '用户名',
+    email: '邮箱',
+    department: '所属部门',
+    role: '角色',
+    status: '状态',
+    enable: '启用',
+    disable: '禁用',
+    created_at: '创建时间',
+    // 表单占位符
+    placeholder: {
+      username: '请输入用户名',
+      email: '请输入邮箱',
+      password: '请输入密码',
+      department: '请选择所属部门',
+      role: '请选择角色',
+      status: '请选择状态',
+      search: '搜索用户名/邮箱/部门'
+    },
+    // 表单验证规则
+    rules: {
+      username: '请输入用户名',
+      email: '请输入有效的邮箱地址',
+      department: '请选择所属部门',
+      role: '请选择角色',
+      status: '请选择状态',
+      usernameLength: '用户名长度在3-50个字符之间',
+      emailFormat: '请输入正确的邮箱格式'
+    },
+    // 密码相关
+    password: {
+      label: '密码',
+      old: '旧密码',
+      new: '新密码',
+      confirm: '确认密码',
+      rules: {
+        required: '请输入密码',
+        length: '密码长度不能小于6位',
+        notSame: '新密码不能与旧密码相同',
+        notMatch: '两次输入的密码不一致',
+        format: '密码必须包含字母和数字'
+      },
+      update: {
+        success: '密码修改成功，请重新登录',
+        error: '密码修改失败'
+      }
+    },
+    // 操作按钮
+    new: '新建用户',
+    batchDelete: '批量删除',
+    search: '搜索',
+    edit: '编辑',
+    view: '查看',
+    delete: '删除',
+    save: '保存',
+    cancel: '取消',
+    close: '关闭',
+    confirm: '确定',
+    // 对话框标题
+    userDetail: '用户详情',
+    editUser: '编辑用户',
+    newUser: '新增用户',
+    confirmTitle: '操作确认',
+    // 操作提示
+    deleteConfirm: '确定删除用户 {name} 吗？',
+    batchDeleteConfirm: '确定删除选中的 {count} 个用户吗？',
+    selectItemsTip: '请选择要删除的用户',
+    // 操作结果
+    createSuccess: '用户创建成功',
+    createError: '用户创建失败',
+    updateSuccess: '用户信息更新成功',
+    updateError: '用户信息更新失败',
+    deleteSuccess: '用户删除成功',
+    deleteError: '用户删除失败',
+    batchDeleteSuccess: '批量删除成功',
+    batchDeleteError: '批量删除失败'
   }
 }

@@ -197,7 +197,10 @@ export default {
     avatars: '头像列表',
     iAgree: '我同意',
     tree: 'Tree 树形控件',
-    home: '首页'
+    home: '首页',
+    wip: '进度查询',
+    fab_wip: '晶圆进度',
+    assy_wip: '封装进度'
   },
   permission: {
     hasPermission: '请设置操作权限值'

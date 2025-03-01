@@ -129,9 +129,6 @@ export default {
     getCode: '获取验证码'
   },
   router: {
-    // 进度管理
-    progress: '进度管理',
-    purchase: '采购进度',
     login: '登录',
     level: '多级菜单',
     menu: '菜单',
@@ -200,7 +197,11 @@ export default {
     home: '首页',
     wip: '进度查询',
     fab_wip: '晶圆进度',
-    assy_wip: '封装进度'
+    assy_wip: '封装进度',
+    purchase: '采购管理',
+    purchaseTable: '采购列表',
+    analyzePurchase: '采购分析',
+    wipFab: '采购进度'
   },
   permission: {
     hasPermission: '请设置操作权限值'

@@ -132,9 +132,6 @@ export default {
     getCode: 'Get code'
   },
   router: {
-    // 进度管理
-    progress: 'Progress',
-    purchase: 'Purchase',
     login: 'Login',
     level: 'Multi level menu',
     menu: 'Menu',
@@ -202,7 +199,14 @@ export default {
     avatars: 'Avatars',
     iAgree: 'I agree',
     tree: 'Tree',
-    home: 'Home'
+    home: 'Home',
+    wip: 'WIP',
+    fab_wip: 'Fab WIP',
+    assy_wip: 'Assy WIP',
+    purchase: 'Purchase',
+    purchaseTable: 'Purchase Table',
+    analyzePurchase: 'Analyze Purchase',
+    wipFab: 'WIP Fab'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

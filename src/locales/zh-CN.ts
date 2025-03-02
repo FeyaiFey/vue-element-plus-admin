@@ -201,7 +201,11 @@ export default {
     purchase: '采购管理',
     purchaseTable: '采购列表',
     analyzePurchase: '采购分析',
-    wipFab: '采购进度'
+    wipFab: '采购进度',
+    assy: '封装管理',
+    wipAssy: '封装进度',
+    assyTable: '封装列表',
+    analyzeAssy: '封装分析'
   },
   permission: {
     hasPermission: '请设置操作权限值'

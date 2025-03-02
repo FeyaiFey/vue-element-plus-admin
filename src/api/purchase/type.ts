@@ -70,3 +70,8 @@ export interface PurchaseWipSupplierResponse {
   label: string
   value: number
 }
+
+export interface PurchaseSupplierResponse {
+  label: string
+  value: number
+}

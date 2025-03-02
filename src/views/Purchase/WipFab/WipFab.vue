@@ -43,6 +43,9 @@ const schema = reactive<FormSchema[]>([
     componentProps: {
       placeholder: '请输入订单号',
       clearable: true
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -52,6 +55,9 @@ const schema = reactive<FormSchema[]>([
     componentProps: {
       placeholder: '请输入物料名称',
       clearable: true
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -62,6 +68,9 @@ const schema = reactive<FormSchema[]>([
       placeholder: '请选择供应商',
       clearable: true,
       options: supplierList
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -77,6 +86,9 @@ const schema = reactive<FormSchema[]>([
         { label: 'HOLD', value: 'HOLD' },
         { label: 'STOCK', value: 'STOCK' }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -92,6 +104,9 @@ const schema = reactive<FormSchema[]>([
         { label: '已完成', value: 1 },
         { label: '未完成', value: 0 }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -106,6 +121,9 @@ const schema = reactive<FormSchema[]>([
         { label: '是', value: 1 },
         { label: '否', value: 0 }
       ]
+    },
+    colProps: {
+      span: 6
     }
   },
   {
@@ -120,9 +138,15 @@ const schema = reactive<FormSchema[]>([
         { label: '15天', value: 15 },
         { label: '30天', value: 30 }
       ]
+    },
+    colProps: {
+      span: 6
     }
   }
 ])
+
+// 定义展开字段
+const is_finished = ref('is_finished')
 
 // 使用 table hook
 const { tableState, tableMethods } = useTable({
@@ -221,7 +245,15 @@ const columns = ref<ColumnType[]>([
 <template>
   <ContentWrap>
     <!-- 搜索表单 -->
-    <Search :schema="schema" @search="setSearchParams" @reset="setSearchParams" />
+    <Search
+      :schema="schema"
+      :is-col="true"
+      :inline="false"
+      show-expand
+      :expand-field="is_finished"
+      @search="setSearchParams"
+      @reset="setSearchParams"
+    />
 
     <!-- 表格 -->
     <div class="mt-4">

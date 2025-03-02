@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, unref, h } from 'vue'
+import { ref, reactive, unref, h, onMounted } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -13,50 +13,89 @@ import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-
 import { ContentWrap } from '@/components/ContentWrap'
 import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
-import { getPurchaseOrderListApi, getPurchaseWipListApi } from '@/api/purchase'
-import type { PurchaseOrder, PurchaseOrderQuery, PurchaseWip } from '@/api/purchase/type'
+import {
+  getPurchaseOrderListApi,
+  getPurchaseWipListApi,
+  getPurchaseSupplierListApi
+} from '@/api/purchase'
+import type {
+  PurchaseOrder,
+  PurchaseOrderQuery,
+  PurchaseWip,
+  PurchaseSupplierResponse
+} from '@/api/purchase/type'
 import { FormSchema } from '@/components/Form'
 import { Table } from '@/components/Table'
-import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
+import { Dialog } from '@/components/Dialog'
+
+// 供应商列表
+const supplierList = ref<PurchaseSupplierResponse[]>([])
+
+// 获取供应商列表
+const getSupplierList = async () => {
+  try {
+    const res = await getPurchaseSupplierListApi()
+    if (res.code === 200) {
+      supplierList.value = res.data
+    }
+  } catch (error) {
+    console.error('获取供应商列表失败:', error)
+  }
+}
+
+// 在组件挂载时获取供应商列表
+onMounted(() => {
+  getSupplierList()
+})
 
 // 查询表单配置
 const schema = reactive<FormSchema[]>([
   {
-    field: 'doc_no',
-    label: 'E10单据号',
-    component: 'Input'
-  },
-  {
-    field: 'item_code',
-    label: '物料编码',
-    component: 'Input'
-  },
-  {
     field: 'item_name',
     label: '物料名称',
-    component: 'Input'
+    component: 'Input',
+    colProps: {
+      span: 6
+    },
+    componentProps: {
+      placeholder: '请输入物料名称'
+    }
   },
   {
     field: 'supplier',
     label: '供应商',
-    component: 'Input'
+    component: 'Select',
+    componentProps: {
+      options: supplierList,
+      placeholder: '请选择供应商'
+    },
+    colProps: {
+      span: 6
+    }
   },
   {
     field: 'receipt_close',
     label: '订单状态',
     component: 'Select',
+    colProps: {
+      span: 6
+    },
     componentProps: {
       options: [
         { label: '全部', value: '' },
         { label: '已关闭', value: 1 },
         { label: '未关闭', value: 0 }
-      ]
+      ],
+      placeholder: '请选择状态'
     }
   },
   {
     field: 'purchase_date_start',
     label: '采购日期',
     component: 'DatePicker',
+    colProps: {
+      span: 6
+    },
     componentProps: {
       type: 'date',
       valueFormat: 'YYYY-MM-DD',
@@ -67,6 +106,9 @@ const schema = reactive<FormSchema[]>([
     field: 'purchase_date_end',
     label: '采购日期',
     component: 'DatePicker',
+    colProps: {
+      span: 6
+    },
     componentProps: {
       type: 'date',
       valueFormat: 'YYYY-MM-DD',
@@ -90,6 +132,9 @@ const { tableState, tableMethods } = useTable({
     }
   }
 })
+
+// 修改初始pageSize
+tableState.pageSize.value = 50
 
 const { getList } = tableMethods
 const { loading, dataList, total, currentPage, pageSize } = tableState
@@ -132,6 +177,13 @@ const wipColumns = [
     headerAlign: 'center' as const
   },
   {
+    label: '预计交期',
+    field: 'forecastDate',
+    width: 120,
+    align: 'center' as const,
+    headerAlign: 'center' as const
+  },
+  {
     label: '晶圆名称',
     field: 'itemName',
     width: 120,
@@ -148,6 +200,7 @@ const wipColumns = [
   {
     label: '数量',
     field: 'qty',
+    prop: 'qty',
     width: 100,
     align: 'center' as const,
     headerAlign: 'center' as const
@@ -155,6 +208,7 @@ const wipColumns = [
   {
     label: '状态',
     field: 'status',
+    width: 120,
     align: 'center' as const,
     headerAlign: 'center' as const,
     slots: {
@@ -172,13 +226,6 @@ const wipColumns = [
   {
     label: '光刻层数',
     field: 'layerCount',
-    width: 120,
-    align: 'center' as const,
-    headerAlign: 'center' as const
-  },
-  {
-    label: '预计交期',
-    field: 'forecastDate',
     width: 120,
     align: 'center' as const,
     headerAlign: 'center' as const
@@ -237,10 +284,9 @@ const columns = ref<ColumnType[]>([
     align: 'center',
     fixed: 'left'
   },
-  { label: '序号', type: 'index', align: 'center', width: 60, headerAlign: 'center' },
   { label: 'E10单据号', prop: 'DOC_NO', align: 'center', showOverflowTooltip: true, hidden: true },
   { label: '订单号', prop: 'REMARK', align: 'center', width: 120 },
-  { label: '物料编码', prop: 'ITEM_CODE', align: 'center', width: 180 },
+  { label: '物料编码', prop: 'ITEM_CODE', align: 'center', hidden: true },
   { label: '物料名称', prop: 'ITEM_NAME', align: 'center' },
   { label: '采购数量', prop: 'BUSINESS_QTY', align: 'center', width: 120 },
   { label: '第二数量', prop: 'SECOND_QTY', align: 'center', hidden: true },
@@ -251,7 +297,7 @@ const columns = ref<ColumnType[]>([
     align: 'center',
     width: 120,
     formatter: (row: PurchaseOrder) => {
-      const className = row.WIP_QTY > 0 ? 'cursor-pointer text-primary' : ''
+      const className = row.WIP_QTY > 0 ? 'wip-clickable' : ''
       return h(
         'span',
         {
@@ -284,7 +330,7 @@ const columns = ref<ColumnType[]>([
   },
   { label: '订单状态', prop: 'RECEIPT_CLOSE', align: 'center', hidden: true },
   { label: '采购日期', prop: 'PURCHASE_DATE', align: 'center', width: 120 },
-  { label: '供应商', prop: 'SUPPLIER_FULL_NAME', align: 'center' }
+  { label: '供应商', prop: 'SUPPLIER_FULL_NAME', align: 'center', showOverflowTooltip: true }
 ])
 
 // 行样式方法
@@ -382,12 +428,43 @@ const getStatusType = (status: string): 'info' | 'danger' | 'primary' | 'success
   if (upperStatus === 'STOCK') return 'primary'
   return 'success'
 }
+
+// 添加合计行计算方法
+const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
+  const { columns, data } = param
+  const sums: string[] = []
+
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计'
+      return
+    }
+
+    // 只计算 qty 列的合计
+    if (column.property === 'qty') {
+      const values = data.map((item) => Number(item.qty || 0))
+      const total = values.reduce((prev, curr) => prev + curr, 0)
+      sums[index] = `${Math.round(total)}`
+    } else {
+      sums[index] = ''
+    }
+  })
+
+  return sums
+}
 </script>
 
 <template>
   <ContentWrap>
     <!-- 搜索表单 -->
-    <Search :schema="schema" @search="setSearchParams" @reset="setSearchParams" />
+    <Search
+      :schema="schema"
+      @search="setSearchParams"
+      @reset="setSearchParams"
+      :is-col="true"
+      :inline="false"
+      label-width="100px"
+    />
 
     <!-- 表格 -->
     <div class="mt-4">
@@ -458,7 +535,7 @@ const getStatusType = (status: string): 'info' | 'danger' | 'primary' | 'success
       </div>
 
       <!-- WIP 详情弹窗 -->
-      <ResizeDialog v-model="dialogVisible" title="在制明细" :max-height="700">
+      <Dialog v-model="dialogVisible" title="在制明细" width="1000px">
         <Table
           v-loading="wipTableState.loading"
           :columns="wipColumns"
@@ -468,6 +545,9 @@ const getStatusType = (status: string): 'info' | 'danger' | 'primary' | 'success
             pageSize: wipTableState.pageSize,
             currentPage: wipTableState.currentPage
           }"
+          :show-summary="true"
+          sum-text="合计"
+          :summary-method="getSummaryMethod"
           @update:current-page="
             (page) => {
               wipTableState.currentPage = page
@@ -475,7 +555,7 @@ const getStatusType = (status: string): 'info' | 'danger' | 'primary' | 'success
             }
           "
         />
-      </ResizeDialog>
+      </Dialog>
     </div>
   </ContentWrap>
 </template>
@@ -491,6 +571,19 @@ const getStatusType = (status: string): 'info' | 'danger' | 'primary' | 'success
 
 :deep(.success-row) {
   background-color: var(--el-color-success-light-9);
+}
+
+// 添加在制数量可点击样式
+:deep(.wip-clickable) {
+  color: var(--el-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    color: var(--el-color-primary-dark-2);
+    text-decoration: underline;
+  }
 }
 
 .summary-row {

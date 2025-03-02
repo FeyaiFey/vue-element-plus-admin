@@ -4,7 +4,8 @@ import type {
   PurchaseOrderResponse,
   PurchaseWipResponse,
   PurchaseWipQuery,
-  PurchaseWipSupplierResponse
+  PurchaseWipSupplierResponse,
+  PurchaseSupplierResponse
 } from './type'
 
 export const getPurchaseOrderListApi = (query: PurchaseOrderQuery) => {
@@ -18,6 +19,12 @@ export const getPurchaseWipListApi = (query: PurchaseWipQuery) => {
   return request.get<PurchaseWipResponse>({
     url: '/purchase/wip',
     params: query
+  })
+}
+
+export const getPurchaseSupplierListApi = () => {
+  return request.get<PurchaseSupplierResponse[]>({
+    url: '/purchase/supplier'
   })
 }
 

@@ -206,7 +206,11 @@ export default {
     purchase: 'Purchase',
     purchaseTable: 'Purchase Table',
     analyzePurchase: 'Analyze Purchase',
-    wipFab: 'WIP Fab'
+    wipFab: 'WIP Fab',
+    assy: 'Assy',
+    wipAssy: 'WIP Assy',
+    assyTable: 'Assy Table',
+    analyzeAssy: 'Analyze Assy'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

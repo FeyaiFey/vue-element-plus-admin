@@ -1,5 +1,12 @@
 import request from '@/axios'
-import type { AssyOrderQuery, AssyOrderResponse, AssyWipQuery, AssyWipResponse } from './type'
+import type {
+  AssyOrderQuery,
+  AssyOrderResponse,
+  AssyWipQuery,
+  AssyWipItemsQuery,
+  AssyWipResponse,
+  AssyWipItemsResponse
+} from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
   return request.get<AssyOrderResponse>({
@@ -11,6 +18,13 @@ export const getAssyListApi = (query: AssyOrderQuery) => {
 export const getAssyWipApi = (query: AssyWipQuery) => {
   return request.get<AssyWipResponse>({
     url: '/assy/wip',
+    params: query
+  })
+}
+
+export const getAssyWipItemsApi = (query: AssyWipItemsQuery) => {
+  return request.get<AssyWipItemsResponse>({
+    url: '/assy/wip/items',
     params: query
   })
 }

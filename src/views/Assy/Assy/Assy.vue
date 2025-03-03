@@ -14,7 +14,7 @@ import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-
 import { ContentWrap } from '@/components/ContentWrap'
 import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
-import { getAssyListApi, getAssyWipApi } from '@/api/assy'
+import { getAssyListApi, getAssyWipApi, getAssyWipItemsApi } from '@/api/assy'
 import type { AssyOrder, AssyOrderQuery, AssyWip } from '@/api/assy/type'
 import { FormSchema } from '@/components/Form'
 import { Table } from '@/components/Table'
@@ -33,20 +33,8 @@ const handleItemCodeSearch = async (query: string) => {
 
   itemCodeLoading.value = true
   try {
-    // 这里应该调用实际的API获取物料编码列表
-    // 示例：const res = await getItemCodeListApi({ keyword: query })
-    // itemCodeOptions.value = res.data.map(item => ({
-    //   label: `${item.code} - ${item.name}`,
-    //   value: item.code
-    // }))
-
-    // 临时模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    itemCodeOptions.value = [
-      { label: `${query}-测试物料1`, value: `${query}1` },
-      { label: `${query}-测试物料2`, value: `${query}2` },
-      { label: `${query}-测试物料3`, value: `${query}3` }
-    ]
+    const res = await getAssyWipItemsApi({ item_code: query })
+    itemCodeOptions.value = res.data.list
   } catch (error) {
     console.error('获取物料编码列表失败:', error)
     ElMessage.error('获取物料编码列表失败')
@@ -83,7 +71,9 @@ const schema = reactive<FormSchema[]>([
       reserveKeyword: true,
       loading: itemCodeLoading,
       remoteMethod: handleItemCodeSearch,
-      options: itemCodeOptions
+      options: itemCodeOptions,
+      collapseTags: true,
+      collapseTagsTooltip: true
     },
     colProps: {
       span: 6
@@ -162,7 +152,6 @@ const schema = reactive<FormSchema[]>([
 
 // 定义展开字段和展开状态
 const is_closed = ref('is_closed')
-const isExpand = ref(true)
 
 // 使用 table hook
 const { tableState, tableMethods } = useTable({
@@ -486,7 +475,6 @@ const getCurrentProcessType = (
       label-width="100px"
       show-expand
       :expand-field="is_closed"
-      v-model:is-expand="isExpand"
     />
 
     <!-- 表格 -->
@@ -559,22 +547,7 @@ const getCurrentProcessType = (
 
       <!-- WIP 详情弹窗 -->
       <Dialog v-model="dialogVisible" title="在制明细" width="1000px">
-        <Table
-          v-loading="wipTableState.loading"
-          :columns="wipColumns"
-          :data="wipTableState.list"
-          :pagination="{
-            total: wipTableState.total,
-            pageSize: wipTableState.pageSize,
-            currentPage: wipTableState.currentPage
-          }"
-          @update:current-page="
-            (page) => {
-              wipTableState.currentPage = page
-              getWipList()
-            }
-          "
-        />
+        <Table v-loading="wipTableState.loading" :columns="wipColumns" :data="wipTableState.list" />
       </Dialog>
     </div>
   </ContentWrap>

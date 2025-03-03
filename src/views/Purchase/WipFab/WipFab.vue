@@ -154,7 +154,7 @@ const { tableState, tableMethods } = useTable({
     const { currentPage } = tableState
     const res = await getPurchaseWipListApi({
       pageIndex: unref(currentPage),
-      pageSize: 100, // 默认每页100行
+      pageSize: 50, // 默认每页100行
       ...searchParams.value
     })
     return {

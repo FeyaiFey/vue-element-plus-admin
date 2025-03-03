@@ -210,6 +210,14 @@ const defaultColumns: ColumnType[] = [
   { label: '完成日期', prop: 'FINISHED_AT', align: 'center', width: 120 },
   { label: '滞留天数', prop: 'STRANDED', align: 'center', width: 100 },
   { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', width: 120, showOverflowTooltip: true },
+  {
+    label: '封装供应商',
+    prop: 'SUPPLIER_FULL_NAME',
+    align: 'left',
+    width: 150,
+    fixed: 'right',
+    showOverflowTooltip: true
+  },
   { label: '研磨', prop: 'POLISHING', align: 'center', width: 80 },
   { label: '切割', prop: 'CUTTING', align: 'center', width: 80 },
   { label: '待装片', prop: 'WAITING_FOR_INSTALLATION', align: 'center', width: 80 },
@@ -247,7 +255,8 @@ const defaultVisibleColumns = [
   'ONLINE_TOTAL',
   'WAREHOUSE_INVENTORY',
   'STRANDED',
-  'HOLD_INFO'
+  'HOLD_INFO',
+  'SUPPLIER_FULL_NAME'
 ]
 
 // 列显示状态接口

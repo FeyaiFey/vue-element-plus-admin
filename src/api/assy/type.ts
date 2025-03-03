@@ -50,6 +50,7 @@ export interface AssyWipQuery {
 
 export interface AssyWip {
   DOC_NO: string
+  SUPPLIER_FULL_NAME: string
   ITEM_CODE: string
   Z_PROCESSING_PURPOSE_NAME: string
   STRANDED: number
@@ -87,4 +88,17 @@ export interface AssyWip {
 export interface AssyWipResponse {
   list: AssyWip[]
   total: number
+}
+
+export interface AssyWipItemsQuery {
+  item_code: string
+}
+
+export interface AssyWipItems {
+  label: string
+  value: string
+}
+
+export interface AssyWipItemsResponse {
+  list: AssyWipItems[]
 }

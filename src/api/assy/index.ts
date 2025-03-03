@@ -3,9 +3,13 @@ import type {
   AssyOrderQuery,
   AssyOrderResponse,
   AssyWipQuery,
-  AssyWipItemsQuery,
   AssyWipResponse,
-  AssyWipItemsResponse
+  AssyOrderItemsQuery,
+  AssyOrderItemsResponse,
+  AssyOrderPackageTypeQuery,
+  AssyOrderPackageTypeResponse,
+  AssyOrderSupplierQuery,
+  AssyOrderSupplierResponse
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
@@ -22,9 +26,23 @@ export const getAssyWipApi = (query: AssyWipQuery) => {
   })
 }
 
-export const getAssyWipItemsApi = (query: AssyWipItemsQuery) => {
-  return request.get<AssyWipItemsResponse>({
-    url: '/assy/wip/items',
+export const getAssyOrderItemsApi = (query: AssyOrderItemsQuery) => {
+  return request.get<AssyOrderItemsResponse>({
+    url: '/assy/items',
+    params: query
+  })
+}
+
+export const getAssyOrderPackageTypeApi = (query: AssyOrderPackageTypeQuery) => {
+  return request.get<AssyOrderPackageTypeResponse>({
+    url: '/assy/package_type',
+    params: query
+  })
+}
+
+export const getAssyOrderSupplierApi = (query: AssyOrderSupplierQuery) => {
+  return request.get<AssyOrderSupplierResponse>({
+    url: '/assy/supplier',
     params: query
   })
 }

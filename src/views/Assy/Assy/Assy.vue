@@ -14,7 +14,13 @@ import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-
 import { ContentWrap } from '@/components/ContentWrap'
 import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
-import { getAssyListApi, getAssyWipApi, getAssyWipItemsApi } from '@/api/assy'
+import {
+  getAssyListApi,
+  getAssyWipApi,
+  getAssyOrderItemsApi,
+  getAssyOrderPackageTypeApi,
+  getAssyOrderSupplierApi
+} from '@/api/assy'
 import type { AssyOrder, AssyOrderQuery, AssyWip } from '@/api/assy/type'
 import { FormSchema } from '@/components/Form'
 import { Table } from '@/components/Table'
@@ -33,7 +39,7 @@ const handleItemCodeSearch = async (query: string) => {
 
   itemCodeLoading.value = true
   try {
-    const res = await getAssyWipItemsApi({ item_code: query })
+    const res = await getAssyOrderItemsApi({ item_code: query })
     itemCodeOptions.value = res.data.list
   } catch (error) {
     console.error('获取物料编码列表失败:', error)
@@ -41,6 +47,48 @@ const handleItemCodeSearch = async (query: string) => {
     itemCodeOptions.value = []
   } finally {
     itemCodeLoading.value = false
+  }
+}
+
+// 供应商选项
+const supplierOptions = ref<Array<{ label: string; value: string }>>([])
+const supplierLoading = ref(false)
+
+// 远程搜索供应商
+const handleSupplierSearch = async (query: string) => {
+  if (!query) {
+    supplierOptions.value = []
+    return
+  }
+  supplierLoading.value = true
+  try {
+    const res = await getAssyOrderSupplierApi({ supplier: query })
+    supplierOptions.value = res.data.list
+  } catch (error) {
+    console.error('获取供应商列表失败:', error)
+  } finally {
+    supplierLoading.value = false
+  }
+}
+
+// 封装类型选项
+const packageTypeOptions = ref<Array<{ label: string; value: string }>>([])
+const packageTypeLoading = ref(false)
+
+// 远程搜索封装类型
+const handlePackageTypeSearch = async (query: string) => {
+  if (!query) {
+    packageTypeOptions.value = []
+    return
+  }
+  packageTypeLoading.value = true
+  try {
+    const res = await getAssyOrderPackageTypeApi({ package_type: query })
+    packageTypeOptions.value = res.data.list
+  } catch (error) {
+    console.error('获取封装类型列表失败:', error)
+  } finally {
+    packageTypeLoading.value = false
   }
 }
 
@@ -82,9 +130,19 @@ const schema = reactive<FormSchema[]>([
   {
     field: 'supplier',
     label: '供应商',
-    component: 'Input',
+    component: 'Select',
     componentProps: {
-      placeholder: '请输入供应商'
+      placeholder: '请输入供应商搜索',
+      clearable: true,
+      multiple: true,
+      filterable: true,
+      remote: true,
+      reserveKeyword: true,
+      loading: supplierLoading,
+      remoteMethod: handleSupplierSearch,
+      options: supplierOptions,
+      collapseTags: true,
+      collapseTagsTooltip: true
     },
     colProps: {
       span: 6
@@ -92,18 +150,23 @@ const schema = reactive<FormSchema[]>([
   },
   {
     field: 'package_type',
-    label: '封装形式',
+    label: '封装类型',
     component: 'Select',
+    componentProps: {
+      placeholder: '请输入封装类型搜索',
+      clearable: true,
+      multiple: true,
+      filterable: true,
+      remote: true,
+      reserveKeyword: true,
+      loading: packageTypeLoading,
+      remoteMethod: handlePackageTypeSearch,
+      options: packageTypeOptions,
+      collapseTags: true,
+      collapseTagsTooltip: true
+    },
     colProps: {
       span: 6
-    },
-    componentProps: {
-      options: [
-        { label: '全部', value: '' },
-        { label: '已关闭', value: 1 },
-        { label: '未关闭', value: 0 }
-      ],
-      placeholder: '请选择状态'
     }
   },
   {

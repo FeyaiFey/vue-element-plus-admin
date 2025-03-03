@@ -90,15 +90,41 @@ export interface AssyWipResponse {
   total: number
 }
 
-export interface AssyWipItemsQuery {
+export interface AssyOrderItemsQuery {
   item_code: string
 }
 
-export interface AssyWipItems {
+export interface AssyOrderItems {
   label: string
   value: string
 }
 
-export interface AssyWipItemsResponse {
-  list: AssyWipItems[]
+export interface AssyOrderItemsResponse {
+  list: AssyOrderItems[]
+}
+
+export interface AssyOrderPackageTypeQuery {
+  package_type: string
+}
+
+export interface AssyOrderPackageType {
+  label: string
+  value: string
+}
+
+export interface AssyOrderPackageTypeResponse {
+  list: AssyOrderPackageType[]
+}
+
+export interface AssyOrderSupplierQuery {
+  supplier: string
+}
+
+export interface AssyOrderSupplier {
+  label: string
+  value: string
+}
+
+export interface AssyOrderSupplierResponse {
+  list: AssyOrderSupplier[]
 }

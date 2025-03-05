@@ -173,6 +173,7 @@ const getCurrentProcessType = (
 ): 'info' | 'danger' | 'primary' | 'success' => {
   if (!CURRENT_PROCESS) return 'info'
   if (CURRENT_PROCESS === '已完成') return 'info'
+  if (CURRENT_PROCESS === 'STOCK') return 'primary'
   return 'success'
 }
 

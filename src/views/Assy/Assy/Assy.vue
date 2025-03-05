@@ -233,7 +233,7 @@ const { tableState, tableMethods } = useTable({
 })
 
 // 修改初始pageSize
-tableState.pageSize.value = 50
+tableState.pageSize.value = 20
 
 const { getList } = tableMethods
 const { loading, dataList, total, currentPage, pageSize } = tableState

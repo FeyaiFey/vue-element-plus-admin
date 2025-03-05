@@ -263,6 +263,7 @@ const columns = ref<ColumnType[]>([
         border
         class="w-full"
         header-cell-class-name="table-header"
+        :height="800"
       >
         <template v-for="item in columns" :key="item.prop">
           <ElTableColumn v-bind="item" v-if="!item.hidden">

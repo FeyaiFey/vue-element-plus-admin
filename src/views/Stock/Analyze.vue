@@ -1,9 +1,9 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ContentWrap } from '@/components/ContentWrap'
 </script>
 
 <template>
   <ContentWrap>
-    <h1>Assy Wip</h1>
+    <div class="stock-analyze">Analyze</div>
   </ContentWrap>
 </template>

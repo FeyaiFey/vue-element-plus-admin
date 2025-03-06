@@ -205,7 +205,10 @@ export default {
     assy: '封装管理',
     wipAssy: '封装进度',
     assyTable: '封装列表',
-    analyzeAssy: '封装分析'
+    analyzeAssy: '封装分析',
+    stock: '库存管理',
+    stockTable: '库存列表',
+    stockAnalysis: '库存分析'
   },
   permission: {
     hasPermission: '请设置操作权限值'

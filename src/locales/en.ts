@@ -210,7 +210,10 @@ export default {
     assy: 'Assy',
     wipAssy: 'WIP Assy',
     assyTable: 'Assy Table',
-    analyzeAssy: 'Analyze Assy'
+    analyzeAssy: 'Analyze Assy',
+    stock: 'Stock',
+    stockTable: 'Stock Table',
+    stockAnalysis: 'Stock Analysis'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

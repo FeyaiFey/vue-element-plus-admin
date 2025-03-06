@@ -1,41 +1,45 @@
-export interface StockItem {
-  ITEM_BUSINESS_ID: string
-  SHORTCUT: string
+export interface StockQuery {
+  feature_group_name?: string[]
+  item_code?: string[]
+  item_name?: string[]
+  warehouse_name?: string[]
+  testing_program?: string[]
+  burning_program?: string[]
+}
+
+export interface Stock {
   FEATURE_GROUP_NAME: string
-  ITEM_LOT_ID: string
   ITEM_CODE: string
   ITEM_NAME: string
   LOT_CODE: string
-  BIN_LEVEL: string
-  Z_TESTING_PROGRAM_NAME: string
-  Z_BURNING_PROGRAM_CODE: string
+  WAREHOUSE_NAME: string
   INVENTORY_QTY: number
   SECOND_QTY: number
-  WAREHOUSE_NAME: string
-  STOCK_AGE: number
-}
-
-export interface StockQueryParams {
-  itemCodes?: string
-  itemNames?: string
-  warehouses?: string
-  featureGroups?: string
-  lotCodes?: string
-  shortcuts?: string
-  showZeroStock?: boolean
-}
-
-export interface SelectOption {
-  label: string
-  value: string | number
-}
-
-export interface OptionsResponse {
-  data: SelectOption[]
+  Z_BIN_LEVEL_NAME: string
+  Z_TESTING_PROGRAM_NAME: string
+  Z_BURNING_PROGRAM_NAME: string
 }
 
 export interface StockResponse {
-  code: number
-  message: string
-  data: StockItem[]
+  list: Stock[]
+}
+
+export interface WaferIdQtyDetailQuery {
+  item_code: string
+  lot_code: string
+}
+
+export interface WaferIdQtyDetail {
+  ITEM_CODE: string
+  LOT_CODE: string
+  WF_ID: number
+  INVENTORY_QTY: number
+  SECOND_QTY: number
+  Z_BIN_LEVEL_NAME: string
+  Z_TESTING_PROGRAM_NAME: string
+  WAREHOUSE_NAME: string
+}
+
+export interface WaferIdQtyDetailResponse {
+  list: WaferIdQtyDetail[]
 }

@@ -389,7 +389,7 @@ const columns = [
     label: '物料编码',
     field: 'ITEM_CODE',
     align: 'center' as const,
-    width: 180,
+    width: 250,
     showOverflowTooltip: true
   },
   {
@@ -410,7 +410,7 @@ const columns = [
     label: '仓库',
     field: 'WAREHOUSE_NAME',
     align: 'center' as const,
-    width: 120
+    width: 180
   },
   {
     label: '库存数量',
@@ -458,7 +458,6 @@ const columns = [
     label: '烧录程序',
     field: 'Z_BURNING_PROGRAM_NAME',
     align: 'center' as const,
-    width: 150,
     showOverflowTooltip: true
   }
 ]
@@ -528,19 +527,19 @@ const dialogColumns = [
     label: 'BIN等级',
     field: 'Z_BIN_LEVEL_NAME',
     align: 'center' as const,
-    width: 100
+    width: 150
   },
   {
     label: '测试程序',
     field: 'Z_TESTING_PROGRAM_NAME',
     align: 'center' as const,
-    width: 150,
     showOverflowTooltip: true
   },
   {
     label: '仓库',
     field: 'WAREHOUSE_NAME',
-    align: 'center' as const
+    align: 'center' as const,
+    width: 200
   }
 ]
 </script>
@@ -592,7 +591,7 @@ const dialogColumns = [
     <Dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="80%"
+      width="70%"
       :top="'5vh'"
       :draggable="true"
       :close-on-click-modal="false"

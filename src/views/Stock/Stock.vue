@@ -12,7 +12,6 @@ import type { Stock, StockQuery, WaferIdQtyDetail } from '@/api/stock/types'
 import {
   getFeatureGroupNameApi,
   getItemCodeApi,
-  getItemNameApi,
   getWarehouseNameApi,
   getTestingProgramApi,
   getBurningProgramApi
@@ -63,30 +62,6 @@ const handleItemCodeSearch = async (query: string) => {
     console.error('获取物料编码列表失败:', error)
   } finally {
     itemCodeLoading.value = false
-  }
-}
-
-// 物料名称选项
-const itemNameOptions = ref<Array<{ label: string; value: string }>>([])
-const itemNameLoading = ref(false)
-
-// 远程搜索物料名称
-const handleItemNameSearch = async (query: string) => {
-  if (!query) {
-    itemNameOptions.value = []
-    return
-  }
-  itemNameLoading.value = true
-  try {
-    const res = await getItemNameApi({ item_name: query })
-    itemNameOptions.value = res.data.list.map((item) => ({
-      label: item.label,
-      value: item.value
-    }))
-  } catch (error) {
-    console.error('获取物料名称列表失败:', error)
-  } finally {
-    itemNameLoading.value = false
   }
 }
 
@@ -209,17 +184,11 @@ const schema = reactive<FormSchema[]>([
   {
     field: 'item_name',
     label: '物料名称',
-    component: 'Select',
+    component: 'Input',
     componentProps: {
-      placeholder: '请输入物料名称搜索',
+      placeholder: '请输入物料名称模糊搜索',
       clearable: true,
       multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: itemNameLoading,
-      remoteMethod: handleItemNameSearch,
-      options: itemNameOptions,
       collapseTags: true,
       collapseTagsTooltip: true
     },
@@ -582,7 +551,6 @@ const dialogColumns = [
           :columns="columns"
           :data="dataList"
           @selection-change="handleSelectionChange"
-          height="calc(100vh)"
         />
       </div>
     </div>

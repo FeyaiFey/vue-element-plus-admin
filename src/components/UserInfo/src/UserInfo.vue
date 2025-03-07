@@ -41,16 +41,18 @@ const toDocument = () => {
 const toPage = (path: string) => {
   push(path)
 }
+
+const getAvatarUrl = computed(() => {
+  const avatarUrl = userStore.getUserInfo?.avatar_url
+  if (!avatarUrl) return ''
+  return `http://192.168.168.67/${avatarUrl}`
+})
 </script>
 
 <template>
   <ElDropdown class="custom-hover" :class="prefixCls" trigger="click">
     <div class="flex items-center">
-      <img
-        :src="`http://localhost:8000/${userStore.getUserInfo?.avatar_url}`"
-        alt=""
-        class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
-      />
+      <img :src="getAvatarUrl" alt="" class="w-[calc(var(--logo-height)-25px)] rounded-[50%]" />
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">{{
         userStore.getUserInfo?.username
       }}</span>

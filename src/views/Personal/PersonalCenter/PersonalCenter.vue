@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ref, unref, onMounted } from 'vue'
+import { ref, unref, onMounted, computed } from 'vue'
 import { ElDivider, ElImage, ElTag, ElTabPane, ElTabs, ElButton, ElMessage } from 'element-plus'
 import defaultAvatar from '@/assets/imgs/avatar.jpg'
 import UploadAvatar from './components/UploadAvatar.vue'
@@ -66,6 +66,12 @@ const saveAvatar = async () => {
     avatarLoading.value = false
   }
 }
+
+const getAvatarUrl = computed(() => {
+  const avatarUrl = userStore.getUserInfo?.avatar_url
+  if (!avatarUrl) return ''
+  return `http://192.168.168.67/${avatarUrl}`
+})
 </script>
 
 <template>
@@ -78,7 +84,7 @@ const saveAvatar = async () => {
         >
           <ElImage
             class="w-[150px] h-[150px] rounded-full"
-            :src="`http://localhost:8000/${userInfo?.avatar_url}` || defaultAvatar"
+            :src="getAvatarUrl || defaultAvatar"
             fit="fill"
           />
         </div>

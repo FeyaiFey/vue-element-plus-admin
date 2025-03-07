@@ -137,6 +137,9 @@ const handleBurningProgramSearch = async (query: string) => {
   }
 }
 
+// 添加表单引用
+const formRef = ref()
+
 // 查询表单配置
 const schema = reactive<FormSchema[]>([
   {
@@ -190,7 +193,15 @@ const schema = reactive<FormSchema[]>([
       clearable: true,
       multiple: true,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
       span: 8
@@ -288,7 +299,10 @@ const searchParams = ref<SearchParams>({
 
 // 搜索方法
 const setSearchParams = (params: StockQuery) => {
-  searchParams.value = params
+  searchParams.value = {
+    ...params,
+    enableSummary: true
+  }
   getList()
 }
 
@@ -517,6 +531,7 @@ const dialogColumns = [
   <ContentWrap>
     <!-- 搜索表单 -->
     <Search
+      ref="formRef"
       :schema="schema"
       @search="setSearchParams"
       @reset="setSearchParams"

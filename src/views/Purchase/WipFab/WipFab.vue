@@ -279,7 +279,7 @@ const columns = ref<ColumnType[]>([
       <div class="flex justify-end mt-4">
         <ElPagination
           v-model:current-page="currentPage"
-          :page-size="100"
+          :page-size="50"
           :total="total"
           layout="total, prev, pager, next, jumper"
           @current-change="getList"

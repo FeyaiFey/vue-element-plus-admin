@@ -16,6 +16,7 @@ import {
   getTestingProgramApi,
   getBurningProgramApi
 } from '@/api/params'
+import Analyze from '@/views/Stock/Analyze.vue'
 
 // 特征组选项
 const featureGroupOptions = ref<Array<{ label: string; value: string }>>([])
@@ -525,6 +526,14 @@ const dialogColumns = [
     width: 200
   }
 ]
+
+// 分析弹窗状态
+const analyzeVisible = ref(false)
+
+// 显示分析弹窗
+const showAnalyze = () => {
+  analyzeVisible.value = true
+}
 </script>
 
 <template>
@@ -606,6 +615,29 @@ const dialogColumns = [
           />
         </div>
       </div>
+    </Dialog>
+
+    <!-- 添加分析按钮 -->
+    <el-button
+      type="primary"
+      icon="el-icon-data-analysis"
+      @click="showAnalyze"
+      :disabled="!dataList.length"
+    >
+      数据分析
+    </el-button>
+
+    <!-- 分析弹窗 -->
+    <Dialog
+      v-model="analyzeVisible"
+      title="库存数据分析"
+      width="90%"
+      :top="'5vh'"
+      :draggable="true"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
+      <Analyze :initial-params="searchParams" />
     </Dialog>
   </ContentWrap>
 </template>

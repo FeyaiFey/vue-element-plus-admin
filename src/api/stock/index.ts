@@ -3,7 +3,9 @@ import type {
   StockQuery,
   StockResponse,
   WaferIdQtyDetailQuery,
-  WaferIdQtyDetailResponse
+  WaferIdQtyDetailResponse,
+  StockSummaryQuery,
+  StockSummaryResponse
 } from './types'
 
 export const getStockListApi = (query: StockQuery) => {
@@ -16,6 +18,13 @@ export const getStockListApi = (query: StockQuery) => {
 export const getWaferIdQtyDetailApi = (query: WaferIdQtyDetailQuery) => {
   return request.get<WaferIdQtyDetailResponse>({
     url: '/stock/wafer_id_qty_detail',
+    params: query
+  })
+}
+
+export const getStockSummaryApi = (query: StockSummaryQuery) => {
+  return request.get<StockSummaryResponse>({
+    url: '/stock/summary',
     params: query
   })
 }

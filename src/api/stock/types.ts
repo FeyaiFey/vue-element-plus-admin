@@ -43,3 +43,22 @@ export interface WaferIdQtyDetail {
 export interface WaferIdQtyDetailResponse {
   list: WaferIdQtyDetail[]
 }
+
+export interface StockSummaryQuery {
+  feature_group_name?: string
+  item_name?: string
+  warehouse_name?: string
+}
+
+export interface StockSummary {
+  FEATURE_GROUP_NAME: string
+  ITEM_NAME: string
+  WAREHOUSE_NAME: string
+  INVENTORY_QTY: number
+  SECOND_QTY: number
+  AVERAGE_STOCK_AGE: number
+}
+
+export interface StockSummaryResponse {
+  list: StockSummary[]
+}

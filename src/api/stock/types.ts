@@ -55,7 +55,6 @@ export interface StockSummary {
   ITEM_NAME: string
   WAREHOUSE_NAME: string
   INVENTORY_QTY: number
-  SECOND_QTY: number
   AVERAGE_STOCK_AGE: number
 }
 

@@ -92,6 +92,8 @@ const handlePackageTypeSearch = async (query: string) => {
   }
 }
 
+const formRef = ref()
+
 // 查询表单配置
 const schema = reactive<FormSchema[]>([
   {
@@ -100,10 +102,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入订单号',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -121,10 +135,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleItemCodeSearch,
       options: itemCodeOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -142,10 +168,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleSupplierSearch,
       options: supplierOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -163,10 +201,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handlePackageTypeSearch,
       options: packageTypeOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -179,10 +229,22 @@ const schema = reactive<FormSchema[]>([
         { label: '已结束', value: 1 },
         { label: '未结束', value: 0 }
       ],
-      placeholder: '请选择状态'
+      placeholder: '请选择状态',
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -190,7 +252,11 @@ const schema = reactive<FormSchema[]>([
     label: '订单日期',
     component: 'DatePicker',
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     },
     componentProps: {
       type: 'date',
@@ -203,7 +269,11 @@ const schema = reactive<FormSchema[]>([
     label: '订单日期',
     component: 'DatePicker',
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     },
     componentProps: {
       type: 'date',
@@ -530,6 +600,7 @@ const getCurrentProcessType = (
   <ContentWrap>
     <!-- 搜索表单 -->
     <Search
+      ref="formRef"
       :schema="schema"
       @search="setSearchParams"
       @reset="setSearchParams"

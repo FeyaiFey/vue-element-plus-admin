@@ -34,6 +34,8 @@ onMounted(() => {
   getSupplierList()
 })
 
+const formRef = ref<ComponentRef<typeof Search>>()
+
 // 查询表单配置
 const schema = reactive<FormSchema[]>([
   {
@@ -42,10 +44,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入订单号',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -54,10 +68,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入物料名称',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -67,10 +93,22 @@ const schema = reactive<FormSchema[]>([
     componentProps: {
       placeholder: '请选择供应商',
       clearable: true,
-      options: supplierList
+      options: supplierList,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -88,7 +126,11 @@ const schema = reactive<FormSchema[]>([
       ]
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -106,7 +148,11 @@ const schema = reactive<FormSchema[]>([
       ]
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -123,7 +169,11 @@ const schema = reactive<FormSchema[]>([
       ]
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -140,7 +190,11 @@ const schema = reactive<FormSchema[]>([
       ]
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   }
 ])
@@ -246,6 +300,7 @@ const columns = ref<ColumnType[]>([
   <ContentWrap>
     <!-- 搜索表单 -->
     <Search
+      ref="formRef"
       :schema="schema"
       :is-col="true"
       :inline="false"

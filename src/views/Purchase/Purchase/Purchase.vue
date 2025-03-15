@@ -48,6 +48,8 @@ onMounted(() => {
   getSupplierList()
 })
 
+const formRef = ref<ComponentRef<typeof Search>>()
+
 // 查询表单配置
 const schema = reactive<FormSchema[]>([
   {
@@ -55,10 +57,21 @@ const schema = reactive<FormSchema[]>([
     label: '物料名称',
     component: 'Input',
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     },
     componentProps: {
-      placeholder: '请输入物料名称'
+      placeholder: '请输入物料名称',
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     }
   },
   {
@@ -67,10 +80,21 @@ const schema = reactive<FormSchema[]>([
     component: 'Select',
     componentProps: {
       options: supplierList,
-      placeholder: '请选择供应商'
+      placeholder: '请选择供应商',
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -78,7 +102,11 @@ const schema = reactive<FormSchema[]>([
     label: '订单状态',
     component: 'Select',
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     },
     componentProps: {
       options: [
@@ -94,7 +122,11 @@ const schema = reactive<FormSchema[]>([
     label: '采购日期',
     component: 'DatePicker',
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     },
     componentProps: {
       type: 'date',
@@ -107,7 +139,11 @@ const schema = reactive<FormSchema[]>([
     label: '采购日期',
     component: 'DatePicker',
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     },
     componentProps: {
       type: 'date',
@@ -458,6 +494,7 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
   <ContentWrap>
     <!-- 搜索表单 -->
     <Search
+      ref="formRef"
       :schema="schema"
       @search="setSearchParams"
       @reset="setSearchParams"

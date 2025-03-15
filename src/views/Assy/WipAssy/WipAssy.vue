@@ -10,6 +10,9 @@ import type { AssyWip, AssyWipQuery } from '@/api/assy/type'
 import { FormSchema } from '@/components/Form'
 import { Icon } from '@/components/Icon'
 
+// 添加表单引用
+const formRef = ref()
+
 // 查询表单配置
 const schema = reactive<FormSchema[]>([
   {
@@ -18,10 +21,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入订单号',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -30,10 +45,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入物料编码',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -42,10 +69,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入供应商',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -54,10 +93,22 @@ const schema = reactive<FormSchema[]>([
     component: 'Input',
     componentProps: {
       placeholder: '请输入当前工序',
-      clearable: true
+      clearable: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -72,10 +123,22 @@ const schema = reactive<FormSchema[]>([
         { label: '全部', value: '' },
         { label: '已完成', value: 1 },
         { label: '未完成', value: 0 }
-      ]
+      ],
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -89,10 +152,22 @@ const schema = reactive<FormSchema[]>([
         { label: '全部', value: '' },
         { label: '是', value: 1 },
         { label: '否', value: 0 }
-      ]
+      ],
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -106,17 +181,29 @@ const schema = reactive<FormSchema[]>([
         { label: '1天', value: 1 },
         { label: '3天', value: 3 },
         { label: '7天', value: 7 }
-      ]
+      ],
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 6
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   }
 ])
 
 // 定义展开字段和展开状态
 const is_finished = ref('is_finished')
-const isExpand = ref(false)
+const isExpand = ref(true)
 
 // 自定义展开按钮文本
 const expandBtnText = computed(() => {
@@ -149,9 +236,7 @@ const searchParams = ref<AssyWipQuery>({
 
 // 搜索方法
 const setSearchParams = (params: AssyWipQuery) => {
-  if (Object.keys(params).some((key) => params[key] !== undefined && params[key] !== '')) {
-    currentPage.value = 1
-  }
+  currentPage.value = 1
   searchParams.value = params
   getList()
 }
@@ -349,6 +434,7 @@ onMounted(() => {
     <!-- 搜索表单 -->
     <div class="flex justify-between items-center mb-4">
       <Search
+        ref="formRef"
         :schema="schema"
         :is-col="true"
         :inline="false"

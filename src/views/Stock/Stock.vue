@@ -16,7 +16,6 @@ import {
   getTestingProgramApi,
   getBurningProgramApi
 } from '@/api/params'
-import Analyze from '@/views/Stock/Analyze.vue'
 
 // 特征组选项
 const featureGroupOptions = ref<Array<{ label: string; value: string }>>([])
@@ -158,10 +157,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleFeatureGroupSearch,
       options: featureGroupOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 8
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -179,10 +190,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleItemCodeSearch,
       options: itemCodeOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 8
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -205,7 +228,11 @@ const schema = reactive<FormSchema[]>([
       }
     },
     colProps: {
-      span: 8
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -223,10 +250,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleWarehouseSearch,
       options: warehouseOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 8
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -244,10 +283,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleTestingProgramSearch,
       options: testingProgramOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 8
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   },
   {
@@ -265,10 +316,22 @@ const schema = reactive<FormSchema[]>([
       remoteMethod: handleBurningProgramSearch,
       options: burningProgramOptions,
       collapseTags: true,
-      collapseTagsTooltip: true
+      collapseTagsTooltip: true,
+      onKeyup: (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          // 获取表单数据
+          formRef.value?.getFormData().then((formData) => {
+            setSearchParams(formData)
+          })
+        }
+      }
     },
     colProps: {
-      span: 8
+      xs: 24, // 在超小屏幕上占满整行
+      sm: 24, // 在小屏幕上占满整行
+      md: 12, // 在中等屏幕上占半行
+      lg: 8, // 在大屏幕上占 1/3
+      xl: 8 // 在超大屏幕上占 1/3
     }
   }
 ])
@@ -526,14 +589,6 @@ const dialogColumns = [
     width: 200
   }
 ]
-
-// 分析弹窗状态
-const analyzeVisible = ref(false)
-
-// 显示分析弹窗
-const showAnalyze = () => {
-  analyzeVisible.value = true
-}
 </script>
 
 <template>
@@ -615,29 +670,6 @@ const showAnalyze = () => {
           />
         </div>
       </div>
-    </Dialog>
-
-    <!-- 添加分析按钮 -->
-    <el-button
-      type="primary"
-      icon="el-icon-data-analysis"
-      @click="showAnalyze"
-      :disabled="!dataList.length"
-    >
-      数据分析
-    </el-button>
-
-    <!-- 分析弹窗 -->
-    <Dialog
-      v-model="analyzeVisible"
-      title="库存数据分析"
-      width="90%"
-      :top="'5vh'"
-      :draggable="true"
-      :close-on-click-modal="false"
-      destroy-on-close
-    >
-      <Analyze :initial-params="searchParams" />
     </Dialog>
   </ContentWrap>
 </template>

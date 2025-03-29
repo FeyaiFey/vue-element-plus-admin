@@ -1,12 +1,23 @@
 <script setup lang="ts">
 import { ref, reactive, h, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import {
+  ElForm,
+  ElFormItem,
+  ElSelect,
+  ElOption,
+  ElRow,
+  ElCol,
+  ElInput,
+  ElButton,
+  ElCollapseTransition
+} from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
-import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
 import { Table } from '@/components/Table'
 import { Dialog } from '@/components/Dialog'
-import type { FormSchema } from '@/components/Form'
+import { Icon } from '@/components/Icon'
+import type { FormInstance } from 'element-plus'
 import { getStockListApi, getWaferIdQtyDetailApi } from '@/api/stock'
 import type { Stock, StockQuery, WaferIdQtyDetail } from '@/api/stock/types'
 import {
@@ -55,7 +66,7 @@ const handleItemCodeSearch = async (query: string) => {
   try {
     const res = await getItemCodeApi({ item_code: query })
     itemCodeOptions.value = res.data.list.map((item) => ({
-      label: item.label,
+      label: item.value,
       value: item.value
     }))
   } catch (error) {
@@ -137,207 +148,24 @@ const handleBurningProgramSearch = async (query: string) => {
   }
 }
 
-// 添加表单引用
-const formRef = ref()
+// 表单引用
+const formRef = ref<FormInstance>()
 
-// 查询表单配置
-const schema = reactive<FormSchema[]>([
-  {
-    field: 'feature_group_name',
-    label: '品号群组',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入品号群组搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: featureGroupLoading,
-      remoteMethod: handleFeatureGroupSearch,
-      options: featureGroupOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'item_code',
-    label: '物料编码',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入物料编码搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: itemCodeLoading,
-      remoteMethod: handleItemCodeSearch,
-      options: itemCodeOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'item_name',
-    label: '物料名称',
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入物料名称模糊搜索',
-      clearable: true,
-      multiple: true,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'warehouse_name',
-    label: '仓库',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入仓库搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: warehouseLoading,
-      remoteMethod: handleWarehouseSearch,
-      options: warehouseOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'testing_program',
-    label: '测试程序',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入测试程序搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: testingProgramLoading,
-      remoteMethod: handleTestingProgramSearch,
-      options: testingProgramOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'burning_program',
-    label: '烧录程序',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入烧录程序搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: burningProgramLoading,
-      remoteMethod: handleBurningProgramSearch,
-      options: burningProgramOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  }
-])
+// 表单数据
+const formData = reactive<StockQuery>({
+  item_code: [],
+  item_name: '',
+  lot_code: '',
+  feature_group_name: [],
+  warehouse_name: [],
+  testing_program: [],
+  burning_program: []
+})
 
-// 定义展开字段和展开状态
-const warehouse_name = ref('warehouse_name')
+// 搜索方法
+const handleSearch = () => {
+  setSearchParams(formData)
+}
 
 // 使用 table hook
 const { tableState, tableMethods } = useTable({
@@ -424,52 +252,59 @@ const columns = [
     type: 'selection',
     width: 50,
     align: 'center' as const,
-    field: 'selection'
+    field: 'selection',
+    fixed: 'left' as const
   },
   {
     label: '品号群组',
     field: 'FEATURE_GROUP_NAME',
     align: 'center' as const,
-    width: 120
+    width: 120,
+    fixed: 'left' as const,
+    showOverflowTooltip: true
   },
   {
     label: '物料编码',
     field: 'ITEM_CODE',
     align: 'center' as const,
-    width: 250,
+    minWidth: 180,
     showOverflowTooltip: true
   },
   {
     label: '物料名称',
     field: 'ITEM_NAME',
     align: 'center' as const,
-    width: 180,
+    minWidth: 180,
     showOverflowTooltip: true
   },
   {
     label: '批号',
     field: 'LOT_CODE',
     align: 'center' as const,
-    width: 150,
+    minWidth: 150,
     showOverflowTooltip: true
   },
   {
     label: '仓库',
     field: 'WAREHOUSE_NAME',
     align: 'center' as const,
-    width: 180
+    minWidth: 180,
+    showOverflowTooltip: true,
+    hide: (width?: number) => width && width < 768
   },
   {
     label: '库存数量',
     field: 'INVENTORY_QTY',
     align: 'center' as const,
-    width: 100
+    width: 100,
+    fixed: 'right' as const
   },
   {
     label: '第二数量',
     field: 'SECOND_QTY',
     align: 'center' as const,
     width: 100,
+    fixed: 'right' as const,
     formatter: (row: Stock) => {
       if (row.SECOND_QTY > 0) {
         return h(
@@ -492,20 +327,24 @@ const columns = [
     label: 'BIN等级',
     field: 'Z_BIN_LEVEL_NAME',
     align: 'center' as const,
-    width: 100
+    width: 100,
+    hide: (width?: number) => width && width < 768
   },
   {
     label: '测试程序',
     field: 'Z_TESTING_PROGRAM_NAME',
     align: 'center' as const,
-    width: 150,
-    showOverflowTooltip: true
+    minWidth: 150,
+    showOverflowTooltip: true,
+    hide: (width?: number) => width && width < 768
   },
   {
     label: '烧录程序',
     field: 'Z_BURNING_PROGRAM_NAME',
     align: 'center' as const,
-    showOverflowTooltip: true
+    minWidth: 150,
+    showOverflowTooltip: true,
+    hide: (width?: number) => width && width < 768
   }
 ]
 
@@ -589,22 +428,190 @@ const dialogColumns = [
     width: 200
   }
 ]
+
+// 折叠状态
+const isCollapse = ref(true)
+
+// 重置方法
+const handleReset = () => {
+  formRef.value?.resetFields()
+  handleSearch()
+}
 </script>
 
 <template>
   <ContentWrap>
     <!-- 搜索表单 -->
-    <Search
-      ref="formRef"
-      :schema="schema"
-      @search="setSearchParams"
-      @reset="setSearchParams"
-      :is-col="true"
-      :inline="false"
-      label-width="100px"
-      show-expand
-      :expand-field="warehouse_name"
-    />
+    <ElForm ref="formRef" :model="formData" label-width="100px" class="search-form">
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="物料编码">
+            <ElSelect
+              v-model="formData.item_code"
+              placeholder="按物料编码精确搜索"
+              clearable
+              filterable
+              remote
+              reserve-keyword
+              :remote-method="handleItemCodeSearch"
+              :loading="itemCodeLoading"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              :no-data-text="'暂无数据'"
+              :no-match-text="'无匹配数据'"
+              @keyup.enter="handleSearch"
+            >
+              <ElOption
+                v-for="item in itemCodeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </ElSelect>
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="物料名称">
+            <ElInput
+              v-model="formData.item_name"
+              placeholder="请输入物料名称模糊搜索"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="批号">
+            <ElInput
+              v-model="formData.lot_code"
+              placeholder="请输入批号搜索"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+      <ElCollapseTransition>
+        <div v-show="!isCollapse">
+          <ElRow :gutter="20">
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="品号群组">
+                <ElSelect
+                  v-model="formData.feature_group_name"
+                  placeholder="请输入品号群组搜索"
+                  clearable
+                  filterable
+                  remote
+                  :remote-method="handleFeatureGroupSearch"
+                  :loading="featureGroupLoading"
+                  multiple
+                  collapse-tags
+                  collapse-tags-tooltip
+                  @keyup.enter="handleSearch"
+                >
+                  <ElOption
+                    v-for="item in featureGroupOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="仓库">
+                <ElSelect
+                  v-model="formData.warehouse_name"
+                  placeholder="请输入仓库搜索"
+                  clearable
+                  filterable
+                  remote
+                  :remote-method="handleWarehouseSearch"
+                  :loading="warehouseLoading"
+                  multiple
+                  collapse-tags
+                  collapse-tags-tooltip
+                  @keyup.enter="handleSearch"
+                >
+                  <ElOption
+                    v-for="item in warehouseOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="测试程序">
+                <ElSelect
+                  v-model="formData.testing_program"
+                  placeholder="请输入测试程序搜索"
+                  clearable
+                  filterable
+                  remote
+                  :remote-method="handleTestingProgramSearch"
+                  :loading="testingProgramLoading"
+                  multiple
+                  collapse-tags
+                  collapse-tags-tooltip
+                  @keyup.enter="handleSearch"
+                >
+                  <ElOption
+                    v-for="item in testingProgramOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="烧录程序">
+                <ElSelect
+                  v-model="formData.burning_program"
+                  placeholder="请输入烧录程序搜索"
+                  clearable
+                  filterable
+                  remote
+                  :remote-method="handleBurningProgramSearch"
+                  :loading="burningProgramLoading"
+                  multiple
+                  collapse-tags
+                  collapse-tags-tooltip
+                  @keyup.enter="handleSearch"
+                >
+                  <ElOption
+                    v-for="item in burningProgramOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+          </ElRow>
+        </div>
+      </ElCollapseTransition>
+      <ElRow>
+        <ElCol :span="24" class="search-buttons">
+          <ElButton type="primary" @click="handleSearch">
+            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+            查询
+          </ElButton>
+          <ElButton @click="handleReset">重置</ElButton>
+          <ElButton type="text" class="collapse-button" @click="isCollapse = !isCollapse">
+            {{ isCollapse ? '展开' : '收起' }}
+            <Icon
+              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+              :size="26"
+              class="ml-1"
+            />
+          </ElButton>
+        </ElCol>
+      </ElRow>
+    </ElForm>
 
     <!-- 表格区域 -->
     <div class="mt-4 table-container">
@@ -630,6 +637,9 @@ const dialogColumns = [
           :columns="columns"
           :data="dataList"
           @selection-change="handleSelectionChange"
+          table-layout="auto"
+          :style="{ width: '100%' }"
+          :max-height="500"
         />
       </div>
     </div>
@@ -678,9 +688,11 @@ const dialogColumns = [
 .table-container {
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 }
 
 .table-wrapper {
+  min-width: 800px;
   border: 1px solid var(--el-border-color-light);
   border-radius: 4px;
 }
@@ -688,6 +700,18 @@ const dialogColumns = [
 :deep(.el-table) {
   // 移除表格边框
   border: none !important;
+
+  // 移动端适配
+  @media screen and (width <= 768px) {
+
+    // 减小字体大小
+    font-size: 12px;
+    // 减小单元格内边距
+    td,
+    th {
+      padding: 8px !important;
+    }
+  }
 
   // 表头样式
   .el-table__header {
@@ -738,6 +762,17 @@ const dialogColumns = [
       background-color: var(--el-color-primary-light-9) !important;
     }
   }
+
+  // 固定列样式
+  .el-table__fixed,
+  .el-table__fixed-right {
+    height: 100% !important;
+    box-shadow: none;
+
+    &::before {
+      display: none;
+    }
+  }
 }
 
 .table-summary {
@@ -780,5 +815,40 @@ const dialogColumns = [
 .dialog-content {
   display: flex;
   flex-direction: column;
+}
+
+.search-form {
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--el-bg-color);
+  border-radius: 4px;
+
+  :deep(.el-row) {
+    margin-bottom: 0;
+  }
+
+  :deep(.el-collapse-transition) {
+    overflow: hidden;
+    transition: 0.3s height ease-in-out;
+  }
+
+  .search-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+
+    .el-button {
+      min-width: 120px;
+    }
+
+    .collapse-button {
+      display: flex;
+      min-width: auto;
+      padding: 0 12px;
+      align-items: center;
+      gap: 4px;
+    }
+  }
 }
 </style>

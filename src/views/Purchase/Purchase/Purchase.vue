@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, unref, h, onMounted } from 'vue'
+import { ref, reactive, unref, h, onMounted, watch } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -7,11 +7,18 @@ import {
   ElCheckbox,
   ElSelect,
   ElOption,
-  ElTag
+  ElTag,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElDatePicker,
+  ElRow,
+  ElCol,
+  ElCollapseTransition,
+  ElButton
 } from 'element-plus'
 import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
 import { ContentWrap } from '@/components/ContentWrap'
-import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
 import {
   getPurchaseOrderListApi,
@@ -24,15 +31,17 @@ import type {
   PurchaseWip,
   PurchaseSupplierResponse
 } from '@/api/purchase/type'
-import { FormSchema } from '@/components/Form'
 import { Table } from '@/components/Table'
 import { Dialog } from '@/components/Dialog'
+import type { FormInstance } from 'element-plus'
 
 // 供应商列表
 const supplierList = ref<PurchaseSupplierResponse[]>([])
+const supplierLoading = ref(false)
 
 // 获取供应商列表
 const getSupplierList = async () => {
+  supplierLoading.value = true
   try {
     const res = await getPurchaseSupplierListApi()
     if (res.code === 200) {
@@ -40,6 +49,8 @@ const getSupplierList = async () => {
     }
   } catch (error) {
     console.error('获取供应商列表失败:', error)
+  } finally {
+    supplierLoading.value = false
   }
 }
 
@@ -48,110 +59,46 @@ onMounted(() => {
   getSupplierList()
 })
 
-const formRef = ref<ComponentRef<typeof Search>>()
+// 折叠状态
+const isCollapse = ref(true)
 
-// 查询表单配置
-const schema = reactive<FormSchema[]>([
-  {
-    field: 'item_name',
-    label: '物料名称',
-    component: 'Input',
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    },
-    componentProps: {
-      placeholder: '请输入物料名称',
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    }
-  },
-  {
-    field: 'supplier',
-    label: '供应商',
-    component: 'Select',
-    componentProps: {
-      options: supplierList,
-      placeholder: '请选择供应商',
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'receipt_close',
-    label: '订单状态',
-    component: 'Select',
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    },
-    componentProps: {
-      options: [
-        { label: '全部', value: '' },
-        { label: '已关闭', value: 1 },
-        { label: '未关闭', value: 0 }
-      ],
-      placeholder: '请选择状态'
-    }
-  },
-  {
-    field: 'purchase_date_start',
-    label: '采购日期',
-    component: 'DatePicker',
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    },
-    componentProps: {
-      type: 'date',
-      valueFormat: 'YYYY-MM-DD',
-      placeholder: '起始于'
-    }
-  },
-  {
-    field: 'purchase_date_end',
-    label: '采购日期',
-    component: 'DatePicker',
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    },
-    componentProps: {
-      type: 'date',
-      valueFormat: 'YYYY-MM-DD',
-      placeholder: '结束于'
-    }
+// 表单引用
+const formRef = ref<FormInstance>()
+
+// 搜索参数
+const searchParams = reactive<PurchaseOrderQuery>({
+  item_name: '',
+  supplier: '',
+  receipt_close: undefined,
+  purchase_date_start: undefined,
+  purchase_date_end: undefined
+})
+
+// 日期范围
+const dateRange = ref<[string, string] | undefined>(undefined)
+
+// 监听日期范围变化
+watch(dateRange, (newVal) => {
+  if (newVal) {
+    searchParams.purchase_date_start = newVal[0]
+    searchParams.purchase_date_end = newVal[1]
+  } else {
+    searchParams.purchase_date_start = undefined
+    searchParams.purchase_date_end = undefined
   }
-])
+})
+
+// 搜索方法
+const handleSearch = () => {
+  currentPage.value = 1
+  getList()
+}
+
+// 重置方法
+const handleReset = () => {
+  formRef.value?.resetFields()
+  handleSearch()
+}
 
 // 使用 table hook
 const { tableState, tableMethods } = useTable({
@@ -160,7 +107,7 @@ const { tableState, tableMethods } = useTable({
     const res = await getPurchaseOrderListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
-      ...searchParams.value
+      ...searchParams
     })
     return {
       list: res.data.list,
@@ -170,29 +117,10 @@ const { tableState, tableMethods } = useTable({
 })
 
 // 修改初始pageSize
-tableState.pageSize.value = 50
+tableState.pageSize.value = 20
 
 const { getList } = tableMethods
 const { loading, dataList, total, currentPage, pageSize } = tableState
-
-// 搜索参数
-interface SearchParams extends PurchaseOrderQuery {
-  enableSummary?: boolean
-}
-
-const searchParams = ref<SearchParams>({
-  enableSummary: true // 设置初始值
-})
-
-// 搜索方法
-const setSearchParams = (params: PurchaseOrderQuery) => {
-  // 有查询参数时重置到第一页
-  if (Object.keys(params).some((key) => params[key] !== undefined && params[key] !== '')) {
-    currentPage.value = 1
-  }
-  searchParams.value = params
-  getList()
-}
 
 // 表格列配置接口
 interface ColumnType extends Partial<TableColumnCtx<PurchaseOrder>> {
@@ -493,15 +421,84 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
 <template>
   <ContentWrap>
     <!-- 搜索表单 -->
-    <Search
-      ref="formRef"
-      :schema="schema"
-      @search="setSearchParams"
-      @reset="setSearchParams"
-      :is-col="true"
-      :inline="false"
-      label-width="100px"
-    />
+    <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="物料名称">
+            <ElInput
+              v-model="searchParams.item_name"
+              placeholder="请输入物料名称"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="供应商">
+            <ElSelect
+              v-model="searchParams.supplier"
+              placeholder="请选择供应商"
+              clearable
+              filterable
+              :loading="supplierLoading"
+              @keyup.enter="handleSearch"
+            >
+              <ElOption
+                v-for="item in supplierList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </ElSelect>
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="订单状态">
+            <ElSelect v-model="searchParams.receipt_close" placeholder="请选择状态" clearable>
+              <ElOption label="全部" value="" />
+              <ElOption label="已关闭" :value="1" />
+              <ElOption label="未关闭" :value="0" />
+            </ElSelect>
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+      <ElCollapseTransition>
+        <div v-show="!isCollapse">
+          <ElRow :gutter="20">
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="采购日期">
+                <ElDatePicker
+                  v-model="dateRange"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  value-format="YYYY-MM-DD"
+                  clearable
+                />
+              </ElFormItem>
+            </ElCol>
+          </ElRow>
+        </div>
+      </ElCollapseTransition>
+      <ElRow>
+        <ElCol :span="24" class="search-buttons">
+          <ElButton type="primary" @click="handleSearch">
+            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+            查询
+          </ElButton>
+          <ElButton @click="handleReset">重置</ElButton>
+          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
+            <Icon
+              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+              :size="20"
+              class="collapse-icon"
+            />
+          </ElButton>
+        </ElCol>
+      </ElRow>
+    </ElForm>
 
     <!-- 表格 -->
     <div class="mt-4">
@@ -706,5 +703,57 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
 
 .text-primary {
   color: var(--el-color-primary);
+}
+
+.search-form {
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--el-bg-color);
+  border-radius: 4px;
+
+  :deep(.el-row) {
+    margin-bottom: 0;
+  }
+
+  :deep(.el-collapse-transition) {
+    overflow: hidden;
+    transition: 0.3s height ease-in-out;
+  }
+
+  .search-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+
+    .el-button {
+      min-width: 120px;
+    }
+
+    .collapse-button {
+      display: flex;
+      height: 32px;
+      min-width: auto;
+      padding: 0 16px;
+      transition: all 0.3s;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      .collapse-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--el-color-primary);
+      }
+
+      .collapse-icon {
+        color: var(--el-color-primary);
+        transition: transform 0.3s;
+      }
+    }
+  }
 }
 </style>

@@ -4,8 +4,8 @@ export interface PurchaseOrderQuery {
   item_code?: string
   item_name?: string
   supplier?: string
-  purchase_date_start?: Date
-  purchase_date_end?: Date
+  purchase_date_start?: string
+  purchase_date_end?: string
   pageIndex?: number
   pageSize?: number
 }

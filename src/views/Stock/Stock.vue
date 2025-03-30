@@ -275,14 +275,16 @@ const columns = [
     field: 'ITEM_NAME',
     align: 'center' as const,
     minWidth: 180,
-    showOverflowTooltip: true
+    showOverflowTooltip: true,
+    sortable: true
   },
   {
     label: '批号',
     field: 'LOT_CODE',
     align: 'center' as const,
     minWidth: 150,
-    showOverflowTooltip: true
+    showOverflowTooltip: true,
+    sortable: true
   },
   {
     label: '仓库',
@@ -290,14 +292,16 @@ const columns = [
     align: 'center' as const,
     minWidth: 180,
     showOverflowTooltip: true,
-    hide: (width?: number) => width && width < 768
+    hide: (width?: number) => width && width < 768,
+    sortable: true
   },
   {
     label: '库存数量',
     field: 'INVENTORY_QTY',
     align: 'center' as const,
-    width: 100,
-    fixed: 'right' as const
+    width: 120,
+    fixed: 'right' as const,
+    sortable: true
   },
   {
     label: '第二数量',
@@ -639,7 +643,6 @@ const handleReset = () => {
           @selection-change="handleSelectionChange"
           table-layout="auto"
           :style="{ width: '100%' }"
-          :max-height="500"
         />
       </div>
     </div>
@@ -703,7 +706,6 @@ const handleReset = () => {
 
   // 移动端适配
   @media screen and (width <= 768px) {
-
     // 减小字体大小
     font-size: 12px;
     // 减小单元格内边距
@@ -714,7 +716,7 @@ const handleReset = () => {
   }
 
   // 表头样式
-  .el-table__header {
+  .el-table__body-header {
     th {
       font-weight: bold;
       color: var(--el-color-primary);

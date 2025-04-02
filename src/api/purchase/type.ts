@@ -37,8 +37,8 @@ export interface PurchaseWipQuery {
   item_name?: string
   supplier?: string
   status?: string
-  is_finished?: number
-  is_stranded?: number
+  is_finished?: number | string
+  is_stranded?: number | string
   days?: number
   pageIndex?: number
   pageSize?: number

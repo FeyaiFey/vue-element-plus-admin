@@ -59,7 +59,7 @@ const searchParams = reactive<PurchaseWipQuery>({
   supplier: '',
   status: '',
   is_finished: 0,
-  is_stranded: undefined,
+  is_stranded: '',
   days: undefined
 })
 
@@ -91,6 +91,14 @@ const handleSearch = () => {
 // 重置方法
 const handleReset = () => {
   formRef.value?.resetFields()
+  // 设置默认参数
+  searchParams.purchase_order = ''
+  searchParams.item_name = ''
+  searchParams.supplier = ''
+  searchParams.status = ''
+  searchParams.is_finished = 0
+  searchParams.is_stranded = ''
+  searchParams.days = undefined
   handleSearch()
 }
 
@@ -104,12 +112,29 @@ const getStatusType = (status: string): 'info' | 'danger' | 'primary' | 'success
   return 'success'
 }
 
+// 获取预计交期的样式类型
+const getDeliveryDateType = (
+  date: string
+): 'danger' | 'warning' | 'success' | 'info' | 'primary' => {
+  if (!date) return 'info'
+  const deliveryDate = new Date(date)
+  const today = new Date()
+  const diffDays = Math.ceil((deliveryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 5) return 'success'
+  if (diffDays <= 10) return 'primary'
+  if (diffDays <= 30) return 'warning'
+  if (diffDays > 30) return 'danger'
+  return 'info'
+}
+
 // 表格列配置
 interface ColumnType extends Partial<TableColumnCtx<PurchaseWip>> {
   hidden?: boolean
   slots?: {
     default?: (scope: { row: PurchaseWip }) => JSX.Element
   }
+  headerCellClassName?: string
 }
 
 const columns = ref<ColumnType[]>([
@@ -142,7 +167,28 @@ const columns = ref<ColumnType[]>([
   { label: '完成日期', prop: 'finished_at', align: 'center', width: 120 },
   { label: '提前期', prop: 'leadTime', align: 'center', width: 120 },
   { label: '滞留天数', prop: 'stranded', align: 'center', width: 120 },
-  { label: '预计交期', prop: 'forecastDate', align: 'center', width: 120, fixed: 'right' },
+  {
+    label: '预计交期',
+    prop: 'forecastDate',
+    align: 'center',
+    width: 120,
+    fixed: 'right',
+    headerCellClassName: 'delivery-date-header',
+    slots: {
+      default: ({ row }) => {
+        if (!row.forecastDate) return h('span', '-')
+        return h(
+          ElTag,
+          {
+            type: getDeliveryDateType(row.forecastDate),
+            effect: 'dark',
+            class: 'delivery-date-tag'
+          },
+          () => row.forecastDate
+        )
+      }
+    }
+  },
   { label: '供应商', prop: 'supplier', align: 'center', fixed: 'right' }
 ])
 
@@ -205,7 +251,6 @@ onMounted(() => {
               <ElFormItem label="状态">
                 <ElSelect v-model="searchParams.status" placeholder="请选择状态" clearable>
                   <ElOption label="全部" value="" />
-                  <ElOption label="已完结" value="已完结" />
                   <ElOption label="HOLD" value="HOLD" />
                   <ElOption label="STOCK" value="STOCK" />
                 </ElSelect>
@@ -271,12 +316,31 @@ onMounted(() => {
           class="w-full"
           header-cell-class-name="table-header"
         >
-          <template v-for="item in columns" :key="item.prop">
+          <template v-for="item in columns" :key="item.prop || item.type">
             <ElTableColumn v-bind="item" v-if="!item.hidden">
-              <template #default="scope" v-if="item.prop === 'status'">
-                <ElTag :type="getStatusType(scope.row.status)" class="status-tag">
-                  {{ scope.row.status || '-' }}
-                </ElTag>
+              <template #header>
+                <span :class="item.headerCellClassName">{{ item.label }}</span>
+              </template>
+              <template #default="scope" v-if="!item.type">
+                <template v-if="item.prop === 'status'">
+                  <ElTag :type="getStatusType(scope.row.status)" class="status-tag">
+                    {{ scope.row.status || '-' }}
+                  </ElTag>
+                </template>
+                <template v-else-if="item.prop === 'forecastDate'">
+                  <ElTag
+                    v-if="scope.row.forecastDate"
+                    :type="getDeliveryDateType(scope.row.forecastDate)"
+                    effect="dark"
+                    class="delivery-date-tag"
+                  >
+                    {{ scope.row.forecastDate }}
+                  </ElTag>
+                  <span v-else>-</span>
+                </template>
+                <template v-else>
+                  {{ scope.row[item.prop as keyof PurchaseWip] }}
+                </template>
               </template>
             </ElTableColumn>
           </template>
@@ -433,5 +497,39 @@ onMounted(() => {
   min-width: 80px;
   padding: 0 12px;
   text-align: center;
+}
+
+:deep(.delivery-date-header) {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  color: var(--el-color-danger) !important;
+  background-color: var(--el-color-danger-light-9) !important;
+  border-radius: 4px;
+}
+
+:deep(.delivery-date-tag) {
+  width: 100%;
+  font-size: 14px;
+  font-weight: bold;
+
+  &.el-tag--success {
+    animation: blink 1s infinite;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 </style>

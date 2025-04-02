@@ -1,214 +1,65 @@
 <script setup lang="ts">
-import { ref, reactive, unref, onMounted, computed } from 'vue'
-import { ElTable, ElTableColumn, ElPagination, ElPopover, ElCheckbox, ElTag } from 'element-plus'
+import { ref, reactive, unref, onMounted, computed, h } from 'vue'
+import {
+  ElTable,
+  ElTableColumn,
+  ElPagination,
+  ElPopover,
+  ElCheckbox,
+  ElTag,
+  ElForm,
+  ElRow,
+  ElCol,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElCollapseTransition,
+  ElButton
+} from 'element-plus'
 import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
 import { ContentWrap } from '@/components/ContentWrap'
-import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
 import { getAssyWipApi } from '@/api/assy'
 import type { AssyWip, AssyWipQuery } from '@/api/assy/type'
-import { FormSchema } from '@/components/Form'
 import { Icon } from '@/components/Icon'
 
-// 添加表单引用
-const formRef = ref()
+// 折叠状态
+const isCollapse = ref(true)
 
-// 查询表单配置
-const schema = reactive<FormSchema[]>([
-  {
-    field: 'doc_no',
-    label: '订单号',
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入订单号',
-      clearable: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'item_code',
-    label: '物料编码',
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入物料编码',
-      clearable: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'supplier',
-    label: '供应商',
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入供应商',
-      clearable: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'current_process',
-    label: '当前工序',
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入当前工序',
-      clearable: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'is_finished',
-    label: '是否完成',
-    component: 'Select',
-    value: 0,
-    componentProps: {
-      placeholder: '请选择',
-      clearable: true,
-      options: [
-        { label: '全部', value: '' },
-        { label: '已完成', value: 1 },
-        { label: '未完成', value: 0 }
-      ],
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'is_stranded',
-    label: '是否滞留',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请选择',
-      clearable: true,
-      options: [
-        { label: '全部', value: '' },
-        { label: '是', value: 1 },
-        { label: '否', value: 0 }
-      ],
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'days',
-    label: '提前天数',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请选择',
-      clearable: true,
-      options: [
-        { label: '1天', value: 1 },
-        { label: '3天', value: 3 },
-        { label: '7天', value: 7 }
-      ],
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  }
-])
+// 表单引用
+const formRef = ref<InstanceType<typeof ElForm>>()
 
-// 定义展开字段和展开状态
-const is_finished = ref('is_finished')
-const isExpand = ref(true)
-
-// 自定义展开按钮文本
-const expandBtnText = computed(() => {
-  return isExpand.value ? '收起筛选' : '展开筛选'
+// 搜索参数
+const searchParams = reactive<AssyWipQuery>({
+  doc_no: '',
+  item_code: '',
+  supplier: '',
+  current_process: '',
+  is_finished: 0,
+  is_stranded: undefined,
+  days: undefined
 })
+
+// 搜索方法
+const handleSearch = () => {
+  currentPage.value = 1
+  getList()
+}
+
+// 重置方法
+const handleReset = () => {
+  formRef.value?.resetFields()
+  // 设置默认参数
+  searchParams.doc_no = ''
+  searchParams.item_code = ''
+  searchParams.supplier = ''
+  searchParams.current_process = ''
+  searchParams.is_finished = 0
+  searchParams.is_stranded = undefined
+  searchParams.days = undefined
+  handleSearch()
+}
 
 // 使用 table hook
 const { tableState, tableMethods } = useTable({
@@ -217,7 +68,7 @@ const { tableState, tableMethods } = useTable({
     const res = await getAssyWipApi({
       pageIndex: unref(currentPage),
       pageSize: 100,
-      ...searchParams.value
+      ...searchParams
     })
     return {
       list: res.data.list,
@@ -229,24 +80,13 @@ const { tableState, tableMethods } = useTable({
 const { getList } = tableMethods
 const { loading, dataList, total, currentPage } = tableState
 
-// 搜索参数
-const searchParams = ref<AssyWipQuery>({
-  is_finished: 0
-})
-
-// 搜索方法
-const setSearchParams = (params: AssyWipQuery) => {
-  currentPage.value = 1
-  searchParams.value = params
-  getList()
-}
-
 // 表格列配置接口
 interface ColumnType extends Partial<TableColumnCtx<AssyWip>> {
   hidden?: boolean
   type?: 'selection' | 'index'
   prop?: string
   label?: string
+  headerCellClassName?: string
   slots?: {
     default?: (scope: { row: AssyWip }) => JSX.Element
   }
@@ -262,28 +102,27 @@ const getCurrentProcessType = (
   return 'success'
 }
 
+// 获取预计交期的样式类型
+const getDeliveryDateType = (
+  date: string
+): 'danger' | 'warning' | 'success' | 'info' | 'primary' => {
+  if (!date) return 'info'
+  const deliveryDate = new Date(date)
+  const today = new Date()
+  const diffDays = Math.ceil((deliveryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 2) return 'success'
+  if (diffDays <= 7) return 'primary'
+  if (diffDays <= 10) return 'warning'
+  if (diffDays <= 30) return 'danger'
+  return 'info'
+}
+
 // 表格列配置
 const defaultColumns: ColumnType[] = [
-  {
-    type: 'selection',
-    width: 50,
-    align: 'center',
-    fixed: 'left'
-  },
   { label: '序号', type: 'index', width: 60, align: 'center', fixed: 'left' },
   { label: '订单号', prop: 'DOC_NO', align: 'center', width: 150 },
   { label: '物料编码', prop: 'ITEM_CODE', align: 'center', width: 250, showOverflowTooltip: true },
-  {
-    label: '预计交期',
-    prop: 'EXPECTED_DELIVERY_DATE',
-    align: 'center',
-    width: 120,
-    fixed: 'right'
-  },
-  { label: '明日预计', prop: 'NEXT_DAY_EXPECTED', align: 'center', width: 100 },
-  { label: '三日预计', prop: 'THREE_DAY_EXPECTED', align: 'center', width: 100 },
-  { label: '七日预计', prop: 'SEVEN_DAY_EXPECTED', align: 'center', width: 100 },
-  { label: '加工方式', prop: 'Z_PROCESSING_PURPOSE_NAME', align: 'center', width: 130 },
   {
     label: '当前工序',
     prop: 'CURRENT_PROCESS',
@@ -293,9 +132,41 @@ const defaultColumns: ColumnType[] = [
   },
   { label: '在线合计', prop: 'ONLINE_TOTAL', align: 'center', width: 100 },
   { label: '仓库库存', prop: 'WAREHOUSE_INVENTORY', align: 'center', width: 100 },
+  { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', width: 120, showOverflowTooltip: true },
+  { label: '明日预计', prop: 'NEXT_DAY_EXPECTED', align: 'center', width: 100 },
+  { label: '三日预计', prop: 'THREE_DAY_EXPECTED', align: 'center', width: 100 },
+  { label: '七日预计', prop: 'SEVEN_DAY_EXPECTED', align: 'center', width: 100 },
+  {
+    label: '加工方式',
+    prop: 'Z_PROCESSING_PURPOSE_NAME',
+    align: 'center',
+    width: 130,
+    fixed: 'right'
+  },
+  {
+    label: '预计交期',
+    prop: 'EXPECTED_DELIVERY_DATE',
+    align: 'center',
+    width: 120,
+    fixed: 'right',
+    headerCellClassName: 'delivery-date-header',
+    slots: {
+      default: ({ row }) => {
+        if (!row.EXPECTED_DELIVERY_DATE) return h('span', '-')
+        return h(
+          ElTag,
+          {
+            type: getDeliveryDateType(row.EXPECTED_DELIVERY_DATE),
+            effect: 'dark',
+            class: 'delivery-date-tag'
+          },
+          () => row.EXPECTED_DELIVERY_DATE
+        )
+      }
+    }
+  },
   { label: '完成日期', prop: 'FINISHED_AT', align: 'center', width: 120 },
   { label: '滞留天数', prop: 'STRANDED', align: 'center', width: 100 },
-  { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', width: 120, showOverflowTooltip: true },
   {
     label: '封装供应商',
     prop: 'SUPPLIER_FULL_NAME',
@@ -328,7 +199,6 @@ const defaultColumns: ColumnType[] = [
 
 // 默认显示的列
 const defaultVisibleColumns = [
-  'selection',
   'index',
   'DOC_NO',
   'ITEM_CODE',
@@ -410,19 +280,6 @@ const visibleColumns = computed(() => {
   })
 })
 
-// 行样式
-const tableRowClassName = ({ row }: { row: AssyWip }) => {
-  if (row.STRANDED > 0) {
-    return 'warning-row'
-  }
-  return ''
-}
-
-// 选择行变化
-const handleSelectionChange = (selection: AssyWip[]) => {
-  console.log('selected:', selection)
-}
-
 // 初始化
 onMounted(() => {
   getList()
@@ -432,30 +289,100 @@ onMounted(() => {
 <template>
   <ContentWrap>
     <!-- 搜索表单 -->
-    <div class="flex justify-between items-center mb-4">
-      <Search
-        ref="formRef"
-        :schema="schema"
-        :is-col="true"
-        :inline="false"
-        show-expand
-        :expand-field="is_finished"
-        @search="setSearchParams"
-        @reset="setSearchParams"
-        label-width="100px"
-      >
-        <template #expand-btn>
-          <div class="expand-btn" @click="isExpand = !isExpand">
-            {{ expandBtnText }}
-            <Icon
-              :icon="isExpand ? 'ep:arrow-up-bold' : 'ep:arrow-down-bold'"
-              :size="14"
-              class="expand-icon"
+    <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="订单号">
+            <ElInput
+              v-model="searchParams.doc_no"
+              placeholder="请输入订单号"
+              clearable
+              @keyup.enter="handleSearch"
             />
-          </div>
-        </template>
-      </Search>
-    </div>
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="物料编码">
+            <ElInput
+              v-model="searchParams.item_code"
+              placeholder="请输入物料编码"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="提前期">
+            <ElSelect v-model="searchParams.days" placeholder="请选择提前天数" clearable>
+              <ElOption label="1天" :value="1" />
+              <ElOption label="3天" :value="3" />
+              <ElOption label="7天" :value="7" />
+            </ElSelect>
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+      <ElCollapseTransition>
+        <div v-show="!isCollapse">
+          <ElRow :gutter="20">
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="供应商">
+                <ElInput
+                  v-model="searchParams.supplier"
+                  placeholder="请输入供应商"
+                  clearable
+                  @keyup.enter="handleSearch"
+                />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="当前工序">
+                <ElInput
+                  v-model="searchParams.current_process"
+                  placeholder="请输入当前工序"
+                  clearable
+                  @keyup.enter="handleSearch"
+                />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="是否完成">
+                <ElSelect v-model="searchParams.is_finished" placeholder="请选择是否完成" clearable>
+                  <ElOption label="全部" value="" />
+                  <ElOption label="已完成" :value="1" />
+                  <ElOption label="未完成" :value="0" />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="是否滞留">
+                <ElSelect v-model="searchParams.is_stranded" placeholder="请选择是否滞留" clearable>
+                  <ElOption label="全部" value="" />
+                  <ElOption label="是" :value="1" />
+                  <ElOption label="否" :value="0" />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+          </ElRow>
+        </div>
+      </ElCollapseTransition>
+      <ElRow>
+        <ElCol :span="24" class="search-buttons">
+          <ElButton type="primary" @click="handleSearch">
+            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+            查询
+          </ElButton>
+          <ElButton @click="handleReset">重置</ElButton>
+          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
+            <Icon
+              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+              :size="20"
+              class="collapse-icon"
+            />
+          </ElButton>
+        </ElCol>
+      </ElRow>
+    </ElForm>
 
     <!-- 表格区域 -->
     <div class="relative">
@@ -500,16 +427,33 @@ onMounted(() => {
         :data="dataList"
         border
         class="w-full"
-        :row-class-name="tableRowClassName"
         header-cell-class-name="table-header"
-        @selection-change="handleSelectionChange"
       >
-        <template v-for="item in visibleColumns" :key="item.prop">
+        <template v-for="item in visibleColumns" :key="item.prop || item.type">
           <ElTableColumn v-bind="item" v-if="!item.hidden">
-            <template #default="scope" v-if="item.prop === 'CURRENT_PROCESS'">
-              <ElTag :type="getCurrentProcessType(scope.row.CURRENT_PROCESS)" class="status-tag">
-                {{ scope.row.CURRENT_PROCESS || '-' }}
-              </ElTag>
+            <template #header>
+              <span :class="item.headerCellClassName">{{ item.label }}</span>
+            </template>
+            <template #default="scope" v-if="!item.type">
+              <template v-if="item.prop === 'CURRENT_PROCESS'">
+                <ElTag :type="getCurrentProcessType(scope.row.CURRENT_PROCESS)" class="status-tag">
+                  {{ scope.row.CURRENT_PROCESS || '-' }}
+                </ElTag>
+              </template>
+              <template v-else-if="item.prop === 'EXPECTED_DELIVERY_DATE'">
+                <ElTag
+                  v-if="scope.row.EXPECTED_DELIVERY_DATE"
+                  :type="getDeliveryDateType(scope.row.EXPECTED_DELIVERY_DATE)"
+                  effect="dark"
+                  class="delivery-date-tag"
+                >
+                  {{ scope.row.EXPECTED_DELIVERY_DATE }}
+                </ElTag>
+                <span v-else>-</span>
+              </template>
+              <template v-else>
+                {{ scope.row[item.prop as keyof AssyWip] }}
+              </template>
             </template>
           </ElTableColumn>
         </template>
@@ -542,24 +486,55 @@ onMounted(() => {
   background-color: var(--el-color-warning-light-9);
 }
 
-.expand-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 12px;
-  color: var(--el-color-primary);
-  cursor: pointer;
-  border: 1px solid var(--el-color-primary);
+.search-form {
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--el-bg-color);
   border-radius: 4px;
-  transition: all 0.3s;
 
-  &:hover {
-    color: white;
-    background-color: var(--el-color-primary);
+  :deep(.el-row) {
+    margin-bottom: 0;
   }
 
-  .expand-icon {
-    transition: transform 0.3s;
+  :deep(.el-collapse-transition) {
+    overflow: hidden;
+    transition: 0.3s height ease-in-out;
+  }
+
+  .search-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+
+    .el-button {
+      min-width: 120px;
+    }
+
+    .collapse-button {
+      display: flex;
+      height: 32px;
+      min-width: auto;
+      padding: 0 16px;
+      transition: all 0.3s;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      .collapse-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--el-color-primary);
+      }
+
+      .collapse-icon {
+        color: var(--el-color-primary);
+        transition: transform 0.3s;
+      }
+    }
   }
 }
 
@@ -604,5 +579,39 @@ onMounted(() => {
   min-width: 80px;
   padding: 0 12px;
   text-align: center;
+}
+
+:deep(.delivery-date-header) {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  color: var(--el-color-danger) !important;
+  background-color: var(--el-color-danger-light-9) !important;
+  border-radius: 4px;
+}
+
+:deep(.delivery-date-tag) {
+  width: 100%;
+  font-size: 14px;
+  font-weight: bold;
+
+  &.el-tag--success {
+    animation: blink 1s infinite;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 </style>

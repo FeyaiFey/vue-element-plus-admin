@@ -97,6 +97,14 @@ const handleSearch = () => {
 // 重置方法
 const handleReset = () => {
   formRef.value?.resetFields()
+  // 设置所有参数为空
+  searchParams.item_name = ''
+  searchParams.supplier = ''
+  searchParams.receipt_close = undefined
+  searchParams.purchase_date_start = undefined
+  searchParams.purchase_date_end = undefined
+  // 清空日期范围
+  dateRange.value = undefined
   handleSearch()
 }
 

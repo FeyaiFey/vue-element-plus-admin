@@ -41,8 +41,8 @@ export interface AssyWipQuery {
   item_code?: string
   supplier?: string
   current_process?: string
-  is_finished?: number
-  is_stranded?: number
+  is_finished?: number | string
+  is_stranded?: number | string
   days?: number
   pageIndex?: number
   pageSize?: number
@@ -55,7 +55,7 @@ export interface AssyWip {
   Z_PROCESSING_PURPOSE_NAME: string
   STRANDED: number
   CURRENT_PROCESS: string
-  EXPECTED_DELIVERY_DATE: Date
+  EXPECTED_DELIVERY_DATE: string
   FINISHED_AT: Date
   ONLINE_TOTAL: number
   WAREHOUSE_INVENTORY: number

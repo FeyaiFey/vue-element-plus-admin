@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, reactive, h, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, h, computed, unref } from 'vue'
+import { ElMessage, ElCheckbox } from 'element-plus'
 import {
   ElForm,
   ElFormItem,
@@ -10,7 +10,9 @@ import {
   ElCol,
   ElInput,
   ElButton,
-  ElCollapseTransition
+  ElCollapseTransition,
+  ElTableV2,
+  ElAutoResizer
 } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import { useTable } from '@/hooks/web/useTable'
@@ -27,6 +29,10 @@ import {
   getTestingProgramApi,
   getBurningProgramApi
 } from '@/api/params'
+import type { CheckboxValueType, Column } from 'element-plus'
+import { FixedDir } from 'element-plus/es/components/table-v2/src/constants'
+import { TableV2SortOrder } from 'element-plus'
+import type { SortBy, SortState } from 'element-plus'
 
 // 特征组选项
 const featureGroupOptions = ref<Array<{ label: string; value: string }>>([])
@@ -205,7 +211,7 @@ const dialogLoading = ref(false)
 const dialogData = ref<WaferIdQtyDetail[]>([])
 
 // 处理第二数量点击
-const handleSecondQtyClick = async (row: Stock) => {
+const handleSecondQtyClick = async (row: any) => {
   if (row.SECOND_QTY > 0) {
     dialogTitle.value = `${row.LOT_CODE}  批次的第二数量明细`
     dialogVisible.value = true
@@ -228,11 +234,6 @@ const handleSecondQtyClick = async (row: Stock) => {
 // 主表格选中项
 const tableSelection = ref<Stock[]>([])
 
-// 主表格选中项变化
-const handleSelectionChange = (val: Stock[]) => {
-  tableSelection.value = val
-}
-
 // 计算主表格选中项合计
 const tableSummary = computed(() => {
   const summary = {
@@ -246,71 +247,128 @@ const tableSummary = computed(() => {
   return summary
 })
 
+// 选择列组件
+const SelectionCell = ({
+  value,
+  intermediate = false,
+  onChange
+}: {
+  value: boolean
+  intermediate?: boolean
+  onChange: (value: CheckboxValueType) => void
+}) => {
+  return h(ElCheckbox, {
+    modelValue: value,
+    indeterminate: intermediate,
+    onChange
+  })
+}
+
 // 表格列配置
-const columns = [
+const columns: Column<any>[] = [
   {
-    type: 'selection',
+    key: 'selection',
+    dataKey: 'selection',
+    title: '',
     width: 50,
-    align: 'center' as const,
-    field: 'selection',
-    fixed: 'left' as const
+    align: 'center',
+    fixed: FixedDir.LEFT,
+    cellRenderer: ({ rowData }: { rowData: any }) => {
+      const onChange = (value: CheckboxValueType) => {
+        if (value) {
+          if (!tableSelection.value.includes(rowData)) {
+            tableSelection.value.push(rowData)
+          }
+        } else {
+          const index = tableSelection.value.findIndex((item) => item === rowData)
+          if (index > -1) {
+            tableSelection.value.splice(index, 1)
+          }
+        }
+      }
+      return h(SelectionCell, {
+        value: tableSelection.value.includes(rowData),
+        onChange
+      })
+    },
+    headerCellRenderer: () => {
+      const _dataList = unref(dataList)
+      const onChange = (value: CheckboxValueType) => {
+        if (value) {
+          tableSelection.value = [..._dataList]
+        } else {
+          tableSelection.value = []
+        }
+      }
+      const allSelected = _dataList.length > 0 && tableSelection.value.length === _dataList.length
+      const containsChecked = tableSelection.value.length > 0
+
+      return h(SelectionCell, {
+        value: allSelected,
+        intermediate: containsChecked && !allSelected,
+        onChange
+      })
+    }
   },
   {
-    label: '品号群组',
-    field: 'FEATURE_GROUP_NAME',
-    align: 'center' as const,
+    key: 'FEATURE_GROUP_NAME',
+    dataKey: 'FEATURE_GROUP_NAME',
+    title: '品号群组',
+    align: 'center',
+    width: 120
+  },
+  {
+    key: 'ITEM_CODE',
+    dataKey: 'ITEM_CODE',
+    title: '物料编码',
+    align: 'center',
+    width: 260,
+    sortable: true
+  },
+  {
+    key: 'ITEM_NAME',
+    dataKey: 'ITEM_NAME',
+    title: '物料名称',
+    align: 'center',
+    width: 180,
+    sortable: true
+  },
+  {
+    key: 'LOT_CODE',
+    dataKey: 'LOT_CODE',
+    title: '批号',
+    align: 'center',
+    width: 150,
+    sortable: true
+  },
+  {
+    key: 'WAREHOUSE_NAME',
+    dataKey: 'WAREHOUSE_NAME',
+    title: '仓库',
+    align: 'center',
+    width: 180,
+    sortable: true,
+    fixed: FixedDir.RIGHT
+  },
+  {
+    key: 'INVENTORY_QTY',
+    dataKey: 'INVENTORY_QTY',
+    title: '库存数量',
+    align: 'center',
+    fixed: FixedDir.RIGHT,
     width: 120,
-    fixed: 'left' as const,
-    showOverflowTooltip: true
-  },
-  {
-    label: '物料编码',
-    field: 'ITEM_CODE',
-    align: 'center' as const,
-    minWidth: 180,
-    showOverflowTooltip: true
-  },
-  {
-    label: '物料名称',
-    field: 'ITEM_NAME',
-    align: 'center' as const,
-    minWidth: 180,
-    showOverflowTooltip: true,
     sortable: true
   },
   {
-    label: '批号',
-    field: 'LOT_CODE',
-    align: 'center' as const,
-    minWidth: 150,
-    showOverflowTooltip: true,
-    sortable: true
-  },
-  {
-    label: '仓库',
-    field: 'WAREHOUSE_NAME',
-    align: 'center' as const,
-    minWidth: 180,
-    showOverflowTooltip: true,
-    hide: (width?: number) => width && width < 768,
-    sortable: true
-  },
-  {
-    label: '库存数量',
-    field: 'INVENTORY_QTY',
-    align: 'center' as const,
-    width: 120,
-    fixed: 'right' as const,
-    sortable: true
-  },
-  {
-    label: '第二数量',
-    field: 'SECOND_QTY',
-    align: 'center' as const,
+    key: 'SECOND_QTY',
+    dataKey: 'SECOND_QTY',
+    title: '第二数量',
+    align: 'center',
     width: 100,
-    fixed: 'right' as const,
-    formatter: (row: Stock) => {
-      if (row.SECOND_QTY > 0) {
+    fixed: FixedDir.RIGHT,
+    sortable: true,
+    cellRenderer: ({ cellData, rowData }: { cellData: number; rowData: any }) => {
+      if (cellData > 0) {
         return h(
           'span',
           {
@@ -319,36 +377,34 @@ const columns = [
               cursor: 'pointer',
               textDecoration: 'underline'
             },
-            onClick: () => handleSecondQtyClick(row)
+            onClick: () => handleSecondQtyClick(rowData)
           },
-          row.SECOND_QTY
+          String(cellData)
         )
       }
-      return row.SECOND_QTY
+      return h('span', null, String(cellData))
     }
   },
   {
-    label: 'BIN等级',
-    field: 'Z_BIN_LEVEL_NAME',
-    align: 'center' as const,
-    width: 100,
-    hide: (width?: number) => width && width < 768
+    key: 'Z_BIN_LEVEL_NAME',
+    dataKey: 'Z_BIN_LEVEL_NAME',
+    title: 'BIN等级',
+    align: 'center',
+    width: 100
   },
   {
-    label: '测试程序',
-    field: 'Z_TESTING_PROGRAM_NAME',
-    align: 'center' as const,
-    minWidth: 150,
-    showOverflowTooltip: true,
-    hide: (width?: number) => width && width < 768
+    key: 'Z_TESTING_PROGRAM_NAME',
+    dataKey: 'Z_TESTING_PROGRAM_NAME',
+    title: '测试程序',
+    align: 'center',
+    width: 200
   },
   {
-    label: '烧录程序',
-    field: 'Z_BURNING_PROGRAM_NAME',
-    align: 'center' as const,
-    minWidth: 150,
-    showOverflowTooltip: true,
-    hide: (width?: number) => width && width < 768
+    key: 'Z_BURNING_PROGRAM_NAME',
+    dataKey: 'Z_BURNING_PROGRAM_NAME',
+    title: '烧录程序',
+    align: 'center',
+    width: 200
   }
 ]
 
@@ -439,7 +495,50 @@ const isCollapse = ref(true)
 // 重置方法
 const handleReset = () => {
   formRef.value?.resetFields()
+  // 设置所有参数为空
+  formData.item_code = []
+  formData.item_name = ''
+  formData.lot_code = ''
+  formData.feature_group_name = []
+  formData.warehouse_name = []
+  formData.testing_program = []
+  formData.burning_program = []
   handleSearch()
+}
+
+// 排序状态
+const sortState = ref<SortState>({
+  ITEM_CODE: TableV2SortOrder.ASC,
+  ITEM_NAME: TableV2SortOrder.ASC,
+  LOT_CODE: TableV2SortOrder.ASC,
+  WAREHOUSE_NAME: TableV2SortOrder.ASC,
+  INVENTORY_QTY: TableV2SortOrder.ASC,
+  SECOND_QTY: TableV2SortOrder.ASC
+})
+
+const onSort = ({ key, order }: SortBy) => {
+  sortState.value[key] = order
+  if (order === undefined) {
+    // 重置排序
+    getList()
+    return
+  }
+
+  // 根据排序状态对数据进行排序
+  dataList.value.sort((a, b) => {
+    const value1 = a[key]
+    const value2 = b[key]
+
+    // 处理数字类型
+    if (typeof value1 === 'number' && typeof value2 === 'number') {
+      return order === TableV2SortOrder.ASC ? value1 - value2 : value2 - value1
+    }
+
+    // 处理字符串类型
+    return order === TableV2SortOrder.ASC
+      ? String(value1).localeCompare(String(value2))
+      : String(value2).localeCompare(String(value1))
+  })
 }
 </script>
 
@@ -605,12 +704,12 @@ const handleReset = () => {
             查询
           </ElButton>
           <ElButton @click="handleReset">重置</ElButton>
-          <ElButton type="text" class="collapse-button" @click="isCollapse = !isCollapse">
-            {{ isCollapse ? '展开' : '收起' }}
+          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
             <Icon
               :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
-              :size="26"
-              class="ml-1"
+              :size="20"
+              class="collapse-icon"
             />
           </ElButton>
         </ElCol>
@@ -618,32 +717,52 @@ const handleReset = () => {
     </ElForm>
 
     <!-- 表格区域 -->
-    <div class="mt-4 table-container">
-      <!-- 表格 -->
-      <div class="table-wrapper">
-        <!-- 选中项合计 -->
-        <div class="table-summary">
-          <div class="summary-content">
-            <span class="summary-item">
-              已选择: <span class="summary-value">{{ tableSelection.length }}</span> 项
-            </span>
-            <span class="summary-item">
-              库存数量合计: <span class="summary-value">{{ tableSummary.INVENTORY_QTY }}</span>
-            </span>
-            <span class="summary-item">
-              第二数量合计: <span class="summary-value">{{ tableSummary.SECOND_QTY }}</span>
-            </span>
-          </div>
+    <div class="h-150">
+      <ElAutoResizer>
+        <template #default="{ width, height }">
+          <ElTableV2
+            v-loading="loading"
+            :columns="columns"
+            :data="dataList"
+            :width="width"
+            :height="height"
+            v-model:sort-state="sortState"
+            @column-sort="onSort"
+            fixed
+            style="border: 1px solid var(--el-border-color-light)"
+            :cell-props="{
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }
+            }"
+            :header-cell-props="{
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'var(--el-color-primary-light-9)',
+                borderBottom: '1px solid var(--el-border-color-light)',
+                borderRight: '1px solid var(--el-border-color-light)'
+              }
+            }"
+          />
+        </template>
+      </ElAutoResizer>
+      <!-- 选中项合计 -->
+      <div class="table-summary">
+        <div class="summary-content">
+          <span class="summary-item">
+            已选择: <span class="summary-value">{{ tableSelection.length }}</span> 项
+          </span>
+          <span class="summary-item">
+            库存数量合计: <span class="summary-value">{{ tableSummary.INVENTORY_QTY }}</span>
+          </span>
+          <span class="summary-item">
+            第二数量合计: <span class="summary-value">{{ tableSummary.SECOND_QTY }}</span>
+          </span>
         </div>
-
-        <Table
-          v-loading="loading"
-          :columns="columns"
-          :data="dataList"
-          @selection-change="handleSelectionChange"
-          table-layout="auto"
-          :style="{ width: '100%' }"
-        />
       </div>
     </div>
 
@@ -679,7 +798,6 @@ const handleReset = () => {
             :columns="dialogColumns"
             :data="dialogData"
             @selection-change="handleDialogSelectionChange"
-            height="calc(100vh - 250px)"
           />
         </div>
       </div>
@@ -691,98 +809,30 @@ const handleReset = () => {
 .table-container {
   display: flex;
   flex-direction: column;
-  overflow-x: auto;
+  height: calc(100vh - 300px);
+  min-height: 400px;
 }
 
 .table-wrapper {
-  min-width: 800px;
+  overflow: hidden;
   border: 1px solid var(--el-border-color-light);
   border-radius: 4px;
+  flex: 1;
 }
 
-:deep(.el-table) {
-  // 移除表格边框
-  border: none !important;
-
-  // 移动端适配
-  @media screen and (width <= 768px) {
-    // 减小字体大小
-    font-size: 12px;
-    // 减小单元格内边距
-    td,
-    th {
-      padding: 8px !important;
-    }
-  }
-
-  // 表头样式
-  .el-table__body-header {
-    th {
-      font-weight: bold;
-      color: var(--el-color-primary);
-      text-align: center !important;
-      background-color: var(--el-color-primary-light-9);
-    }
-  }
-
-  // 表格内容居中
-  .el-table__body {
-    td {
-      text-align: center !important;
-    }
-  }
-
-  // 选择框居中
-  .el-checkbox {
-    display: flex;
-    height: 100%;
-    padding: 0;
-    margin-right: 0;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .el-table-column--selection .cell {
-    display: flex;
-    padding: 0;
-    justify-content: center;
-    align-items: center;
-  }
-
-  // 选中行样式
-  .el-table__row.current-row,
-  .el-table__row.hover-row,
-  .el-table__row.selected {
-    td {
-      background-color: var(--el-color-primary-light-8) !important;
-    }
-  }
-
-  // 鼠标悬停样式
-  .el-table__row:hover {
-    td {
-      background-color: var(--el-color-primary-light-9) !important;
-    }
-  }
-
-  // 固定列样式
-  .el-table__fixed,
-  .el-table__fixed-right {
-    height: 100% !important;
-    box-shadow: none;
-
-    &::before {
-      display: none;
-    }
-  }
+:deep(.el-table-v2__cell) {
+  border-right: 1px solid var(--el-border-color-light);
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .table-summary {
   display: flex;
   padding: 8px 12px;
   background-color: var(--el-color-primary-light-9);
-  border-bottom: 1px solid var(--el-border-color-light);
+  border: 1px solid var(--el-border-color-light);
+  border-bottom: none;
   align-items: center;
+  border-radius: 4px 4px 0 0;
 
   .summary-content {
     display: flex;
@@ -797,7 +847,7 @@ const handleReset = () => {
     gap: 4px;
 
     .summary-value {
-      font-weight: 500;
+      font-weight: 600;
       color: var(--el-color-primary);
     }
   }
@@ -846,11 +896,42 @@ const handleReset = () => {
 
     .collapse-button {
       display: flex;
+      height: 32px;
       min-width: auto;
-      padding: 0 12px;
+      padding: 0 16px;
+      transition: all 0.3s;
       align-items: center;
       gap: 4px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      .collapse-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--el-color-primary);
+      }
+
+      .collapse-icon {
+        color: var(--el-color-primary);
+        transition: transform 0.3s;
+      }
     }
+  }
+}
+
+:deep(.el-table-v2__header-cell) {
+  font-weight: bold;
+  color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+}
+
+:deep(.el-table-v2__cell) {
+  input[type='checkbox'] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
   }
 }
 </style>

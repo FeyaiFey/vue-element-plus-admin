@@ -2,6 +2,7 @@ import request from '@/axios'
 import type {
   AssyOrderQuery,
   AssyOrderResponse,
+  AxiosResponse,
   AssyWipQuery,
   AssyWipResponse,
   AssyOrderItemsQuery,
@@ -9,12 +10,21 @@ import type {
   AssyOrderPackageTypeQuery,
   AssyOrderPackageTypeResponse,
   AssyOrderSupplierQuery,
-  AssyOrderSupplierResponse
+  AssyOrderSupplierResponse,
+  AssyBomQuery,
+  AssyBomResponse
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
   return request.get<AssyOrderResponse>({
     url: '/assy/table',
+    params: query
+  })
+}
+
+export const getAssyBomApi = (query: AssyBomQuery) => {
+  return request.get<AssyBomResponse>({
+    url: '/assy/bom',
     params: query
   })
 }
@@ -44,5 +54,16 @@ export const getAssyOrderSupplierApi = (query: AssyOrderSupplierQuery) => {
   return request.get<AssyOrderSupplierResponse>({
     url: '/assy/supplier',
     params: query
+  })
+}
+
+export const exportAssyListApi = (query: AssyOrderQuery) => {
+  return request.get<AxiosResponse>({
+    url: '/assy/export',
+    params: query,
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    }
   })
 }

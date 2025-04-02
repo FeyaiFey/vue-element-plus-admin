@@ -479,7 +479,8 @@ onMounted(() => {
   font-weight: bold;
   color: var(--el-text-color-primary);
   text-align: center !important;
-  background-color: #f0f7ff !important;
+  background-color: var(--el-fill-color-light) !important;
+  border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 :deep(.warning-row) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, unref, h } from 'vue'
+import { ref, reactive, unref, h, watch } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -8,283 +8,80 @@ import {
   ElSelect,
   ElOption,
   ElTag,
-  ElMessage
+  ElForm,
+  ElRow,
+  ElCol,
+  ElFormItem,
+  ElInput,
+  ElDatePicker,
+  ElCollapseTransition,
+  ElButton,
+  ElMessage,
+  ElDescriptions,
+  ElDescriptionsItem
 } from 'element-plus'
 import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
+import type { AxiosResponse } from '@/axios/types'
 import { ContentWrap } from '@/components/ContentWrap'
-import { Search } from '@/components/Search'
 import { useTable } from '@/hooks/web/useTable'
-import {
-  getAssyListApi,
-  getAssyWipApi,
-  getAssyOrderItemsApi,
-  getAssyOrderPackageTypeApi,
-  getAssyOrderSupplierApi
-} from '@/api/assy'
-import type { AssyOrder, AssyOrderQuery, AssyWip } from '@/api/assy/type'
-import { FormSchema } from '@/components/Form'
+import { getAssyListApi, getAssyWipApi, exportAssyListApi, getAssyBomApi } from '@/api/assy'
+import type { AssyOrder, AssyOrderQuery, AssyWip, AssyBom } from '@/api/assy/type'
 import { Table } from '@/components/Table'
 import { Dialog } from '@/components/Dialog'
+import { Icon } from '@/components/Icon'
 
-// 物料编码选项
-const itemCodeOptions = ref<Array<{ label: string; value: string }>>([])
-const itemCodeLoading = ref(false)
+// 折叠状态
+const isCollapse = ref(true)
 
-// 远程搜索物料编码
-const handleItemCodeSearch = async (query: string) => {
-  if (!query) {
-    itemCodeOptions.value = []
-    return
+// 表单引用
+const formRef = ref<InstanceType<typeof ElForm>>()
+
+// 搜索参数
+const searchParams = reactive<AssyOrderQuery>({
+  doc_no: '',
+  item_code: '',
+  supplier: '',
+  package_type: '',
+  is_closed: undefined,
+  order_date_start: undefined,
+  order_date_end: undefined
+})
+
+// 日期范围
+const dateRange = ref<[string, string] | undefined>(undefined)
+
+// 监听日期范围变化
+watch(dateRange, (newVal) => {
+  if (newVal) {
+    searchParams.order_date_start = new Date(newVal[0])
+    searchParams.order_date_end = new Date(newVal[1])
+  } else {
+    searchParams.order_date_start = undefined
+    searchParams.order_date_end = undefined
   }
+})
 
-  itemCodeLoading.value = true
-  try {
-    const res = await getAssyOrderItemsApi({ item_code: query })
-    itemCodeOptions.value = res.data.list
-  } catch (error) {
-    console.error('获取物料编码列表失败:', error)
-    ElMessage.error('获取物料编码列表失败')
-    itemCodeOptions.value = []
-  } finally {
-    itemCodeLoading.value = false
-  }
+// 搜索方法
+const handleSearch = () => {
+  currentPage.value = 1
+  getList()
 }
 
-// 供应商选项
-const supplierOptions = ref<Array<{ label: string; value: string }>>([])
-const supplierLoading = ref(false)
-
-// 远程搜索供应商
-const handleSupplierSearch = async (query: string) => {
-  if (!query) {
-    supplierOptions.value = []
-    return
-  }
-  supplierLoading.value = true
-  try {
-    const res = await getAssyOrderSupplierApi({ supplier: query })
-    supplierOptions.value = res.data.list
-  } catch (error) {
-    console.error('获取供应商列表失败:', error)
-  } finally {
-    supplierLoading.value = false
-  }
+// 重置方法
+const handleReset = () => {
+  formRef.value?.resetFields()
+  // 设置默认参数
+  searchParams.doc_no = ''
+  searchParams.item_code = ''
+  searchParams.supplier = ''
+  searchParams.package_type = ''
+  searchParams.is_closed = undefined
+  searchParams.order_date_start = undefined
+  searchParams.order_date_end = undefined
+  // 清空日期范围
+  dateRange.value = undefined
+  handleSearch()
 }
-
-// 封装类型选项
-const packageTypeOptions = ref<Array<{ label: string; value: string }>>([])
-const packageTypeLoading = ref(false)
-
-// 远程搜索封装类型
-const handlePackageTypeSearch = async (query: string) => {
-  if (!query) {
-    packageTypeOptions.value = []
-    return
-  }
-  packageTypeLoading.value = true
-  try {
-    const res = await getAssyOrderPackageTypeApi({ package_type: query })
-    packageTypeOptions.value = res.data.list
-  } catch (error) {
-    console.error('获取封装类型列表失败:', error)
-  } finally {
-    packageTypeLoading.value = false
-  }
-}
-
-const formRef = ref()
-
-// 查询表单配置
-const schema = reactive<FormSchema[]>([
-  {
-    field: 'doc_no',
-    label: '订单号',
-    component: 'Input',
-    componentProps: {
-      placeholder: '请输入订单号',
-      clearable: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'item_code',
-    label: '物料编码',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入物料编码搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: itemCodeLoading,
-      remoteMethod: handleItemCodeSearch,
-      options: itemCodeOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'supplier',
-    label: '供应商',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入供应商搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: supplierLoading,
-      remoteMethod: handleSupplierSearch,
-      options: supplierOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'package_type',
-    label: '封装类型',
-    component: 'Select',
-    componentProps: {
-      placeholder: '请输入封装类型搜索',
-      clearable: true,
-      multiple: true,
-      filterable: true,
-      remote: true,
-      reserveKeyword: true,
-      loading: packageTypeLoading,
-      remoteMethod: handlePackageTypeSearch,
-      options: packageTypeOptions,
-      collapseTags: true,
-      collapseTagsTooltip: true,
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'is_closed',
-    label: '订单状态',
-    component: 'Select',
-    componentProps: {
-      options: [
-        { label: '全部', value: '' },
-        { label: '已结束', value: 1 },
-        { label: '未结束', value: 0 }
-      ],
-      placeholder: '请选择状态',
-      onKeyup: (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          // 获取表单数据
-          formRef.value?.getFormData().then((formData) => {
-            setSearchParams(formData)
-          })
-        }
-      }
-    },
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    }
-  },
-  {
-    field: 'order_date_start',
-    label: '订单日期',
-    component: 'DatePicker',
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    },
-    componentProps: {
-      type: 'date',
-      valueFormat: 'YYYY-MM-DD',
-      placeholder: '起始于'
-    }
-  },
-  {
-    field: 'order_date_end',
-    label: '订单日期',
-    component: 'DatePicker',
-    colProps: {
-      xs: 24, // 在超小屏幕上占满整行
-      sm: 24, // 在小屏幕上占满整行
-      md: 12, // 在中等屏幕上占半行
-      lg: 8, // 在大屏幕上占 1/3
-      xl: 8 // 在超大屏幕上占 1/3
-    },
-    componentProps: {
-      type: 'date',
-      valueFormat: 'YYYY-MM-DD',
-      placeholder: '结束于'
-    }
-  }
-])
-
-// 定义展开字段和展开状态
-const is_closed = ref('is_closed')
 
 // 使用 table hook
 const { tableState, tableMethods } = useTable({
@@ -293,7 +90,7 @@ const { tableState, tableMethods } = useTable({
     const res = await getAssyListApi({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
-      ...searchParams.value
+      ...searchParams
     })
     return {
       list: res.data.list,
@@ -308,28 +105,12 @@ tableState.pageSize.value = 20
 const { getList } = tableMethods
 const { loading, dataList, total, currentPage, pageSize } = tableState
 
-// 搜索参数
-interface SearchParams extends AssyOrderQuery {
-  enableSummary?: boolean
-}
-
-const searchParams = ref<SearchParams>({
-  enableSummary: true // 设置初始值
-})
-
-// 搜索方法
-const setSearchParams = (params: AssyOrderQuery) => {
-  // 有查询参数时重置到第一页
-  if (Object.keys(params).some((key) => params[key] !== undefined && params[key] !== '')) {
-    currentPage.value = 1
-  }
-  searchParams.value = params
-  getList()
-}
-
 // 表格列配置接口
 interface ColumnType extends Partial<TableColumnCtx<AssyOrder>> {
   hidden?: boolean // 是否隐藏列
+  slots?: {
+    default?: (scope: any) => any
+  }
 }
 
 // Dialog 相关状态
@@ -435,7 +216,7 @@ const getWipList = async () => {
 
 // 处理在制数量点击
 const handleWipClick = (row: AssyOrder) => {
-  if (row.WIP_QTY > 0) {
+  if (row.WIP_QTY && row.WIP_QTY > 0 && row.DOC_NO) {
     currentOrderNo.value = row.DOC_NO
     dialogVisible.value = true
     getWipList()
@@ -444,18 +225,12 @@ const handleWipClick = (row: AssyOrder) => {
 
 // 表格列配置
 const columns = ref<ColumnType[]>([
-  {
-    type: 'selection',
-    width: 50,
-    align: 'center',
-    fixed: 'left'
-  },
   { label: '订单号', prop: 'DOC_NO', align: 'center', width: 150, showOverflowTooltip: true },
   {
     label: '物料编码',
     prop: 'ITEM_CODE',
-    align: 'right',
-    width: 300
+    align: 'center',
+    width: 260
   },
   {
     label: '封装形式',
@@ -473,18 +248,19 @@ const columns = ref<ColumnType[]>([
     align: 'center',
     width: 120,
     formatter: (row: AssyOrder) => {
-      const className = row.WIP_QTY > 0 ? 'wip-clickable' : ''
+      const wipClassName = row.WIP_QTY && row.WIP_QTY > 0 ? 'wip-clickable' : ''
       return h(
         'span',
         {
-          class: className,
+          class: wipClassName,
           onClick: () => handleWipClick(row)
         },
-        row.WIP_QTY
+        row.WIP_QTY || 0
       )
     }
   },
-  { label: '单价', prop: 'PRICE', align: 'center', width: 120 },
+  { label: '加工方式', prop: 'Z_PROCESSING_PURPOSE_NAME', align: 'center', width: 130 },
+  { label: '成测程序', prop: 'Z_TESTING_PROGRAM_NAME', align: 'center', width: 130 },
   {
     label: '打线图号',
     prop: 'Z_ASSEMBLY_CODE',
@@ -492,8 +268,10 @@ const columns = ref<ColumnType[]>([
     width: 120,
     showOverflowTooltip: true
   },
-  { label: '加工方式', prop: 'Z_PROCESSING_PURPOSE_NAME', align: 'center', width: 130 },
+  { label: '线材', prop: 'Z_WIRE_NAME', align: 'center', width: 130 },
   { label: '备注', prop: 'REMARK', align: 'center', width: 120, showOverflowTooltip: true },
+  { label: '订单日期', prop: 'PURCHASE_DATE', align: 'center', width: 120 },
+  { label: '到货日期', prop: 'FIRST_ARRIVAL_DATE', align: 'center', width: 120 },
   {
     label: '供应商',
     prop: 'SUPPLIER_FULL_NAME',
@@ -502,13 +280,12 @@ const columns = ref<ColumnType[]>([
     showOverflowTooltip: true,
     fixed: 'right'
   },
-  { label: '订单日期', prop: 'PURCHASE_DATE', align: 'center', width: 120 },
-  { label: '订单状态', prop: 'CLOSE', align: 'center', hidden: true }
+  { label: '订单状态', prop: 'RECEIPT_CLOSE', align: 'center', hidden: true }
 ])
 
 // 行样式方法
 const tableRowClassName = ({ row }: { row: AssyOrder }) => {
-  if (row.CLOSE === 1 || row.CLOSE === 2) {
+  if (row.RECEIPT_CLOSE === 1 || row.RECEIPT_CLOSE === 2) {
     return 'success-row'
   }
   return ''
@@ -547,12 +324,6 @@ const summaryFields = ref([
     field: 'WIP_QTY',
     checked: false,
     calculationType: calculationTypes.SUM
-  },
-  {
-    label: '单价',
-    field: 'PRICE',
-    checked: true,
-    calculationType: calculationTypes.AVERAGE
   }
 ])
 
@@ -576,9 +347,6 @@ const getSummaries = () => {
 // 格式化数字（用于合计行）
 const formatNumber = (value: number, field: string) => {
   switch (field) {
-    case 'PRICE':
-    case 'AMOUNT':
-      return `￥${value.toFixed(2)}`
     case 'BUSINESS_QTY':
       return Math.round(value) // 采购数量取整
     default:
@@ -594,22 +362,180 @@ const getCurrentProcessType = (
   if (CURRENT_PROCESS === '已完成') return 'info'
   return 'success'
 }
+
+// 导出Excel
+const handleExport = async () => {
+  try {
+    ElMessage.info('正在导出，请稍候...')
+    const res = (await exportAssyListApi({
+      ...searchParams
+    })) as unknown as AxiosResponse
+    // 如果是文件流，直接创建blob
+    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+    const disposition = res.headers?.['content-disposition']
+    let filename = `封装订单列表_${new Date().getTime()}.xlsx`
+    if (disposition) {
+      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+      const matches = filenameRegex.exec(disposition)
+      if (matches != null && matches[1]) {
+        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''))
+      }
+    }
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败')
+  }
+}
+
+// 展开行数据
+const expandedRows = ref<{ [key: string]: AssyBom[] }>({})
+const loadingRows = ref<{ [key: string]: boolean }>({})
+
+// 处理展开行
+const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
+  if (!expanded || !row.DOC_NO) return
+
+  if (expandedRows.value[row.DOC_NO]) {
+    return
+  }
+
+  try {
+    loadingRows.value[row.DOC_NO] = true
+    const res = await getAssyBomApi({
+      doc_no: row.DOC_NO
+    })
+    expandedRows.value[row.DOC_NO] = res.data.list
+  } catch (error) {
+    console.error('获取BOM数据失败:', error)
+    ElMessage.error('获取BOM数据失败')
+  } finally {
+    loadingRows.value[row.DOC_NO] = false
+  }
+}
 </script>
 
 <template>
   <ContentWrap>
     <!-- 搜索表单 -->
-    <Search
-      ref="formRef"
-      :schema="schema"
-      @search="setSearchParams"
-      @reset="setSearchParams"
-      :is-col="true"
-      :inline="false"
-      label-width="100px"
-      show-expand
-      :expand-field="is_closed"
-    />
+    <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
+      <ElRow :gutter="20">
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="物料编码">
+            <ElInput
+              v-model="searchParams.item_code"
+              placeholder="请输入物料编码"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="打印批号">
+            <ElInput
+              v-model="searchParams.lot_code"
+              placeholder="请输入打印批号"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+          <ElFormItem label="封装类型">
+            <ElInput
+              v-model="searchParams.package_type"
+              placeholder="请输入封装类型"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </ElFormItem>
+        </ElCol>
+      </ElRow>
+      <ElCollapseTransition>
+        <div v-show="!isCollapse">
+          <ElRow :gutter="20">
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="订单号">
+                <ElInput
+                  v-model="searchParams.doc_no"
+                  placeholder="请输入订单号"
+                  clearable
+                  @keyup.enter="handleSearch"
+                />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="供应商">
+                <ElInput
+                  v-model="searchParams.supplier"
+                  placeholder="请输入供应商"
+                  clearable
+                  @keyup.enter="handleSearch"
+                />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="订单状态">
+                <ElSelect v-model="searchParams.is_closed" placeholder="请选择状态" clearable>
+                  <ElOption label="全部" value="" />
+                  <ElOption label="已结束" :value="1" />
+                  <ElOption label="未结束" :value="0" />
+                </ElSelect>
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="订单日期">
+                <ElDatePicker
+                  v-model="searchParams.order_date_start"
+                  type="date"
+                  placeholder="起始于"
+                  value-format="YYYY-MM-DD"
+                  @keyup.enter="handleSearch"
+                />
+              </ElFormItem>
+            </ElCol>
+            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+              <ElFormItem label="订单日期">
+                <ElDatePicker
+                  v-model="searchParams.order_date_end"
+                  type="date"
+                  placeholder="结束于"
+                  value-format="YYYY-MM-DD"
+                  @keyup.enter="handleSearch"
+                />
+              </ElFormItem>
+            </ElCol>
+          </ElRow>
+        </div>
+      </ElCollapseTransition>
+      <ElRow>
+        <ElCol :span="24" class="search-buttons">
+          <ElButton type="primary" @click="handleSearch">
+            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+            查询
+          </ElButton>
+          <ElButton @click="handleReset">重置</ElButton>
+          <ElButton type="success" @click="handleExport">
+            <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
+            导出Excel
+          </ElButton>
+          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
+            <Icon
+              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+              :size="20"
+              class="collapse-icon"
+            />
+          </ElButton>
+        </ElCol>
+      </ElRow>
+    </ElForm>
 
     <!-- 表格 -->
     <div class="mt-4">
@@ -621,9 +547,59 @@ const getCurrentProcessType = (
         :row-class-name="tableRowClassName"
         header-cell-class-name="table-header"
         @selection-change="handleSelectionChange"
+        @expand-change="handleExpandChange"
+        row-key="DOC_NO"
       >
+        <ElTableColumn type="selection" width="50" align="center" fixed="left" />
+        <ElTableColumn type="expand" width="50" align="center" fixed="left">
+          <template #default="props">
+            <div v-loading="loadingRows[props.row.DOC_NO]" class="expanded-content">
+              <div class="expanded-body">
+                <template v-if="expandedRows[props.row.DOC_NO]?.length">
+                  <div
+                    v-for="(bom, index) in expandedRows[props.row.DOC_NO]"
+                    :key="index"
+                    class="bom-item"
+                  >
+                    <ElDescriptions :column="4" border size="small" class="bom-descriptions">
+                      <ElDescriptionsItem label="主芯片" label-class-name="label-style">
+                        {{ bom.MAIN_CHIP }}
+                      </ElDescriptionsItem>
+                      <ElDescriptionsItem label="物料编码" label-class-name="label-style">
+                        {{ bom.ITEM_CODE }}
+                      </ElDescriptionsItem>
+                      <ElDescriptionsItem label="物料名称" label-class-name="label-style">
+                        {{ bom.ITEM_NAME }}
+                      </ElDescriptionsItem>
+                      <ElDescriptionsItem label="批号名称" label-class-name="label-style">
+                        {{ bom.LOT_CODE_NAME }}
+                      </ElDescriptionsItem>
+                      <ElDescriptionsItem label="业务数量" label-class-name="label-style">
+                        {{ bom.BUSINESS_QTY }}
+                      </ElDescriptionsItem>
+                      <ElDescriptionsItem label="第二数量" label-class-name="label-style">
+                        {{ bom.SECOND_QTY }}
+                      </ElDescriptionsItem>
+                      <ElDescriptionsItem label="晶圆ID" label-class-name="label-style" :span="2">
+                        {{ bom.WAFER_ID }}
+                      </ElDescriptionsItem>
+                    </ElDescriptions>
+                  </div>
+                </template>
+                <div v-else class="empty-data">暂无BOM数据</div>
+              </div>
+            </div>
+          </template>
+        </ElTableColumn>
         <template v-for="item in columns" :key="item.prop">
-          <ElTableColumn v-bind="item" v-if="!item.hidden" />
+          <ElTableColumn
+            v-if="!item.hidden && item.type !== 'selection' && item.type !== 'expand'"
+            v-bind="item"
+          >
+            <template v-if="item.slots?.default" #default="scope">
+              {{ item.slots.default(scope) }}
+            </template>
+          </ElTableColumn>
         </template>
 
         <!-- 合计行 -->
@@ -693,7 +669,8 @@ const getCurrentProcessType = (
   font-weight: bold;
   color: var(--el-text-color-primary);
   text-align: center !important;
-  background-color: #f0f7ff !important;
+  background-color: var(--el-fill-color-light) !important;
+  border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 :deep(.success-row) {
@@ -796,5 +773,117 @@ const getCurrentProcessType = (
 
 .text-primary {
   color: var(--el-color-primary);
+}
+
+.search-form {
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--el-bg-color);
+  border-radius: 4px;
+
+  :deep(.el-row) {
+    margin-bottom: 0;
+  }
+
+  :deep(.el-date-editor.el-input) {
+    width: 100%;
+  }
+
+  :deep(.el-collapse-transition) {
+    overflow: hidden;
+    transition: 0.3s height ease-in-out;
+  }
+
+  .search-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+
+    .el-button {
+      min-width: 120px;
+    }
+
+    .collapse-button {
+      display: flex;
+      height: 32px;
+      min-width: auto;
+      padding: 0 16px;
+      transition: all 0.3s;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      .collapse-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--el-color-primary);
+      }
+
+      .collapse-icon {
+        color: var(--el-color-primary);
+        transition: transform 0.3s;
+      }
+    }
+  }
+}
+
+.expanded-content {
+  padding: 8px 16px;
+  background-color: var(--el-fill-color-blank);
+}
+
+.expanded-body {
+  .bom-item {
+    &:not(:last-child) {
+      margin-bottom: 8px;
+    }
+  }
+
+  :deep(.bom-descriptions) {
+    padding: 4px;
+    background-color: var(--el-bg-color);
+    border-radius: 4px;
+
+    .el-descriptions__header {
+      margin-bottom: 0;
+    }
+
+    .el-descriptions__body {
+      .el-descriptions__table {
+        border-collapse: collapse;
+      }
+
+      .el-descriptions__cell {
+        padding: 8px 12px;
+      }
+
+      .el-descriptions__label {
+        width: 80px;
+        font-size: 13px;
+        font-weight: normal;
+        color: var(--el-text-color-regular);
+        background-color: var(--el-fill-color-light);
+      }
+
+      .el-descriptions__content {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+.empty-data {
+  padding: 16px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  text-align: center;
+}
+
+:deep(.el-table__expand-icon) {
+  margin-right: 0;
 }
 </style>

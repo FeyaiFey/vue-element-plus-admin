@@ -1,34 +1,35 @@
 export interface AssyOrderQuery {
-  doc_no?: string
-  item_code?: string[]
-  item_name?: string[]
-  supplier?: string[]
-  package_type?: string[]
-  is_closed?: number
-  order_date_start?: Date
-  order_date_end?: Date
-  pageIndex?: number
-  pageSize?: number
+  doc_no?: string // 封装订单号
+  item_code?: string // 品号
+  lot_code?: string // 批号
+  supplier?: string // 供应商
+  package_type?: string // 封装类型
+  assembly_code?: string // 打线图号
+  is_closed?: number // 是否关闭
+  order_date_start?: Date // 工单日期开始
+  order_date_end?: Date // 工单日期结束
+  pageIndex?: number // 页码,默认1,最小1
+  pageSize?: number // 每页数量,默认50,1-100
 }
 
 export interface AssyOrder {
-  DOC_NO: string
-  ITEM_CODE: string
-  Z_PROCESSING_PURPOSE_NAME: string
-  Z_ASSEMBLY_CODE: string
-  LOT_CODE: string
-  BUSINESS_QTY: number
-  RECEIPTED_PRICE_QTY: number
-  WIP_QTY: number
-  PRICE: number
-  Z_PACKAGE_TYPE_NAME: string
-  REMARK: string
-  Z_LOADING_METHOD_NAME: string
-  Z_WIRE_NAME: string
-  Z_FEATURE_GROUP_NAME: string
-  CLOSE: number
-  PURCHASE_DATE: Date
-  SUPPLIER_FULL_NAME: string
+  ID?: number
+  DOC_NO?: string
+  ITEM_CODE?: string
+  Z_PACKAGE_TYPE_NAME?: string
+  LOT_CODE?: string
+  BUSINESS_QTY?: number
+  RECEIPTED_PRICE_QTY?: number
+  WIP_QTY?: number
+  Z_PROCESSING_PURPOSE_NAME?: string
+  Z_TESTING_PROGRAM_NAME?: string
+  Z_ASSEMBLY_CODE?: string
+  Z_WIRE_NAME?: string
+  REMARK?: string
+  PURCHASE_DATE?: Date
+  FIRST_ARRIVAL_DATE?: Date
+  SUPPLIER_FULL_NAME?: string
+  RECEIPT_CLOSE?: number
 }
 
 export interface AssyOrderResponse {
@@ -90,6 +91,24 @@ export interface AssyWipResponse {
   total: number
 }
 
+export interface AssyBomQuery {
+  doc_no: string
+}
+
+export interface AssyBom {
+  MAIN_CHIP: string
+  ITEM_CODE: string
+  ITEM_NAME: string
+  LOT_CODE_NAME: string
+  BUSINESS_QTY: number
+  SECOND_QTY: number
+  WAFER_ID: string
+}
+
+export interface AssyBomResponse {
+  list: AssyBom[]
+}
+
 export interface AssyOrderItemsQuery {
   item_code: string
 }
@@ -127,4 +146,9 @@ export interface AssyOrderSupplier {
 
 export interface AssyOrderSupplierResponse {
   list: AssyOrderSupplier[]
+}
+
+export interface AxiosResponse {
+  data: any
+  headers: any
 }

@@ -208,7 +208,9 @@ export default {
     analyzeAssy: '封装分析',
     stock: '库存管理',
     stockTable: '库存列表',
-    stockAnalysis: '库存分析'
+    stockAnalysis: '库存分析',
+    report: '报表管理',
+    globalReport: '综合报表'
   },
   permission: {
     hasPermission: '请设置操作权限值'

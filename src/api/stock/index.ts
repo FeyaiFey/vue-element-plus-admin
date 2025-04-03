@@ -7,6 +7,7 @@ import type {
   StockSummaryQuery,
   StockSummaryResponse
 } from './types'
+import { AxiosResponse } from 'axios'
 
 export const getStockListApi = (query: StockQuery) => {
   return request.get<StockResponse>({
@@ -26,5 +27,16 @@ export const getStockSummaryApi = (query: StockSummaryQuery) => {
   return request.get<StockSummaryResponse>({
     url: '/stock/summary',
     params: query
+  })
+}
+
+export const exportStockListApi = (query: StockQuery) => {
+  return request.get<AxiosResponse>({
+    url: '/stock/export',
+    params: query,
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    }
   })
 }

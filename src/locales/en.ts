@@ -213,7 +213,9 @@ export default {
     analyzeAssy: 'Analyze Assy',
     stock: 'Stock',
     stockTable: 'Stock Table',
-    stockAnalysis: 'Stock Analysis'
+    stockAnalysis: 'Stock Analysis',
+    report: 'Report',
+    globalReport: 'Global Report'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

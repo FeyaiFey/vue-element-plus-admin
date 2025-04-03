@@ -121,8 +121,8 @@ const getDeliveryDateType = (
   const today = new Date()
   const diffDays = Math.ceil((deliveryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
-  if (diffDays < 5) return 'success'
-  if (diffDays <= 10) return 'primary'
+  if (diffDays < 8) return 'success'
+  if (diffDays <= 15) return 'primary'
   if (diffDays <= 30) return 'warning'
   if (diffDays > 30) return 'danger'
   return 'info'

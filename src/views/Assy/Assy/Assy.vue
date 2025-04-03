@@ -345,13 +345,11 @@ const getSummaries = () => {
 }
 
 // 格式化数字（用于合计行）
-const formatNumber = (value: number, field: string) => {
-  switch (field) {
-    case 'BUSINESS_QTY':
-      return Math.round(value) // 采购数量取整
-    default:
-      return value.toFixed(2) // 其他数值保留两位小数
+const formatNumber = (value: number, calculationType: string) => {
+  if (calculationType === calculationTypes.AVERAGE) {
+    return value.toFixed(2) // 求平均保留两位小数
   }
+  return Math.round(value) // 求和取整
 }
 
 // 获取状态标签类型
@@ -411,7 +409,14 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
     const res = await getAssyBomApi({
       doc_no: row.DOC_NO
     })
-    expandedRows.value[row.DOC_NO] = res.data.list
+    // 对数据进行排序
+    const sortedList = [...res.data.list].sort((a, b) => {
+      const order = { U0: 0, U1: 1, U2: 2 }
+      const aOrder = order[a.MAIN_CHIP] ?? 999
+      const bOrder = order[b.MAIN_CHIP] ?? 999
+      return aOrder - bOrder
+    })
+    expandedRows.value[row.DOC_NO] = sortedList
   } catch (error) {
     console.error('获取BOM数据失败:', error)
     ElMessage.error('获取BOM数据失败')
@@ -521,7 +526,7 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
             查询
           </ElButton>
           <ElButton @click="handleReset">重置</ElButton>
-          <ElButton type="success" @click="handleExport">
+          <ElButton @click="handleExport">
             <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
             导出Excel
           </ElButton>
@@ -561,9 +566,17 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
                     :key="index"
                     class="bom-item"
                   >
-                    <ElDescriptions :column="4" border size="small" class="bom-descriptions">
-                      <ElDescriptionsItem label="主芯片" label-class-name="label-style">
-                        {{ bom.MAIN_CHIP }}
+                    <ElDescriptions :column="2" border size="small" class="bom-descriptions">
+                      <ElDescriptionsItem label="主副芯片" label-class-name="label-style">
+                        {{
+                          bom.MAIN_CHIP === 'U0'
+                            ? 'U0(A芯)'
+                            : bom.MAIN_CHIP === 'U1'
+                              ? 'U1(A芯)'
+                              : bom.MAIN_CHIP === 'U2'
+                                ? 'U2(B芯)'
+                                : bom.MAIN_CHIP
+                        }}
                       </ElDescriptionsItem>
                       <ElDescriptionsItem label="物料编码" label-class-name="label-style">
                         {{ bom.ITEM_CODE }}
@@ -635,7 +648,7 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
                   ({{ field.calculationType === calculationTypes.AVERAGE ? '平均' : '合计' }}):
                 </span>
                 <span class="summary-value">
-                  {{ formatNumber(getSummaries()[field.field], field.field) }}
+                  {{ formatNumber(getSummaries()[field.field], field.calculationType) }}
                 </span>
               </div>
             </div>
@@ -643,7 +656,7 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
         </template>
       </ElTable>
       <!-- 分页 -->
-      <div class="flex justify-left mt-4">
+      <div v-if="total > 50" class="flex justify-left mt-4">
         <ElPagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -691,7 +704,7 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
 }
 
 .summary-row {
-  padding: 8px 12px;
+  padding: 12px 16px;
   background-color: var(--el-color-primary-light-9);
   border-top: 1px solid var(--el-border-color);
 }
@@ -700,12 +713,12 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .summary-title {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--el-text-color-primary);
   white-space: nowrap;
 }
@@ -713,20 +726,21 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
 .summary-fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
 }
 
 .field-config {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 
   :deep(.el-checkbox) {
     margin-right: 0;
 
     .el-checkbox__label {
-      font-size: 12px;
+      font-size: 14px;
+      font-weight: 500;
     }
   }
 
@@ -737,25 +751,35 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
 
 .summary-content {
   display: flex;
-  padding-top: 4px;
-  margin-top: 4px;
+  padding-top: 8px;
+  margin-top: 8px;
   border-top: 1px dashed var(--el-border-color-lighter);
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 24px;
 }
 
 .summary-item {
   display: inline-flex;
+  padding: 4px 12px;
+  font-size: 14px;
+  background-color: var(--el-color-primary-light-8);
+  border-radius: 4px;
+  transition: all 0.3s;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: 8px;
+
+  &:hover {
+    background-color: var(--el-color-primary-light-7);
+  }
 
   .summary-label {
-    color: var(--el-text-color-secondary);
+    font-weight: 500;
+    color: var(--el-text-color-primary);
   }
 
   .summary-value {
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--el-color-primary);
   }
 }
@@ -832,55 +856,50 @@ const handleExpandChange = async (row: AssyOrder, expanded: boolean) => {
 }
 
 .expanded-content {
-  padding: 8px 16px;
-  background-color: var(--el-fill-color-blank);
+  padding: 16px;
+  background-color: var(--el-bg-color-page);
 }
 
 .expanded-body {
-  .bom-item {
-    &:not(:last-child) {
-      margin-bottom: 8px;
-    }
+  max-width: 800px;
+  margin: 0;
+}
+
+.bom-item {
+  margin-bottom: 16px;
+  background-color: var(--el-bg-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.bom-descriptions {
+  :deep(.el-descriptions__body) {
+    background-color: var(--el-bg-color);
   }
 
-  :deep(.bom-descriptions) {
-    padding: 4px;
-    background-color: var(--el-bg-color);
-    border-radius: 4px;
+  :deep(.el-descriptions__label) {
+    width: 120px;
+    font-weight: bold;
+    color: var(--el-color-primary);
+    text-align: center;
+    background-color: var(--el-color-primary-light-9);
+  }
 
-    .el-descriptions__header {
-      margin-bottom: 0;
-    }
-
-    .el-descriptions__body {
-      .el-descriptions__table {
-        border-collapse: collapse;
-      }
-
-      .el-descriptions__cell {
-        padding: 8px 12px;
-      }
-
-      .el-descriptions__label {
-        width: 80px;
-        font-size: 13px;
-        font-weight: normal;
-        color: var(--el-text-color-regular);
-        background-color: var(--el-fill-color-light);
-      }
-
-      .el-descriptions__content {
-        font-size: 13px;
-      }
-    }
+  :deep(.el-descriptions__content) {
+    padding: 12px 16px;
+    text-align: left;
   }
 }
 
 .empty-data {
-  padding: 16px;
-  font-size: 13px;
+  padding: 32px;
+  font-size: 14px;
   color: var(--el-text-color-secondary);
-  text-align: center;
+  text-align: left;
 }
 
 :deep(.el-table__expand-icon) {

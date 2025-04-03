@@ -20,7 +20,7 @@ import { Table } from '@/components/Table'
 import { Dialog } from '@/components/Dialog'
 import { Icon } from '@/components/Icon'
 import type { FormInstance } from 'element-plus'
-import { getStockListApi, getWaferIdQtyDetailApi } from '@/api/stock'
+import { getStockListApi, getWaferIdQtyDetailApi, exportStockListApi } from '@/api/stock'
 import type { Stock, StockQuery, WaferIdQtyDetail } from '@/api/stock/types'
 import {
   getFeatureGroupNameApi,
@@ -33,6 +33,7 @@ import type { CheckboxValueType, Column } from 'element-plus'
 import { FixedDir } from 'element-plus/es/components/table-v2/src/constants'
 import { TableV2SortOrder } from 'element-plus'
 import type { SortBy, SortState } from 'element-plus'
+import type { AxiosResponse } from 'axios'
 
 // 特征组选项
 const featureGroupOptions = ref<Array<{ label: string; value: string }>>([])
@@ -318,19 +319,19 @@ const columns: Column<any>[] = [
     width: 120
   },
   {
-    key: 'ITEM_CODE',
-    dataKey: 'ITEM_CODE',
-    title: '物料编码',
-    align: 'center',
-    width: 260,
-    sortable: true
-  },
-  {
     key: 'ITEM_NAME',
     dataKey: 'ITEM_NAME',
     title: '物料名称',
     align: 'center',
     width: 180,
+    sortable: true
+  },
+  {
+    key: 'ITEM_CODE',
+    dataKey: 'ITEM_CODE',
+    title: '物料编码',
+    align: 'center',
+    width: 260,
     sortable: true
   },
   {
@@ -356,15 +357,15 @@ const columns: Column<any>[] = [
     title: '库存数量',
     align: 'center',
     fixed: FixedDir.RIGHT,
-    width: 120,
+    width: 100,
     sortable: true
   },
   {
     key: 'SECOND_QTY',
     dataKey: 'SECOND_QTY',
-    title: '第二数量',
+    title: '片数',
     align: 'center',
-    width: 100,
+    width: 50,
     fixed: FixedDir.RIGHT,
     sortable: true,
     cellRenderer: ({ cellData, rowData }: { cellData: number; rowData: any }) => {
@@ -540,6 +541,37 @@ const onSort = ({ key, order }: SortBy) => {
       : String(value2).localeCompare(String(value1))
   })
 }
+
+// 导出Excel
+const handleExport = async () => {
+  try {
+    ElMessage.info('正在导出，请稍候...')
+    const res = (await exportStockListApi({
+      ...formData
+    })) as unknown as AxiosResponse
+    // 如果是文件流，直接创建blob
+    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+    const disposition = res.headers?.['content-disposition']
+    let filename = `库存列表_${new Date().getTime()}.xlsx`
+    if (disposition) {
+      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+      const matches = filenameRegex.exec(disposition)
+      if (matches != null && matches[1]) {
+        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''))
+      }
+    }
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败')
+  }
+}
 </script>
 
 <template>
@@ -704,8 +736,12 @@ const onSort = ({ key, order }: SortBy) => {
             查询
           </ElButton>
           <ElButton @click="handleReset">重置</ElButton>
+          <ElButton @click="handleExport">
+            <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
+            导出Excel
+          </ElButton>
           <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
-            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
+            <span class="collapse-text">{{ isCollapse ? '更多查询' : '收起' }}</span>
             <Icon
               :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
               :size="20"
@@ -729,7 +765,6 @@ const onSort = ({ key, order }: SortBy) => {
             v-model:sort-state="sortState"
             @column-sort="onSort"
             fixed
-            style="border: 1px solid var(--el-border-color-light)"
             :cell-props="{
               style: {
                 display: 'flex',
@@ -737,32 +772,22 @@ const onSort = ({ key, order }: SortBy) => {
                 justifyContent: 'center'
               }
             }"
-            :header-cell-props="{
-              style: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'var(--el-color-primary-light-9)',
-                borderBottom: '1px solid var(--el-border-color-light)',
-                borderRight: '1px solid var(--el-border-color-light)'
-              }
-            }"
           />
         </template>
       </ElAutoResizer>
-      <!-- 选中项合计 -->
-      <div class="table-summary">
-        <div class="summary-content">
-          <span class="summary-item">
-            已选择: <span class="summary-value">{{ tableSelection.length }}</span> 项
-          </span>
-          <span class="summary-item">
-            库存数量合计: <span class="summary-value">{{ tableSummary.INVENTORY_QTY }}</span>
-          </span>
-          <span class="summary-item">
-            第二数量合计: <span class="summary-value">{{ tableSummary.SECOND_QTY }}</span>
-          </span>
-        </div>
+    </div>
+    <!-- 选中项合计 -->
+    <div class="table-summary">
+      <div class="summary-content">
+        <span class="summary-item">
+          已选择: <span class="summary-value">{{ tableSelection.length }}</span> 项
+        </span>
+        <span class="summary-item">
+          库存数量合计: <span class="summary-value">{{ tableSummary.INVENTORY_QTY }}</span>
+        </span>
+        <span class="summary-item">
+          第二数量合计: <span class="summary-value">{{ tableSummary.SECOND_QTY }}</span>
+        </span>
       </div>
     </div>
 
@@ -918,20 +943,6 @@ const onSort = ({ key, order }: SortBy) => {
         transition: transform 0.3s;
       }
     }
-  }
-}
-
-:deep(.el-table-v2__header-cell) {
-  font-weight: bold;
-  color: var(--el-color-primary);
-  background-color: var(--el-color-primary-light-9);
-}
-
-:deep(.el-table-v2__cell) {
-  input[type='checkbox'] {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
   }
 }
 </style>

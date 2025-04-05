@@ -265,6 +265,137 @@ const SelectionCell = ({
   })
 }
 
+// 筛选器状态
+interface NumberFilter {
+  expression: string
+}
+
+interface NumberFilters {
+  [key: string]: NumberFilter
+}
+
+const textFilters = reactive({
+  FEATURE_GROUP_NAME: '',
+  ITEM_NAME: '',
+  ITEM_CODE: '',
+  LOT_CODE: '',
+  WAREHOUSE_NAME: '',
+  Z_BIN_LEVEL_NAME: '',
+  Z_TESTING_PROGRAM_NAME: '',
+  Z_BURNING_PROGRAM_NAME: ''
+})
+
+const numberFilters = ref<NumberFilters>({
+  INVENTORY_QTY: { expression: '' },
+  SECOND_QTY: { expression: '' }
+})
+
+// 解析数字过滤表达式
+const parseNumberFilter = (expression: string): { operator: string; value: number | null } => {
+  expression = expression.trim()
+  if (!expression) return { operator: '', value: null }
+
+  const matches = expression.match(/^(>=|<=|>|<|=)?\s*(-?\d+\.?\d*)$/)
+  if (!matches) return { operator: '', value: null }
+
+  const [, operator = '=', valueStr] = matches
+  const value = parseFloat(valueStr)
+  return { operator, value }
+}
+
+// 评估数字过滤条件
+const evaluateNumberFilter = (
+  value: number,
+  filter: { operator: string; value: number | null }
+) => {
+  if (!filter.operator || filter.value === null) return true
+
+  switch (filter.operator) {
+    case '>':
+      return value > filter.value
+    case '>=':
+      return value >= filter.value
+    case '<':
+      return value < filter.value
+    case '<=':
+      return value <= filter.value
+    case '=':
+      return value === filter.value
+    default:
+      return true
+  }
+}
+
+// 过滤后的数据
+const filteredData = computed(() => {
+  return dataList.value.filter((row) => {
+    // 文本列过滤
+    const textFilterMatch = Object.entries(textFilters).every(([key, filterValue]) => {
+      if (!filterValue) return true
+      const value = String(row[key] || '').toLowerCase()
+      return value.includes(filterValue.toLowerCase())
+    })
+
+    // 数字列过滤
+    const numberFilterMatch = Object.entries(numberFilters.value).every(([key, filter]) => {
+      if (!filter.expression) return true
+      const value = Number(row[key])
+      if (isNaN(value)) return true
+
+      const parsedFilter = parseNumberFilter(filter.expression)
+      return evaluateNumberFilter(value, parsedFilter)
+    })
+
+    return textFilterMatch && numberFilterMatch
+  })
+})
+
+// 创建文本列过滤器渲染器
+const createTextFilterHeader = (key: string, title: string) => ({
+  key,
+  dataKey: key,
+  title,
+  width: key === 'ITEM_CODE' ? 260 : key === 'ITEM_NAME' ? 180 : 120,
+  align: 'center' as const,
+  headerAlign: 'center' as const,
+  headerCellRenderer: ({ column }) => {
+    return h('div', { class: 'filter-header' }, [
+      h('span', { class: 'header-title' }, column.title),
+      h(ElInput, {
+        modelValue: textFilters[key],
+        'onUpdate:modelValue': (val) => (textFilters[key] = val),
+        placeholder: '筛选',
+        size: 'small',
+        class: 'filter-input',
+        clearable: true
+      })
+    ])
+  }
+})
+
+// 创建数字列过滤器渲染器
+const createNumberFilterHeader = (key: string, title: string) => ({
+  key,
+  dataKey: key,
+  title,
+  width: 100,
+  align: 'center' as const,
+  headerAlign: 'center' as const,
+  headerCellRenderer: ({ column }) => {
+    return h('div', { class: 'filter-header' }, [
+      h('span', { class: 'header-title' }, column.title),
+      h(ElInput, {
+        modelValue: numberFilters.value[key].expression,
+        'onUpdate:modelValue': (val) => (numberFilters.value[key].expression = val),
+        placeholder: '例如: >=100',
+        size: 'small',
+        class: 'filter-input',
+        clearable: true
+      })
+    ])
+  }
+})
+
 // 表格列配置
 const columns: Column<any>[] = [
   {
@@ -312,62 +443,35 @@ const columns: Column<any>[] = [
     }
   },
   {
-    key: 'FEATURE_GROUP_NAME',
-    dataKey: 'FEATURE_GROUP_NAME',
-    title: '品号群组',
-    align: 'center',
-    width: 120
-  },
-  {
-    key: 'ITEM_NAME',
-    dataKey: 'ITEM_NAME',
-    title: '物料名称',
-    align: 'center',
-    width: 180,
+    ...createTextFilterHeader('FEATURE_GROUP_NAME', '品号群组'),
     sortable: true
   },
   {
-    key: 'ITEM_CODE',
-    dataKey: 'ITEM_CODE',
-    title: '物料编码',
-    align: 'center',
-    width: 260,
+    ...createTextFilterHeader('ITEM_NAME', '物料名称'),
     sortable: true
   },
   {
-    key: 'LOT_CODE',
-    dataKey: 'LOT_CODE',
-    title: '批号',
-    align: 'center',
-    width: 150,
+    ...createTextFilterHeader('ITEM_CODE', '物料编码'),
     sortable: true
   },
   {
-    key: 'WAREHOUSE_NAME',
-    dataKey: 'WAREHOUSE_NAME',
-    title: '仓库',
-    align: 'center',
-    width: 180,
+    ...createTextFilterHeader('LOT_CODE', '批号'),
+    sortable: true
+  },
+  {
+    ...createTextFilterHeader('WAREHOUSE_NAME', '仓库'),
     sortable: true,
     fixed: FixedDir.RIGHT
   },
   {
-    key: 'INVENTORY_QTY',
-    dataKey: 'INVENTORY_QTY',
-    title: '库存数量',
-    align: 'center',
-    fixed: FixedDir.RIGHT,
-    width: 100,
-    sortable: true
+    ...createNumberFilterHeader('INVENTORY_QTY', '库存数量'),
+    sortable: true,
+    fixed: FixedDir.RIGHT
   },
   {
-    key: 'SECOND_QTY',
-    dataKey: 'SECOND_QTY',
-    title: '片数',
-    align: 'center',
-    width: 50,
-    fixed: FixedDir.RIGHT,
+    ...createNumberFilterHeader('SECOND_QTY', '片数'),
     sortable: true,
+    fixed: FixedDir.RIGHT,
     cellRenderer: ({ cellData, rowData }: { cellData: number; rowData: any }) => {
       if (cellData > 0) {
         return h(
@@ -386,27 +490,9 @@ const columns: Column<any>[] = [
       return h('span', null, String(cellData))
     }
   },
-  {
-    key: 'Z_BIN_LEVEL_NAME',
-    dataKey: 'Z_BIN_LEVEL_NAME',
-    title: 'BIN等级',
-    align: 'center',
-    width: 100
-  },
-  {
-    key: 'Z_TESTING_PROGRAM_NAME',
-    dataKey: 'Z_TESTING_PROGRAM_NAME',
-    title: '测试程序',
-    align: 'center',
-    width: 200
-  },
-  {
-    key: 'Z_BURNING_PROGRAM_NAME',
-    dataKey: 'Z_BURNING_PROGRAM_NAME',
-    title: '烧录程序',
-    align: 'center',
-    width: 200
-  }
+  createTextFilterHeader('Z_BIN_LEVEL_NAME', 'BIN等级'),
+  createTextFilterHeader('Z_TESTING_PROGRAM_NAME', '测试程序'),
+  createTextFilterHeader('Z_BURNING_PROGRAM_NAME', '烧录程序')
 ]
 
 // Dialog表格选中项
@@ -759,7 +845,7 @@ const handleExport = async () => {
           <ElTableV2
             v-loading="loading"
             :columns="columns"
-            :data="dataList"
+            :data="filteredData"
             :width="width"
             :height="height"
             v-model:sort-state="sortState"
@@ -944,5 +1030,44 @@ const handleExport = async () => {
       }
     }
   }
+}
+
+.filter-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+
+  .header-title {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 20px;
+  }
+
+  .filter-input {
+    width: 100%;
+
+    :deep(.el-input__inner) {
+      height: 22px;
+      padding: 0 8px;
+      font-size: 12px;
+      line-height: 22px;
+
+      &::placeholder {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+:deep(.table-header) {
+  height: 42px;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--el-text-color-primary);
+  text-align: center !important;
+  background-color: var(--el-fill-color-light) !important;
+  border-bottom: 1px solid var(--el-border-color-lighter);
 }
 </style>

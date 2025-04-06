@@ -1,9 +1,9 @@
 export interface StockQuery {
-  feature_group_name?: string[]
-  item_code?: string[]
+  feature_group_name?: string
+  item_code?: string
   item_name?: string
   lot_code?: string
-  warehouse_name?: string[]
+  warehouse_name?: string
   testing_program?: string[]
   burning_program?: string[]
 }

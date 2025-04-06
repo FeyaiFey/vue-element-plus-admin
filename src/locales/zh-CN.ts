@@ -210,7 +210,7 @@ export default {
     stockTable: '库存列表',
     stockAnalysis: '库存分析',
     report: '报表管理',
-    globalReport: '综合报表'
+    globalReport: '外协报表'
   },
   permission: {
     hasPermission: '请设置操作权限值'

@@ -22,90 +22,12 @@ import { Icon } from '@/components/Icon'
 import type { FormInstance } from 'element-plus'
 import { getStockListApi, getWaferIdQtyDetailApi, exportStockListApi } from '@/api/stock'
 import type { Stock, StockQuery, WaferIdQtyDetail } from '@/api/stock/types'
-import {
-  getFeatureGroupNameApi,
-  getItemCodeApi,
-  getWarehouseNameApi,
-  getTestingProgramApi,
-  getBurningProgramApi
-} from '@/api/params'
+import { getTestingProgramApi, getBurningProgramApi } from '@/api/params'
 import type { CheckboxValueType, Column } from 'element-plus'
 import { FixedDir } from 'element-plus/es/components/table-v2/src/constants'
 import { TableV2SortOrder } from 'element-plus'
 import type { SortBy, SortState } from 'element-plus'
 import type { AxiosResponse } from 'axios'
-
-// 特征组选项
-const featureGroupOptions = ref<Array<{ label: string; value: string }>>([])
-const featureGroupLoading = ref(false)
-
-// 远程搜索特征组
-const handleFeatureGroupSearch = async (query: string) => {
-  if (!query) {
-    featureGroupOptions.value = []
-    return
-  }
-  featureGroupLoading.value = true
-  try {
-    const res = await getFeatureGroupNameApi({ feature_group_name: query })
-    featureGroupOptions.value = res.data.list.map((item) => ({
-      label: item.label,
-      value: item.value
-    }))
-  } catch (error) {
-    console.error('获取特征组列表失败:', error)
-  } finally {
-    featureGroupLoading.value = false
-  }
-}
-
-// 物料编码选项
-const itemCodeOptions = ref<Array<{ label: string; value: string }>>([])
-const itemCodeLoading = ref(false)
-
-// 远程搜索物料编码
-const handleItemCodeSearch = async (query: string) => {
-  if (!query) {
-    itemCodeOptions.value = []
-    return
-  }
-  itemCodeLoading.value = true
-  try {
-    const res = await getItemCodeApi({ item_code: query })
-    itemCodeOptions.value = res.data.list.map((item) => ({
-      label: item.value,
-      value: item.value
-    }))
-  } catch (error) {
-    console.error('获取物料编码列表失败:', error)
-  } finally {
-    itemCodeLoading.value = false
-  }
-}
-
-// 仓库选项
-const warehouseOptions = ref<Array<{ label: string; value: string }>>([])
-const warehouseLoading = ref(false)
-
-// 远程搜索仓库
-const handleWarehouseSearch = async (query: string) => {
-  if (!query) {
-    warehouseOptions.value = []
-    return
-  }
-  warehouseLoading.value = true
-  try {
-    const res = await getWarehouseNameApi({ warehouse_name: query })
-    warehouseOptions.value = res.data.list.map((item) => ({
-      label: item.label,
-      value: item.value
-    }))
-  } catch (error) {
-    console.error('获取仓库列表失败:', error)
-  } finally {
-    warehouseLoading.value = false
-  }
-}
 
 // 测试程序选项
 const testingProgramOptions = ref<Array<{ label: string; value: string }>>([])
@@ -160,11 +82,11 @@ const formRef = ref<FormInstance>()
 
 // 表单数据
 const formData = reactive<StockQuery>({
-  item_code: [],
+  item_code: '',
   item_name: '',
   lot_code: '',
-  feature_group_name: [],
-  warehouse_name: [],
+  feature_group_name: '',
+  warehouse_name: '',
   testing_program: [],
   burning_program: []
 })
@@ -583,11 +505,11 @@ const isCollapse = ref(true)
 const handleReset = () => {
   formRef.value?.resetFields()
   // 设置所有参数为空
-  formData.item_code = []
+  formData.item_code = ''
   formData.item_name = ''
   formData.lot_code = ''
-  formData.feature_group_name = []
-  formData.warehouse_name = []
+  formData.feature_group_name = ''
+  formData.warehouse_name = ''
   formData.testing_program = []
   formData.burning_program = []
   handleSearch()
@@ -667,29 +589,12 @@ const handleExport = async () => {
       <ElRow :gutter="20">
         <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
           <ElFormItem label="物料编码">
-            <ElSelect
+            <ElInput
               v-model="formData.item_code"
-              placeholder="按物料编码精确搜索"
+              placeholder="按物料编码模糊搜索"
               clearable
-              filterable
-              remote
-              reserve-keyword
-              :remote-method="handleItemCodeSearch"
-              :loading="itemCodeLoading"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              :no-data-text="'暂无数据'"
-              :no-match-text="'无匹配数据'"
               @keyup.enter="handleSearch"
-            >
-              <ElOption
-                v-for="item in itemCodeOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </ElSelect>
+            />
           </ElFormItem>
         </ElCol>
         <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
@@ -718,50 +623,22 @@ const handleExport = async () => {
           <ElRow :gutter="20">
             <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
               <ElFormItem label="品号群组">
-                <ElSelect
+                <ElInput
                   v-model="formData.feature_group_name"
-                  placeholder="请输入品号群组搜索"
+                  placeholder="请输入品号群组模糊搜索"
                   clearable
-                  filterable
-                  remote
-                  :remote-method="handleFeatureGroupSearch"
-                  :loading="featureGroupLoading"
-                  multiple
-                  collapse-tags
-                  collapse-tags-tooltip
                   @keyup.enter="handleSearch"
-                >
-                  <ElOption
-                    v-for="item in featureGroupOptions"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </ElSelect>
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
               <ElFormItem label="仓库">
-                <ElSelect
+                <ElInput
                   v-model="formData.warehouse_name"
-                  placeholder="请输入仓库搜索"
+                  placeholder="请输入仓库模糊搜索"
                   clearable
-                  filterable
-                  remote
-                  :remote-method="handleWarehouseSearch"
-                  :loading="warehouseLoading"
-                  multiple
-                  collapse-tags
-                  collapse-tags-tooltip
                   @keyup.enter="handleSearch"
-                >
-                  <ElOption
-                    v-for="item in warehouseOptions"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </ElSelect>
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">

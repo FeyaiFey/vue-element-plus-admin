@@ -1,5 +1,7 @@
 export type GlobalReport = {
   ROW: number
+  RN: number
+  MAIN_CHIP_COUNT: number
   MAIN_CHIP: string
   CHIP_NAME: string
   TOTAL_FINISHED_GOODS: number
@@ -16,12 +18,13 @@ export type GlobalReport = {
   SG_SEMI_MANUFACTURED: number
   SECONDARY_OUTSOURCING_WIP_QTY: number
   PURCHASE_WIP_QTY: number
+  TOTAL_RAW_MATERIALS: number
   CP_WIP_QTY: number
   NO_TESTED_WAFER: number
   TESTED_WAFER: number
   DEPUTY_CHIP: string
   OUTSOURCING_WIP_QTY: number
-  OUTSOURCING_WAFER: number
+  TOTAL_B_RAW_MATERIALS: number
 }
 
 export interface AxiosResponse {

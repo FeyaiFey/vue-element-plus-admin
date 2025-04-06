@@ -215,7 +215,7 @@ export default {
     stockTable: 'Stock Table',
     stockAnalysis: 'Stock Analysis',
     report: 'Report',
-    globalReport: 'Global Report'
+    globalReport: 'External Report'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

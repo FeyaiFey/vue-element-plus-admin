@@ -363,7 +363,8 @@ const handleNumberClick = async (row: GlobalReport, columnKey: string) => {
         )
 
         const res = await getPurchaseWipListApi({
-          [`${paramName1}`]: paramValue1
+          [`${paramName1}`]: paramValue1,
+          is_finished: 0
         })
         dialogData.value = res.data.list
         dialogVisible.value = true

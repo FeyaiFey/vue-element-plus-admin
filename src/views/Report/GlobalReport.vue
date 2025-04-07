@@ -280,8 +280,8 @@ const columnConfigs: Record<string, ColumnConfig> = {
   },
   OUTSOURCING_WIP_QTY: {
     title: 'B芯在途',
-    param1_name: 'item_code',
-    param1_value: 'CL%REPLACE_TEXT%',
+    param1_name: 'item_name',
+    param1_value: 'REPLACE_TEXT',
     by_column_name: 'DEPUTY_CHIP',
     type: 'purchaseWip'
   },
@@ -348,7 +348,8 @@ const handleNumberClick = async (row: GlobalReport, columnKey: string) => {
         )
 
         const res = await getAssyWipApi({
-          [`${paramName1}`]: paramValue1
+          [`${paramName1}`]: paramValue1,
+          is_finished: 0
         })
         dialogData.value = res.data.list
         dialogVisible.value = true
@@ -729,7 +730,7 @@ onMounted(() => {
       <div class="report-content">
         <div v-if="loading" class="app-loading">
           <div class="app-loading-wrap">
-            <div class="app-loading-title">数据量较大,通常加载需要5~6秒钟，请稍候...</div>
+            <div class="app-loading-title">数据量较大,首次加载需要5~6秒钟，请稍候...</div>
             <div class="app-loading-item">
               <div class="app-loading-outter"></div>
               <div class="app-loading-inner"></div>
@@ -750,6 +751,7 @@ onMounted(() => {
               :header-class="() => 'table-header'"
               :cell-props="cellProps"
               :class="kls"
+              scrollbar-always-on
             >
               <template #row="props">
                 <Row v-bind="props" />
@@ -790,30 +792,13 @@ onMounted(() => {
           style="margin-top: 20px"
           border
         >
-          <ElTableColumn prop="FEATURE_GROUP_NAME" label="品号群组" width="200" align="center" />
-          <ElTableColumn prop="ITEM_CODE" label="品号" width="250" align="center" />
-          <ElTableColumn prop="LOT_CODE" label="批号" width="200" align="center" />
-          <ElTableColumn prop="WAREHOUSE_NAME" label="仓库" width="180" align="center" />
-          <ElTableColumn
-            prop="INVENTORY_QTY"
-            label="库存数量"
-            align="center"
-            width="100"
-            fixed="right"
-          />
-          <ElTableColumn
-            prop="SECOND_QTY"
-            label="第二数量"
-            width="100"
-            align="center"
-            fixed="right"
-          />
-          <ElTableColumn
-            prop="Z_TESTING_PROGRAM_NAME"
-            label="测试程序"
-            width="100"
-            align="center"
-          />
+          <ElTableColumn prop="FEATURE_GROUP_NAME" label="品号群组" align="center" />
+          <ElTableColumn prop="ITEM_CODE" label="品号" align="center" />
+          <ElTableColumn prop="LOT_CODE" label="批号" align="center" />
+          <ElTableColumn prop="WAREHOUSE_NAME" label="仓库" align="center" />
+          <ElTableColumn prop="INVENTORY_QTY" label="库存数量" align="center" fixed="right" />
+          <ElTableColumn prop="SECOND_QTY" label="第二数量" align="center" fixed="right" />
+          <ElTableColumn prop="Z_TESTING_PROGRAM_NAME" label="测试程序" align="center" />
           <ElTableColumn prop="Z_BURNING_PROGRAM_NAME" label="烧录程序" align="center" />
         </ElTable>
 
@@ -824,17 +809,12 @@ onMounted(() => {
           style="width: 100%; margin-top: 20px"
           border
         >
-          <ElTableColumn prop="DOC_NO" label="订单号" width="150" align="center" />
-          <ElTableColumn prop="ITEM_CODE" label="物料编码" width="250" align="center" />
-          <ElTableColumn
-            prop="EXPECTED_DELIVERY_DATE"
-            label="预计交期"
-            width="120"
-            align="center"
-          />
-          <ElTableColumn prop="CURRENT_PROCESS" label="当前工序" width="120" align="center" />
-          <ElTableColumn prop="ONLINE_TOTAL" label="在线合计" width="100" align="center" />
-          <ElTableColumn prop="WAREHOUSE_INVENTORY" label="仓库库存" width="100" align="center" />
+          <ElTableColumn prop="DOC_NO" label="订单号" align="center" />
+          <ElTableColumn prop="ITEM_CODE" label="物料编码" align="center" />
+          <ElTableColumn prop="EXPECTED_DELIVERY_DATE" label="预计交期" align="center" />
+          <ElTableColumn prop="CURRENT_PROCESS" label="当前工序" align="center" />
+          <ElTableColumn prop="ONLINE_TOTAL" label="在线合计" align="center" />
+          <ElTableColumn prop="WAREHOUSE_INVENTORY" label="仓库库存" align="center" />
         </ElTable>
 
         <!-- 采购在制品数据表格 -->
@@ -844,19 +824,13 @@ onMounted(() => {
           style="margin-top: 20px"
           border
         >
-          <ElTableColumn prop="purchaseOrder" label="订单号" width="100" align="center" />
-          <ElTableColumn prop="itemName" label="晶圆名称" width="120" align="center" />
-          <ElTableColumn prop="lot" label="批次" width="120" align="center" />
-          <ElTableColumn prop="qty" label="数量" width="120" align="center" />
-          <ElTableColumn prop="status" label="状态" width="120" align="center" />
-          <ElTableColumn prop="stage" label="当前阶段" width="100" align="center" />
-          <ElTableColumn
-            prop="forecastDate"
-            label="预计交期"
-            width="120"
-            fixed="right"
-            align="center"
-          />
+          <ElTableColumn prop="purchaseOrder" label="订单号" align="center" />
+          <ElTableColumn prop="itemName" label="晶圆名称" align="center" />
+          <ElTableColumn prop="lot" label="批次" align="center" />
+          <ElTableColumn prop="qty" label="数量" align="center" />
+          <ElTableColumn prop="status" label="状态" align="center" />
+          <ElTableColumn prop="stage" label="当前阶段" align="center" />
+          <ElTableColumn prop="forecastDate" label="预计交期" align="center" fixed="right" />
         </ElTable>
       </div>
     </ResizeDialog>

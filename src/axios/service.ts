@@ -4,6 +4,7 @@ import { defaultRequestInterceptors, defaultResponseInterceptors } from './confi
 import { AxiosInstance, InternalAxiosRequestConfig, RequestConfig, AxiosResponse } from './types'
 import { ElMessage } from 'element-plus'
 import { REQUEST_TIMEOUT } from '@/constants'
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 export const PATH_URL = import.meta.env.VITE_API_BASE_PATH
 
@@ -38,9 +39,33 @@ axiosInstance.interceptors.response.use(
     return res
   },
   (error: AxiosError<{ message: string; code: number; name: string }>) => {
-    console.log(error.message)
-    console.log(error.response?.data?.message)
-    ElMessage.error(error.response?.data?.message || error.message)
+    const url = error.config?.url || ''
+    abortControllerMap.delete(url)
+
+    // 处理401错误
+    if (error.response?.data?.code === 401) {
+      const userStore = useUserStoreWithOut()
+      // 先显示错误消息
+      ElMessage({
+        type: 'error',
+        message: '登录状态已过期，请重新登录',
+        duration: 2000
+      })
+      // 延迟执行登出和跳转，确保消息能显示
+      setTimeout(() => {
+        userStore.logout()
+        window.location.href = '/login'
+      }, 1000)
+      return Promise.reject(error)
+    }
+
+    // 处理其他错误
+    const errorMessage = error.response?.data?.message || error.message || '请求失败'
+    ElMessage({
+      type: 'error',
+      message: errorMessage,
+      duration: 2000
+    })
     return Promise.reject(error)
   }
 )

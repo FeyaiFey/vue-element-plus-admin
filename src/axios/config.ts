@@ -1,9 +1,8 @@
 import { AxiosResponse, InternalAxiosRequestConfig } from './types'
-import { ElMessage } from 'element-plus'
 import qs from 'qs'
 import { SUCCESS_CODE, TRANSFORM_REQUEST_DATA } from '@/constants'
-import { useUserStoreWithOut } from '@/store/modules/user'
 import { objToFormData } from '@/utils'
+import { ElMessage } from 'element-plus'
 
 const defaultRequestInterceptors = (config: InternalAxiosRequestConfig) => {
   if (
@@ -42,11 +41,8 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
   } else if (response.data.code === SUCCESS_CODE) {
     return response.data
   } else {
-    ElMessage.error(response?.data?.message)
-    if (response?.data?.code === 401) {
-      const userStore = useUserStoreWithOut()
-      userStore.logout()
-    }
+    ElMessage.error(response?.data?.message || '请求失败')
+    return Promise.reject(response.data)
   }
 }
 

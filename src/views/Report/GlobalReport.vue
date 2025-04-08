@@ -596,7 +596,9 @@ const handleExport = async () => {
       const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
       const matches = filenameRegex.exec(disposition)
       if (matches != null && matches[1]) {
-        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''))
+        // 移除UTF-8前缀
+        const rawFilename = matches[1].replace(/['"]/g, '')
+        filename = decodeURIComponent(rawFilename.replace(/^UTF-8/, ''))
       }
     }
     const url = window.URL.createObjectURL(blob)

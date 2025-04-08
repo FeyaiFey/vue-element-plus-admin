@@ -10,6 +10,9 @@ export const getGlobalReportApi = () => {
 export const exportGlobalReportApi = () => {
   return request.get<AxiosResponse>({
     url: '/report/global/export',
-    responseType: 'blob'
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    }
   })
 }

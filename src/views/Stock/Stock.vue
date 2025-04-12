@@ -289,7 +289,10 @@ const createTextFilterHeader = (key: string, title: string) => ({
         placeholder: '筛选',
         size: 'small',
         class: 'filter-input',
-        clearable: true
+        clearable: true,
+        onClick: (e: Event) => {
+          e.stopPropagation()
+        }
       })
     ])
   }
@@ -312,7 +315,10 @@ const createNumberFilterHeader = (key: string, title: string) => ({
         placeholder: '例如: >=100',
         size: 'small',
         class: 'filter-input',
-        clearable: true
+        clearable: true,
+        onClick: (e: Event) => {
+          e.stopPropagation()
+        }
       })
     ])
   }

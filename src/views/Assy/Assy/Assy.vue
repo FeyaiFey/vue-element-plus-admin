@@ -92,6 +92,10 @@ const { tableState, tableMethods } = useTable({
       pageSize: unref(pageSize),
       ...searchParams
     })
+    // 如果总数小于50，将pageSize设置为50
+    if (res.data.total < 50) {
+      tableState.pageSize.value = 50
+    }
     return {
       list: res.data.list,
       total: res.data.total

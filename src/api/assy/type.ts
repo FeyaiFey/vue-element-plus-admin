@@ -152,3 +152,10 @@ export interface AxiosResponse {
   data: any
   headers: any
 }
+
+export interface AssyAnalyzeTotalResponse {
+  receipt: number
+  wip: number
+  leadTime: number
+  yields: number
+}

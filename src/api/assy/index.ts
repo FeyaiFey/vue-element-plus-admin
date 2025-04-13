@@ -12,7 +12,8 @@ import type {
   AssyOrderSupplierQuery,
   AssyOrderSupplierResponse,
   AssyBomQuery,
-  AssyBomResponse
+  AssyBomResponse,
+  AssyAnalyzeTotalResponse
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
@@ -65,5 +66,11 @@ export const exportAssyListApi = (query: AssyOrderQuery) => {
     headers: {
       'Content-Type': 'application/json'
     }
+  })
+}
+
+export const getAssyAnalyzeTotalApi = () => {
+  return request.get<AssyAnalyzeTotalResponse>({
+    url: '/assy/analyze/total'
   })
 }

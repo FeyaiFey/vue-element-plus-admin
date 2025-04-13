@@ -217,6 +217,10 @@ export default {
     hasPermission: '请设置操作权限值'
   },
   analysis: {
+    receipt: '上月累计入库',
+    wip: '封装在制总数',
+    leadTime: '本季度平均交期',
+    yields: '本季度封装良率',
     newUser: '新增用户',
     unreadInformation: '未读消息',
     transactionAmount: '成交金额',

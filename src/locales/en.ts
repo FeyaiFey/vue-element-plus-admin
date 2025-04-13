@@ -222,6 +222,10 @@ export default {
     hasPermission: 'Please set the operation permission value'
   },
   analysis: {
+    receipt: 'Last month cumulative receipt',
+    wip: 'Current month assembly in-process',
+    leadTime: 'Current quarter average lead time',
+    yields: 'Current quarter yield',
     newUser: 'New user',
     unreadInformation: 'Unread information',
     transactionAmount: 'Transaction amount',

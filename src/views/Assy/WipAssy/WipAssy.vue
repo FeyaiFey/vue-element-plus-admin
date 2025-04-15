@@ -120,9 +120,10 @@ const getDeliveryDateType = (
 
 // 表格列配置
 const defaultColumns: ColumnType[] = [
+  { type: 'selection', width: 50, align: 'center', fixed: 'left' },
   { label: '序号', type: 'index', width: 60, align: 'center', fixed: 'left' },
-  { label: '订单号', prop: 'DOC_NO', align: 'center', width: 150 },
-  { label: '物料编码', prop: 'ITEM_CODE', align: 'center', width: 250, showOverflowTooltip: true },
+  { label: '订单号', prop: 'DOC_NO', align: 'center', width: 160 },
+  { label: '物料编码', prop: 'ITEM_CODE', align: 'center', width: 280, showOverflowTooltip: true },
   {
     label: '当前工序',
     prop: 'CURRENT_PROCESS',
@@ -132,7 +133,7 @@ const defaultColumns: ColumnType[] = [
   },
   { label: '在线合计', prop: 'ONLINE_TOTAL', align: 'center', width: 100 },
   { label: '仓库库存', prop: 'WAREHOUSE_INVENTORY', align: 'center', width: 100 },
-  { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', width: 120, showOverflowTooltip: true },
+  { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', width: 160, showOverflowTooltip: true },
   { label: '明日预计', prop: 'NEXT_DAY_EXPECTED', align: 'center', width: 100 },
   { label: '三日预计', prop: 'THREE_DAY_EXPECTED', align: 'center', width: 100 },
   { label: '七日预计', prop: 'SEVEN_DAY_EXPECTED', align: 'center', width: 100 },
@@ -167,14 +168,6 @@ const defaultColumns: ColumnType[] = [
   },
   { label: '完成日期', prop: 'FINISHED_AT', align: 'center', width: 120 },
   { label: '滞留天数', prop: 'STRANDED', align: 'center', width: 100 },
-  {
-    label: '封装供应商',
-    prop: 'SUPPLIER_FULL_NAME',
-    align: 'left',
-    width: 150,
-    fixed: 'right',
-    showOverflowTooltip: true
-  },
   { label: '研磨', prop: 'POLISHING', align: 'center', width: 80 },
   { label: '切割', prop: 'CUTTING', align: 'center', width: 80 },
   { label: '待装片', prop: 'WAITING_FOR_INSTALLATION', align: 'center', width: 80 },
@@ -194,11 +187,19 @@ const defaultColumns: ColumnType[] = [
   { label: '测编打印', prop: 'MEASUREMENT_AND_PRINTING', align: 'center', width: 100 },
   { label: '外观检', prop: 'APPEARANCE_INSPECTION', align: 'center', width: 100 },
   { label: '包装', prop: 'PACKING', align: 'center', width: 80 },
-  { label: '待入库', prop: 'WAITING_FOR_WAREHOUSE_INVENTORY', align: 'center', width: 80 }
+  { label: '待入库', prop: 'WAITING_FOR_WAREHOUSE_INVENTORY', align: 'center', width: 80 },
+  {
+    label: '封装供应商',
+    prop: 'SUPPLIER_FULL_NAME',
+    align: 'left',
+    width: 150,
+    showOverflowTooltip: true
+  }
 ]
 
 // 默认显示的列
 const defaultVisibleColumns = [
+  'selection',
   'index',
   'DOC_NO',
   'ITEM_CODE',
@@ -211,8 +212,7 @@ const defaultVisibleColumns = [
   'ONLINE_TOTAL',
   'WAREHOUSE_INVENTORY',
   'STRANDED',
-  'HOLD_INFO',
-  'SUPPLIER_FULL_NAME'
+  'HOLD_INFO'
 ]
 
 // 列显示状态接口
@@ -276,9 +276,61 @@ const updateColumnVisible = (key: string | undefined) => {
 const visibleColumns = computed(() => {
   return defaultColumns.filter((col) => {
     const key = col.type || col.prop
-    return key ? columnVisible.value[key] : false
+    return key ? columnVisible.value[key] !== false : false
   })
 })
+
+// 选中行数据
+const selectedRows = ref<AssyWip[]>([])
+
+// 计算选中行的合计
+const selectedSummary = computed(() => {
+  if (!selectedRows.value.length) return null
+
+  return {
+    onlineTotal: selectedRows.value.reduce((sum, row) => sum + (Number(row.ONLINE_TOTAL) || 0), 0),
+    warehouseInventory: selectedRows.value.reduce(
+      (sum, row) => sum + (Number(row.WAREHOUSE_INVENTORY) || 0),
+      0
+    )
+  }
+})
+
+// 处理选择变化
+const handleSelectionChange = (rows: AssyWip[]) => {
+  selectedRows.value = rows
+}
+
+// 表格合计行
+const getSummaries = (param: { columns: any[]; data: any[] }) => {
+  const { columns } = param
+  const sums: string[] = []
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计'
+      return
+    }
+    if (index === 1) {
+      sums[index] = `已选${selectedRows.value.length}项`
+      return
+    }
+
+    const values = selectedRows.value.map((item) => Number(item[column.property]) || 0)
+    if (!values.every((value) => Number.isNaN(value))) {
+      sums[index] = `${values.reduce((prev, curr) => {
+        const value = Number(curr)
+        if (!Number.isNaN(value)) {
+          return prev + curr
+        } else {
+          return prev
+        }
+      }, 0)}`
+    } else {
+      sums[index] = ''
+    }
+  })
+  return sums
+}
 
 // 初始化
 onMounted(() => {
@@ -421,6 +473,21 @@ onMounted(() => {
         </ElPopover>
       </div>
 
+      <!-- 选中统计信息 -->
+      <div v-if="selectedSummary" class="mb-4 p-4 bg-blue-50 rounded-md">
+        <span class="font-bold mr-8">已选择 {{ selectedRows.length }} 项</span>
+        <span class="mr-8"
+          >在线合计:
+          <span class="text-blue-600 font-bold">{{ selectedSummary.onlineTotal }}</span></span
+        >
+        <span
+          >仓库库存合计:
+          <span class="text-blue-600 font-bold">{{
+            selectedSummary.warehouseInventory
+          }}</span></span
+        >
+      </div>
+
       <!-- 表格 -->
       <ElTable
         v-loading="loading"
@@ -428,6 +495,9 @@ onMounted(() => {
         border
         class="w-full"
         header-cell-class-name="table-header"
+        @selection-change="handleSelectionChange"
+        :summary-method="getSummaries"
+        show-summary
       >
         <template v-for="item in visibleColumns" :key="item.prop || item.type">
           <ElTableColumn v-bind="item" v-if="!item.hidden">
@@ -613,6 +683,16 @@ onMounted(() => {
 
   100% {
     opacity: 1;
+  }
+}
+
+:deep(.el-table__footer) {
+  font-weight: bold;
+  color: var(--el-color-primary);
+  background-color: var(--el-fill-color-light);
+
+  .cell {
+    text-align: center;
   }
 }
 </style>

@@ -13,7 +13,10 @@ import type {
   AssyOrderSupplierResponse,
   AssyBomQuery,
   AssyBomResponse,
-  AssyAnalyzeTotalResponse
+  AssyAnalyzeTotalResponse,
+  AssyAnalyzeLoadingResponse,
+  AssyAnalyzeLoadingQuery,
+  AssyYearTrendResponse
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
@@ -72,5 +75,18 @@ export const exportAssyListApi = (query: AssyOrderQuery) => {
 export const getAssyAnalyzeTotalApi = () => {
   return request.get<AssyAnalyzeTotalResponse>({
     url: '/assy/analyze/total'
+  })
+}
+
+export const getAssyAnalyzeLoadingApi = (query: AssyAnalyzeLoadingQuery) => {
+  return request.get<AssyAnalyzeLoadingResponse>({
+    url: '/assy/analyze/loading',
+    params: query
+  })
+}
+
+export const getAssyYearTrendApi = () => {
+  return request.get<AssyYearTrendResponse>({
+    url: '/assy/analyze/year-trend'
   })
 }

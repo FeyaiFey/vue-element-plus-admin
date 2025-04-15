@@ -19,7 +19,9 @@ let totalState = reactive<AssyAnalyzeTotalResponse>({
   receipt: 0,
   wip: 0,
   leadTime: 0,
-  yields: 0
+  yields: 0,
+  exceed: 0,
+  this_month_receipt: 0
 })
 
 const getAssyAnalyzeTotal = async () => {
@@ -56,7 +58,7 @@ getAssyAnalyzeTotal()
                   class="text-20px font-700 text-right"
                   :start-val="0"
                   :end-val="totalState.receipt"
-                  :duration="2600"
+                  :duration="2500"
                 />
               </div>
             </div>
@@ -85,7 +87,7 @@ getAssyAnalyzeTotal()
                   class="text-20px font-700 text-right"
                   :start-val="0"
                   :end-val="totalState.wip"
-                  :duration="2600"
+                  :duration="2500"
                 />
               </div>
             </div>
@@ -114,7 +116,7 @@ getAssyAnalyzeTotal()
                   class="text-20px font-700 text-right"
                   :start-val="0"
                   :end-val="totalState.leadTime"
-                  :duration="2600"
+                  :duration="2500"
                 />
               </div>
             </div>
@@ -143,7 +145,8 @@ getAssyAnalyzeTotal()
                   class="text-20px font-700 text-right"
                   :start-val="0"
                   :end-val="totalState.yields"
-                  :duration="2600"
+                  :duration="2500"
+                  :decimals="2"
                 />
               </div>
             </div>

@@ -158,4 +158,35 @@ export interface AssyAnalyzeTotalResponse {
   wip: number
   leadTime: number
   yields: number
+  exceed: number
+  this_month_receipt: number
+}
+
+export interface AssyAnalyzeLoadingQuery {
+  range_type: string
+}
+
+export interface AssyAnalyzeLoadingResponse {
+  Date: string
+  SOP8_12R: number
+  SOP8: number
+  DFN8: number
+  SOP16_12R: number
+  SOP16: number
+  SOP14_12R: number
+  SOP14: number
+  TSSOP20: number
+  SOT26: number
+  SOT25_20R: number
+  SOT25_14R: number
+  SSOP24: number
+  ESSOP10: number
+  QFN20: number
+  LQFP32: number
+}
+
+export interface AssyYearTrendResponse {
+  qty: number
+  packageType: string
+  year: number
 }

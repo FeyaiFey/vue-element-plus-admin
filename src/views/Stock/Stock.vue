@@ -277,7 +277,16 @@ const createTextFilterHeader = (key: string, title: string) => ({
   key,
   dataKey: key,
   title,
-  width: key === 'ITEM_CODE' ? 260 : key === 'ITEM_NAME' ? 180 : 120,
+  width:
+    key === 'ITEM_CODE'
+      ? 260
+      : key === 'ITEM_NAME'
+        ? 180
+        : key === 'WAREHOUSE_NAME'
+          ? 200
+          : key === 'LOT_CODE'
+            ? 300
+            : 120,
   align: 'center' as const,
   headerAlign: 'center' as const,
   headerCellRenderer: ({ column }) => {

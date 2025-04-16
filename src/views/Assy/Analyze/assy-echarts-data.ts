@@ -186,7 +186,7 @@ export const generateGaugeOptions = (value: number): EChartsOption => {
       {
         name: 'Pressure',
         type: 'gauge',
-        radius: '110%',
+        radius: '100%',
         center: ['50%', '60%'],
         progress: {
           show: true
@@ -311,7 +311,16 @@ export const generateYearTrendOptions = (data: any[]): EChartsOption => {
   }
 }
 
-export const generateAssyYieldOptions = (value: number): EChartsOption => {
+export const generateAssyExceedOptions = (value: number): EChartsOption => {
+  // 根据数值范围确定颜色
+  const getColor = (value: number) => {
+    if (value <= 30) return '#67C23A' // 绿色
+    if (value <= 60) return '#E6A23C' // 黄色
+    return '#F56C6C' // 红色
+  }
+
+  const currentColor = getColor(value)
+
   return {
     animationDuration: 2500,
     tooltip: {
@@ -321,14 +330,10 @@ export const generateAssyYieldOptions = (value: number): EChartsOption => {
       {
         name: '超期率',
         type: 'gauge',
-        radius: '110%',
+        radius: '100%',
         center: ['50%', '60%'],
         min: 0,
         max: 100,
-        progress: {
-          show: true,
-          width: 18
-        },
         axisLine: {
           lineStyle: {
             width: 18,
@@ -337,6 +342,11 @@ export const generateAssyYieldOptions = (value: number): EChartsOption => {
               [0.6, '#E6A23C'], // 30-60% 黄色
               [1, '#F56C6C'] // 60-100% 红色
             ]
+          }
+        },
+        pointer: {
+          itemStyle: {
+            color: currentColor
           }
         },
         axisTick: {
@@ -356,7 +366,7 @@ export const generateAssyYieldOptions = (value: number): EChartsOption => {
           }
         },
         axisLabel: {
-          color: 'auto',
+          color: 'inherit',
           distance: 25,
           fontSize: 14,
           formatter: function (value: number) {
@@ -368,15 +378,155 @@ export const generateAssyYieldOptions = (value: number): EChartsOption => {
         },
         detail: {
           valueAnimation: true,
-          formatter: (value: number) => value.toFixed(2) + '%'
+          formatter: (value: number) => value.toFixed(2) + '%',
+          color: currentColor,
+          fontSize: 20,
+          fontWeight: 'bold'
         },
         data: [
           {
             value: value,
-            name: '超期率'
+            name: '超期率',
+            itemStyle: {
+              color: currentColor
+            }
           }
         ]
       }
     ]
+  }
+}
+
+export const generateAssySupplyAnalyzeOptions = (data: any[]): EChartsOption => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return {
+      title: {
+        text: '暂无数据',
+        left: 'center',
+        top: 'center'
+      }
+    }
+  }
+
+  // 获取所有供应商
+  const suppliers = [...new Set(data.map((item) => item.Supplier))]
+
+  // 定义颜色数组
+  const colors = [
+    '#5470c6',
+    '#91cc75',
+    '#fac858',
+    '#ee6666',
+    '#73c0de',
+    '#3ba272',
+    '#fc8452',
+    '#9a60b4',
+    '#ea7ccc',
+    '#1E88E5',
+    '#FF6B6B',
+    '#4ECDC4',
+    '#45B7D1',
+    '#96CEB4',
+    '#FFEEAD',
+    '#D4A5A5',
+    '#9B59B6',
+    '#3498DB',
+    '#E67E22',
+    '#2ECC71',
+    '#F1C40F',
+    '#E74C3C',
+    '#34495E',
+    '#16A085',
+    '#F39C12'
+  ]
+
+  // 计算最大封装类型数用于气泡大小计算
+  const maxPackageTypeCount = Math.max(...data.map((item) => item.PackageTypeCount))
+
+  // 计算气泡大小的函数
+  const sizeFunction = (value: number) => {
+    const maxSize = 100
+    const minSize = 10
+    return minSize + (value / maxPackageTypeCount) * (maxSize - minSize)
+  }
+
+  // 为每个供应商创建系列
+  const series: echarts.ScatterSeriesOption[] = suppliers.map((supplier, index) => {
+    const supplierData = data.filter((item) => item.Supplier === supplier)
+    return {
+      name: supplier,
+      type: 'scatter',
+      data: supplierData.map((item) => ({
+        value: [item.DataRowCount, item.TotalOrderQty, item.PackageTypeCount],
+        DataRowCount: item.DataRowCount,
+        TotalOrderQty: item.TotalOrderQty,
+        PackageTypeCount: item.PackageTypeCount
+      })),
+      symbolSize: (val) => sizeFunction(val[2]),
+      itemStyle: {
+        color: colors[index % colors.length]
+      },
+      emphasis: {
+        focus: 'series',
+        itemStyle: {
+          shadowBlur: 10,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
+        }
+      }
+    }
+  })
+
+  return {
+    animationDuration: 2500,
+    title: {
+      text: '过去一年封装厂封装形式和订单量分析',
+      left: 'center',
+      top: '3%'
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: (params: any) => {
+        return `
+          供应商: ${params.seriesName}<br/>
+          订单数: ${params.data.DataRowCount}<br/>
+          总订单量: ${params.data.TotalOrderQty}<br/>
+          封装类型数: ${params.data.PackageTypeCount}
+        `
+      }
+    },
+    legend: {
+      bottom: '0',
+      left: 'center',
+      data: suppliers
+    },
+    grid: {
+      left: '1%',
+      right: '4%',
+      bottom: '20%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'log',
+      name: '订单数',
+      nameLocation: 'middle',
+      nameGap: 30,
+      splitLine: {
+        lineStyle: {
+          type: 'dashed'
+        }
+      }
+    },
+    yAxis: {
+      type: 'log',
+      name: '总订单量',
+      nameLocation: 'end',
+      nameGap: 30,
+      splitLine: {
+        lineStyle: {
+          type: 'dashed'
+        }
+      }
+    },
+    series: series
   }
 }

@@ -24,7 +24,8 @@ import {
   DatasetComponent,
   TransformComponent,
   DataZoomComponent,
-  ToolboxComponent
+  ToolboxComponent,
+  VisualMapComponent
 } from 'echarts/components'
 
 import { CanvasRenderer } from 'echarts/renderers'
@@ -51,7 +52,8 @@ echarts.use([
   DatasetComponent,
   TransformComponent,
   DataZoomComponent,
-  ToolboxComponent
+  ToolboxComponent,
+  VisualMapComponent
 ])
 
 export default echarts

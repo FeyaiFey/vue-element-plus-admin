@@ -190,3 +190,10 @@ export interface AssyYearTrendResponse {
   packageType: string
   year: number
 }
+
+export interface AssySupplyAnalyzeResponse {
+  Supplier: string
+  DataRowCount: number
+  TotalOrderQty: number
+  PackageTypeCount: number
+}

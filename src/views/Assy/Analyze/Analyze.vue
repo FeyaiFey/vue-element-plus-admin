@@ -19,10 +19,20 @@ import {
   dateRangeOptions,
   packageTypeOptions,
   generateYearTrendOptions,
-  generateAssyYieldOptions
+  generateAssyExceedOptions,
+  generateAssySupplyAnalyzeOptions
 } from './assy-echarts-data'
-import { getAssyAnalyzeLoadingApi, getAssyAnalyzeTotalApi, getAssyYearTrendApi } from '@/api/assy'
-import type { AssyAnalyzeLoadingResponse, AssyYearTrendResponse } from '@/api/assy/type'
+import {
+  getAssyAnalyzeLoadingApi,
+  getAssyAnalyzeTotalApi,
+  getAssyYearTrendApi,
+  getAssySupplyAnalyzeApi
+} from '@/api/assy'
+import type {
+  AssyAnalyzeLoadingResponse,
+  AssyYearTrendResponse,
+  AssySupplyAnalyzeResponse
+} from '@/api/assy/type'
 
 const loading = ref(true)
 const selectedPackageType = ref('SOP8_12R')
@@ -30,6 +40,7 @@ const selectedDateRange = ref('0')
 
 const assyAnalyzeLoadingData = ref<AssyAnalyzeLoadingResponse[]>([])
 const assyAnalyzeYearTrendData = ref<AssyYearTrendResponse[]>([])
+const assySupplyAnalyzeData = ref<AssySupplyAnalyzeResponse[]>([])
 const thisMonthReceipt = ref(0)
 const exceed_rate = ref(0)
 
@@ -37,7 +48,7 @@ const lineOptionsData = reactive<EChartsOption>({}) as EChartsOption
 const receiptGaugeOptionsData = reactive<EChartsOption>({}) as EChartsOption
 const yearTrendData = reactive<EChartsOption>({}) as EChartsOption
 const exceedGaugeOptionsData = reactive<EChartsOption>({}) as EChartsOption
-
+const supplyAnalyzeData = reactive<EChartsOption>({}) as EChartsOption
 // 获取本月装片量
 const getThisMonthReceipt = async () => {
   try {
@@ -83,6 +94,21 @@ const getAssyAnalyzeYearTrendData = async () => {
   }
 }
 
+// 获取供应商分析数据
+const getAssySupplyAnalyzeData = async () => {
+  try {
+    const res = await getAssySupplyAnalyzeApi()
+    if (Array.isArray(res.data)) {
+      assySupplyAnalyzeData.value = res.data
+      return res.data
+    }
+    return null
+  } catch (error) {
+    console.error('获取供应商分析数据失败:', error)
+    return null
+  }
+}
+
 // 更新所有图表
 const updateAllCharts = () => {
   // 更新仪表盘
@@ -95,19 +121,22 @@ const updateAllCharts = () => {
   // 更新年度趋势图
   Object.assign(yearTrendData, generateYearTrendOptions(assyAnalyzeYearTrendData.value))
   // 更新超期率图
-  Object.assign(exceedGaugeOptionsData, generateAssyYieldOptions(exceed_rate.value))
+  Object.assign(exceedGaugeOptionsData, generateAssyExceedOptions(exceed_rate.value))
+  // 更新供应商分析图
+  Object.assign(supplyAnalyzeData, generateAssySupplyAnalyzeOptions(assySupplyAnalyzeData.value))
 }
 
 // 加载所有数据
 const loadAllData = async () => {
   loading.value = true
   try {
-    const [monthData, chartData, yearTrendData] = await Promise.all([
+    const [monthData, chartData, yearTrendData, supplyAnalyzeData] = await Promise.all([
       getThisMonthReceipt(),
       getAssyAnalyzeLoadingData(),
-      getAssyAnalyzeYearTrendData()
+      getAssyAnalyzeYearTrendData(),
+      getAssySupplyAnalyzeData()
     ])
-    if (monthData && chartData && yearTrendData) {
+    if (monthData && chartData && yearTrendData && supplyAnalyzeData) {
       updateAllCharts()
     }
   } catch (error) {
@@ -137,19 +166,24 @@ onMounted(() => {
 <template>
   <PanelGroup />
   <ElRow :gutter="20" justify="space-between">
-    <ElCol :xl="6" :lg="12" :md="12" :sm="24" :xs="24">
+    <ElCol :xl="6" :lg="6" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <Echart :options="receiptGaugeOptionsData" :height="300" />
       </ElCard>
     </ElCol>
-    <ElCol :xl="12" :lg="12" :md="12" :sm="24" :xs="24">
+    <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <Echart :options="yearTrendData" :height="300" />
       </ElCard>
     </ElCol>
-    <ElCol :xl="6" :lg="12" :md="12" :sm="24" :xs="24">
+    <ElCol :xl="6" :lg="6" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <Echart :options="exceedGaugeOptionsData" :height="300" />
+      </ElCard>
+    </ElCol>
+    <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24">
+      <ElCard shadow="hover" class="mb-20px">
+        <Echart :options="supplyAnalyzeData" :height="500" />
       </ElCard>
     </ElCol>
     <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24">

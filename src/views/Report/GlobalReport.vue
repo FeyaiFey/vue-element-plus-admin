@@ -349,7 +349,7 @@ const handleNumberClick = async (row: GlobalReport, columnKey: string) => {
 
         const res = await getAssyWipApi({
           [`${paramName1}`]: paramValue1,
-          is_finished: 0
+          is_tr: undefined
         })
         dialogData.value = res.data.list
         dialogVisible.value = true

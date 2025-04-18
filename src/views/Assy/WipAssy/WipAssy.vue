@@ -36,7 +36,7 @@ const searchParams = reactive<AssyWipQuery>({
   item_code: '',
   supplier: '',
   current_process: '',
-  is_finished: 0,
+  is_tr: undefined,
   is_stranded: undefined,
   days: undefined
 })
@@ -55,7 +55,7 @@ const handleReset = () => {
   searchParams.item_code = ''
   searchParams.supplier = ''
   searchParams.current_process = ''
-  searchParams.is_finished = 0
+  searchParams.is_tr = undefined
   searchParams.is_stranded = undefined
   searchParams.days = undefined
   handleSearch()
@@ -95,10 +95,11 @@ interface ColumnType extends Partial<TableColumnCtx<AssyWip>> {
 // 获取状态标签类型
 const getCurrentProcessType = (
   CURRENT_PROCESS: string
-): 'info' | 'danger' | 'primary' | 'success' => {
+): 'info' | 'danger' | 'primary' | 'success' | 'warning' => {
   if (!CURRENT_PROCESS) return 'info'
   if (CURRENT_PROCESS === '已完成') return 'info'
   if (CURRENT_PROCESS === 'STOCK') return 'primary'
+  if (CURRENT_PROCESS === '需确认') return 'warning'
   return 'success'
 }
 
@@ -264,14 +265,6 @@ const handleCheckAllChange = (val: boolean) => {
   isIndeterminate.value = false
 }
 
-// 更新列显示状态
-const updateColumnVisible = (key: string | undefined) => {
-  if (key) {
-    columnVisible.value[key] = !columnVisible.value[key]
-    handleCheckedColumnsChange()
-  }
-}
-
 // 可见列
 const visibleColumns = computed(() => {
   return defaultColumns.filter((col) => {
@@ -397,11 +390,11 @@ onMounted(() => {
               </ElFormItem>
             </ElCol>
             <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="是否完成">
-                <ElSelect v-model="searchParams.is_finished" placeholder="请选择是否完成" clearable>
+              <ElFormItem label="是否编带">
+                <ElSelect v-model="searchParams.is_tr" placeholder="请选择是否编带" clearable>
                   <ElOption label="全部" value="" />
-                  <ElOption label="已完成" :value="1" />
-                  <ElOption label="未完成" :value="0" />
+                  <ElOption label="是" :value="1" />
+                  <ElOption label="否" :value="0" />
                 </ElSelect>
               </ElFormItem>
             </ElCol>
@@ -464,7 +457,8 @@ onMounted(() => {
                 v-for="col in defaultColumns.slice(2)"
                 :key="col.prop"
                 v-model="columnVisible[col.prop || '']"
-                @change="() => updateColumnVisible(col.prop)"
+                :label="col.prop"
+                @change="handleCheckedColumnsChange"
               >
                 {{ col.label }}
               </ElCheckbox>
@@ -649,6 +643,7 @@ onMounted(() => {
 :deep(.status-tag) {
   min-width: 80px;
   padding: 0 12px;
+  font-size: 14px;
   text-align: center;
 }
 

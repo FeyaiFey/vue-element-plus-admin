@@ -205,7 +205,7 @@ const getWipList = async () => {
     wipTableState.loading = true
     const res = await getAssyWipApi({
       doc_no: currentOrderNo.value,
-      is_finished: 0,
+      is_tr: undefined,
       pageSize: wipTableState.pageSize,
       pageIndex: wipTableState.currentPage
     })

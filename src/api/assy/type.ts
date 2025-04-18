@@ -42,9 +42,9 @@ export interface AssyWipQuery {
   item_code?: string
   supplier?: string
   current_process?: string
-  is_finished?: number | string
-  is_stranded?: number | string
-  days?: number
+  is_tr?: number | string | undefined
+  is_stranded?: number | string | undefined
+  days?: number | undefined
   pageIndex?: number
   pageSize?: number
 }

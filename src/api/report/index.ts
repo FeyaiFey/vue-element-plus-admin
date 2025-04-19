@@ -1,5 +1,5 @@
 import request from '@/axios'
-import type { GlobalReport, AxiosResponse } from './type'
+import type { GlobalReport, AxiosResponse, SopAnalyzeResponse } from './type'
 
 export const getGlobalReportApi = () => {
   return request.get<GlobalReport>({
@@ -14,5 +14,11 @@ export const exportGlobalReportApi = () => {
     headers: {
       'Content-Type': 'application/json'
     }
+  })
+}
+
+export const getSopAnalyzeApi = () => {
+  return request.get<SopAnalyzeResponse>({
+    url: '/report/sop'
   })
 }

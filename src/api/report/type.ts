@@ -31,3 +31,17 @@ export interface AxiosResponse {
   data: any
   headers: any
 }
+
+export interface SopAnalyzeResponse {
+  ID?: number
+  ITEM_NAME?: string
+  ABTR?: string
+  SAFE_STOCK?: number
+  LAST_MONTH_SALE?: number
+  CP_QTY?: number
+  BC_QTY?: number
+  WIP_QTY_WITHOUT_STOCK?: number
+  ASSY_STOCK?: number
+  TOTAL_STOCK?: number
+  INVENTORT_GAP?: number
+}

@@ -357,7 +357,7 @@ watch(
                 <ElInput :value="waferInfo.MAIN_CHIP" disabled />
               </ElFormItem>
 
-              <ElFormItem v-if="waferInfo.MAIN_CHIP_GROSS_DIE" label="A芯总Die数">
+              <ElFormItem v-if="waferInfo.MAIN_CHIP_GROSS_DIE" label="A芯GrossDie">
                 <ElInput :value="waferInfo.MAIN_CHIP_GROSS_DIE" disabled />
               </ElFormItem>
 
@@ -376,7 +376,7 @@ watch(
                 <ElInput :value="waferInfo.DEPUTY_CHIP" disabled />
               </ElFormItem>
 
-              <ElFormItem v-if="waferInfo.DEPUTY_CHIP_GROSS_DIE" label="B芯总Die数">
+              <ElFormItem v-if="waferInfo.DEPUTY_CHIP_GROSS_DIE" label="B芯GrossDie">
                 <ElInput :value="waferInfo.DEPUTY_CHIP_GROSS_DIE" disabled />
               </ElFormItem>
 

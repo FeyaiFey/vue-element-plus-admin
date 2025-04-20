@@ -16,7 +16,7 @@ import {
   ElLoading
 } from 'element-plus'
 import { getSopAnalyzeApi, exportSopReportApi } from '@/api/report'
-import { submitAssyOrdersApi } from '@/api/assy'
+import { submitAssyOrdersApi, exportAssyOrderApi } from '@/api/assy'
 import type { SopAnalyzeResponse } from '@/api/report/type'
 import { Icon } from '@/components/Icon'
 import { AxiosResponse } from 'axios'
@@ -632,6 +632,130 @@ const handleBatchDelete = () => {
     })
 }
 
+// 导出封装订单
+const handleExportAssyOrders = async () => {
+  if (assyOrderList.value.length === 0) {
+    ElMessage.warning('没有可导出的记录')
+    return
+  }
+
+  try {
+    const loadingMessage = ElMessage({
+      type: 'info',
+      message: '正在导出，请稍候...',
+      duration: 0 // 设置为0表示不自动关闭
+    })
+
+    // 构造导出参数
+    const exportParams = {
+      orders: assyOrderList.value.map((item) => ({
+        itemName: item.itemName,
+        itemCode: item.itemCode,
+        abtr: item.abtr,
+        businessQty: item.businessQty,
+        requirementType: item.requirementType,
+        emergency: item.emergency,
+        sales: item.sales,
+        remark: item.remark,
+        mainChip: item.mainChip || '',
+        deputyChip: item.deputyChip || '',
+        mainChipUsage: item.mainChipUsage || 0,
+        deputyChipUsage: item.deputyChipUsage || 0
+      }))
+    }
+
+    const res = (await exportAssyOrderApi(exportParams)) as unknown as AxiosResponse
+    // 如果是文件流，直接创建blob
+    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+    const disposition = res.headers?.['content-disposition']
+    let filename = `封装订单_${new Date().getTime()}.xlsx`
+    if (disposition) {
+      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+      const matches = filenameRegex.exec(disposition)
+      if (matches != null && matches[1]) {
+        // 移除UTF-8前缀
+        const rawFilename = matches[1].replace(/['"]/g, '')
+        filename = decodeURIComponent(rawFilename.replace(/^UTF-8/, ''))
+      }
+    }
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    window.URL.revokeObjectURL(url)
+
+    // 在文件下载框弹出后关闭提示消息
+    loadingMessage.close()
+    ElMessage.success('导出成功')
+
+    // 导出成功后，自动运行批量提交(不需要确认)
+    setTimeout(async () => {
+      // 直接执行提交逻辑而不显示确认对话框
+      await autoSubmitOrders()
+    }, 1000)
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败: ' + (error instanceof Error ? error.message : String(error)))
+  }
+}
+
+// 自动提交封装单(不需要确认)
+const autoSubmitOrders = async () => {
+  if (assyOrderList.value.length === 0) {
+    return
+  }
+
+  let loadingInstance: any = null
+
+  try {
+    // 显示加载状态
+    loadingInstance = ElLoading.service({
+      lock: true,
+      text: '正在提交...',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+
+    // 构造符合API要求的数据格式
+    const requestData = {
+      orders: assyOrderList.value.map((item) => ({
+        itemName: item.itemName,
+        itemCode: item.itemCode,
+        abtr: item.abtr,
+        businessQty: item.businessQty, // 这里已经是"只"为单位
+        requirementType: item.requirementType,
+        emergency: item.emergency,
+        sales: item.sales,
+        remark: item.remark,
+        mainChip: item.mainChip || '',
+        deputyChip: item.deputyChip || '',
+        mainChipUsage: item.mainChipUsage || 0,
+        deputyChipUsage: item.deputyChipUsage || 0
+      }))
+    }
+
+    // 调用API提交数据
+    const res = await submitAssyOrdersApi(requestData)
+
+    if (res.code === 200) {
+      console.log('批量提交数据成功:', requestData)
+
+      // 提交成功后清空列表
+      assyOrderList.value = []
+    } else {
+      ElMessage.error(`提交失败: ${res.message || '未知错误'}`)
+    }
+  } catch (error) {
+    console.error('提交失败:', error)
+    ElMessage.error('提交失败: ' + (error instanceof Error ? error.message : String(error)))
+  } finally {
+    // 无论成功还是失败，都确保关闭loading
+    if (loadingInstance) {
+      loadingInstance.close()
+    }
+  }
+}
+
 ElNotification.warning({
   title: '注意',
   message:
@@ -756,6 +880,10 @@ ElNotification.warning({
               <Icon icon="vi-ri:delete-bin-line" class="mr-1" />
               删除所选({{ selectedOrders.length }})
             </ElButton>
+            <ElButton type="success" class="mr-2" @click="handleExportAssyOrders">
+              <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
+              导出Excel
+            </ElButton>
             <ElButton type="primary" @click="batchSubmitOrders">
               <Icon icon="vi-ri:upload-cloud-line" class="mr-2" />
               批量提交
@@ -787,6 +915,13 @@ ElNotification.warning({
           <ElTableColumn
             prop="abtr"
             label="管装/编带"
+            width="120"
+            header-align="center"
+            align="center"
+          />
+          <ElTableColumn
+            prop="businessQty"
+            label="需求数量"
             width="120"
             header-align="center"
             align="center"

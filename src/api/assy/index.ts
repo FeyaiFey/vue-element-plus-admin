@@ -110,3 +110,14 @@ export const submitAssyOrdersApi = (data: AssySubmitOrdersRequest) => {
     data
   })
 }
+
+export const exportAssyOrderApi = (data: AssySubmitOrdersRequest) => {
+  return request.post<AxiosResponse>({
+    url: '/assy/orders/export',
+    data,
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}

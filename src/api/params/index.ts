@@ -13,7 +13,10 @@ import type {
   TestingProgramQuery,
   TestingProgramResponse,
   BurningProgramQuery,
-  BurningProgramResponse
+  BurningProgramResponse,
+  ItemWaferInfoQuery,
+  ItemWaferInfoResponse,
+  SalesResponse
 } from './type'
 
 export const getFeatureGroupNameApi = (query: FeatureGroupNameQuery) => {
@@ -62,5 +65,18 @@ export const getBurningProgramApi = (query: BurningProgramQuery) => {
   return request.get<BurningProgramResponse>({
     url: '/params/burning_program',
     params: query
+  })
+}
+
+export const getWaferInfoApi = (query: ItemWaferInfoQuery) => {
+  return request.get<ItemWaferInfoResponse>({
+    url: '/params/requirement/wafer-info',
+    params: query
+  })
+}
+
+export const getSalesApi = () => {
+  return request.get<SalesResponse>({
+    url: '/params/requirement/sales'
   })
 }

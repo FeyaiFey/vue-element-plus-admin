@@ -22,3 +22,13 @@ export const getSopAnalyzeApi = () => {
     url: '/report/sop'
   })
 }
+
+export const exportSopReportApi = () => {
+  return request.get<AxiosResponse>({
+    url: '/report/sop/export',
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}

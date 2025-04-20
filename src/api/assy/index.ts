@@ -17,7 +17,8 @@ import type {
   AssyAnalyzeLoadingResponse,
   AssyAnalyzeLoadingQuery,
   AssyYearTrendResponse,
-  AssySupplyAnalyzeResponse
+  AssySupplyAnalyzeResponse,
+  AssySubmitOrdersRequest
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
@@ -95,5 +96,17 @@ export const getAssyYearTrendApi = () => {
 export const getAssySupplyAnalyzeApi = () => {
   return request.get<AssySupplyAnalyzeResponse>({
     url: '/assy/analyze/supply'
+  })
+}
+
+/**
+ * 批量提交封装单
+ * @param data 封装单数据列表
+ * @returns 提交结果
+ */
+export const submitAssyOrdersApi = (data: AssySubmitOrdersRequest) => {
+  return request.post<IResponse>({
+    url: '/assy/orders/batch',
+    data
   })
 }

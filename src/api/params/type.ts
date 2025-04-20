@@ -101,3 +101,20 @@ export interface BurningProgram {
 export interface BurningProgramResponse {
   list: BurningProgram[]
 }
+
+export interface ItemWaferInfoQuery {
+  item_name: string
+}
+
+export interface ItemWaferInfoResponse {
+  CHIP_NAME: string
+  MAIN_CHIP: string
+  MAIN_CHIP_GROSS_DIE: number
+  DEPUTY_CHIP: string
+  DEPUTY_CHIP_GROSS_DIE: number
+}
+
+export interface SalesResponse {
+  label: string
+  value: string
+}

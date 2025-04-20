@@ -197,3 +197,24 @@ export interface AssySupplyAnalyzeResponse {
   TotalOrderQty: number
   PackageTypeCount: number
 }
+
+// 封装单提交参数类型
+export interface AssySubmitOrderItem {
+  itemName: string
+  itemCode: string
+  abtr: string
+  businessQty: number // 以"只"为单位的数量
+  requirementType: string // 需求类型
+  emergency: string // 紧急程度
+  sales: string // 销售员
+  remark: string
+  mainChip?: string
+  deputyChip?: string
+  mainChipUsage?: number
+  deputyChipUsage?: number
+}
+
+// 批量提交封装单请求参数
+export interface AssySubmitOrdersRequest {
+  orders: AssySubmitOrderItem[]
+}

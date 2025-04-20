@@ -635,7 +635,7 @@ const handleBatchDelete = () => {
 ElNotification.warning({
   title: '注意',
   message:
-    '只设了编带安全库存的产品请注意该产品管装产品库存和封装数量(管装和编带都设有安全库存的产品除外)!!',
+    '对只设了编带安全库存的产品请注意该产品管装产品库存和封装数量(管装和编带都设有安全库存的产品除外)!!',
   position: 'top-right',
   duration: 300000
 })
@@ -769,16 +769,63 @@ ElNotification.warning({
           style="width: 100%"
           @selection-change="handleOrderSelectionChange"
         >
-          <ElTableColumn type="selection" width="55" />
-          <ElTableColumn prop="itemName" label="品名" width="200" />
-          <ElTableColumn prop="itemCode" label="品号" width="250" />
-          <ElTableColumn prop="abtr" label="管装/编带" width="120" />
-          <ElTableColumn prop="businessQty" label="数量" width="120" />
-          <ElTableColumn prop="requirementType" label="需求类型" width="120" />
-          <ElTableColumn prop="emergency" label="紧急程度" width="120" />
-          <ElTableColumn prop="sales" label="销售员" width="120" />
-          <ElTableColumn prop="remark" label="备注" min-width="180" />
-          <ElTableColumn label="操作" width="200" fixed="right">
+          <ElTableColumn type="selection" width="55" header-align="center" align="center" />
+          <ElTableColumn
+            prop="itemName"
+            label="品名"
+            width="200"
+            header-align="center"
+            align="right"
+          />
+          <ElTableColumn
+            prop="itemCode"
+            label="品号"
+            width="250"
+            header-align="center"
+            align="right"
+          />
+          <ElTableColumn
+            prop="abtr"
+            label="管装/编带"
+            width="120"
+            header-align="center"
+            align="center"
+          />
+          <ElTableColumn
+            prop="requirementType"
+            label="需求类型"
+            width="120"
+            header-align="center"
+            align="center"
+          />
+          <ElTableColumn
+            prop="emergency"
+            label="紧急程度"
+            width="120"
+            header-align="center"
+            align="center"
+          />
+          <ElTableColumn
+            prop="sales"
+            label="销售员"
+            width="120"
+            header-align="center"
+            align="center"
+          />
+          <ElTableColumn
+            prop="remark"
+            label="备注"
+            min-width="180"
+            header-align="center"
+            align="left"
+          />
+          <ElTableColumn
+            label="操作"
+            width="200"
+            fixed="right"
+            header-align="center"
+            align="center"
+          >
             <template #default="{ $index }">
               <ElButton type="primary" size="small" @click="handleEditOrder($index)" text>
                 <Icon icon="vi-ri:edit-line" class="mr-1" />

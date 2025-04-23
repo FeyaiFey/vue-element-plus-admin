@@ -38,3 +38,15 @@ export interface UpdateUserInfoParams {
   status?: number
   password?: string
 }
+
+export interface updateEmailPasswordParams {
+  new_password: string
+}
+
+export interface UserEmailInfo {
+  ID: number
+  EMAIL: string
+  PASSWORD?: string
+  IMAP_SERVER: string
+  SMTP_PORT: number
+}

@@ -18,7 +18,9 @@ import type {
   AssyAnalyzeLoadingQuery,
   AssyYearTrendResponse,
   AssySupplyAnalyzeResponse,
-  AssySubmitOrdersRequest
+  AssySubmitOrdersRequest,
+  CpTestOrdersQuery,
+  CpTestOrdersResponse
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
@@ -115,6 +117,24 @@ export const exportAssyOrderApi = (data: AssySubmitOrdersRequest) => {
   return request.post<AxiosResponse>({
     url: '/assy/orders/export',
     data,
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
+export const getCpTestOrdersApi = (query: CpTestOrdersQuery) => {
+  return request.get<CpTestOrdersResponse>({
+    url: '/assy/cptest/table',
+    params: query
+  })
+}
+
+export const exportCpTestOrdersApi = (query: CpTestOrdersQuery) => {
+  return request.get<AxiosResponse>({
+    url: '/assy/cptest/export',
+    params: query,
     responseType: 'blob',
     headers: {
       'Content-Type': 'application/json'

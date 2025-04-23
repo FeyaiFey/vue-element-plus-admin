@@ -7,6 +7,7 @@ import UploadAvatar from './components/UploadAvatar.vue'
 import { Dialog } from '@/components/Dialog'
 import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
+import EditEmail from './components/EditEmail.vue'
 import { getUserInfoApi } from '@/api/login'
 import { UserType } from '@/api/login/types'
 import { useUserStore } from '@/store/modules/user'
@@ -129,6 +130,9 @@ const getAvatarUrl = computed(() => {
         </ElTabPane>
         <ElTabPane label="修改密码" name="second">
           <EditPassword />
+        </ElTabPane>
+        <ElTabPane label="维护邮箱" name="third">
+          <EditEmail />
         </ElTabPane>
       </ElTabs>
     </ContentWrap>

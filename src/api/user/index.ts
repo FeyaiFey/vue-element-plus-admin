@@ -1,5 +1,11 @@
 import request from '@/axios'
-import type { UserTableParams, UpdateUserInfoParams, updateUserPasswordParams } from './type'
+import type {
+  UserTableParams,
+  UpdateUserInfoParams,
+  updateUserPasswordParams,
+  updateEmailPasswordParams,
+  UserEmailInfo
+} from './type'
 
 export const getUserTableApi = (params: UserTableParams) => {
   return request.get({ url: '/user/list', params })
@@ -19,4 +25,12 @@ export const updateUserInfoApi = (data: UpdateUserInfoParams) => {
 
 export const updateUserPasswordApi = (data: updateUserPasswordParams) => {
   return request.put({ url: '/user/password', data })
+}
+
+export const updateEmailPasswordApi = (data: updateEmailPasswordParams) => {
+  return request.put({ url: '/user/email-password', data })
+}
+
+export const getUserEmailInfoApi = () => {
+  return request.get<UserEmailInfo>({ url: '/user/email-info' })
 }

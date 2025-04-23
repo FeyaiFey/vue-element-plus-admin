@@ -218,3 +218,40 @@ export interface AssySubmitOrderItem {
 export interface AssySubmitOrdersRequest {
   orders: AssySubmitOrderItem[]
 }
+
+export interface CpTestOrdersQuery {
+  item_code?: string
+  item_name?: string
+  lot_name?: string
+  status?: number
+  doc_date_start?: string
+  doc_date_end?: string
+  supplier?: string
+  progress_name?: string
+  testing_program_name?: string
+  pageIndex?: number
+  pageSize?: number
+}
+
+export interface CpTestOrders {
+  ID: number
+  DOC_NO: string
+  ITEM_CODE: string
+  ITEM_NAME: string
+  LOT_NAME: string
+  BUSINESS_QTY: number
+  RECEIPT_QTY: number
+  WIP_QTY: number
+  PROGRESS_NAME: string
+  TESTING_PROGRAM_NAME: string
+  REMARK: string
+  DOC_DATE: string
+  FIRST_ARRIVAL_DATE: string
+  SUPPLIER: string
+  STATUS: string
+}
+
+export interface CpTestOrdersResponse {
+  list: CpTestOrders[]
+  total: number
+}

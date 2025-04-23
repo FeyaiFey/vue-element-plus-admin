@@ -211,7 +211,8 @@ export default {
     stockAnalysis: '库存分析',
     report: '报表管理',
     globalReport: '外协报表',
-    sopReport: '产销协调'
+    sopReport: '产销协调',
+    cpTest: '中测列表'
   },
   permission: {
     hasPermission: '请设置操作权限值'

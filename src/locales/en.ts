@@ -216,7 +216,8 @@ export default {
     stockAnalysis: 'Stock Analysis',
     report: 'Report',
     globalReport: 'External Report',
-    sopReport: 'SOP Report'
+    sopReport: 'SOP Report',
+    cpTest: 'CP Test List'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

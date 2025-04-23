@@ -14,7 +14,7 @@ import {
 } from 'element-plus'
 import { getGlobalReportApi, exportGlobalReportApi } from '@/api/report'
 import { getStockListApi } from '@/api/stock'
-import { getAssyWipApi } from '@/api/assy'
+import { getAssyWipApi, getCpTestOrdersApi } from '@/api/assy'
 import { getPurchaseWipListApi } from '@/api/purchase'
 import type { GlobalReport } from '@/api/report/type'
 import { Icon } from '@/components/Icon'
@@ -137,7 +137,7 @@ interface ColumnConfig {
   param2_name?: string
   param2_value?: string
   by_column_name?: string
-  type: 'stock' | 'assyWip' | 'purchaseWip'
+  type: 'stock' | 'assyWip' | 'purchaseWip' | 'cpWip'
 }
 
 // 列参数配置
@@ -248,10 +248,10 @@ const columnConfigs: Record<string, ColumnConfig> = {
   },
   CP_WIP_QTY: {
     title: '中测数量',
-    param1_name: 'item_code',
-    param1_value: 'CL%REPLACE_TEXT%CP',
+    param1_name: 'item_name',
+    param1_value: '%REPLACE_TEXT%',
     by_column_name: 'MAIN_CHIP',
-    type: 'assyWip'
+    type: 'cpWip'
   },
   TOTAL_RAW_MATERIALS: {
     title: '原材料库存',
@@ -366,6 +366,22 @@ const handleNumberClick = async (row: GlobalReport, columnKey: string) => {
         const res = await getPurchaseWipListApi({
           [`${paramName1}`]: paramValue1,
           is_finished: 0
+        })
+        dialogData.value = res.data.list
+        dialogVisible.value = true
+      } else if (columnConfig.type === 'cpWip') {
+        const byColumnValue = currentColumn.value.by_column_name
+        if (!byColumnValue) return
+
+        const paramName1 = currentColumn.value.param1_name
+        const paramValue1 = currentColumn.value.param1_value.replace(
+          'REPLACE_TEXT',
+          currentRow.value[byColumnValue]
+        )
+
+        const res = await getCpTestOrdersApi({
+          [`${paramName1}`]: paramValue1,
+          status: 0
         })
         dialogData.value = res.data.list
         dialogVisible.value = true
@@ -485,7 +501,7 @@ const allColumns: Column[] = [
   {
     key: 'DEPUTY_CHIP',
     dataKey: 'DEPUTY_CHIP',
-    title: '副芯片',
+    title: 'B芯',
     width: 120,
     align: 'center',
     headerAlign: 'center',
@@ -833,6 +849,26 @@ onMounted(() => {
           <ElTableColumn prop="status" label="状态" align="center" />
           <ElTableColumn prop="stage" label="当前阶段" align="center" />
           <ElTableColumn prop="forecastDate" label="预计交期" align="center" fixed="right" />
+        </ElTable>
+
+        <!-- 中测在制品数据表格 -->
+        <ElTable
+          v-if="currentColumn.type === 'cpWip' && dialogData"
+          :data="dialogData"
+          style="margin-top: 20px"
+          border
+        >
+          <ElTableColumn type="index" label="序号" align="center" />
+          <ElTableColumn prop="DOC_NO" label="订单号" align="center" />
+          <ElTableColumn prop="ITEM_NAME" label="品名" align="center" />
+          <ElTableColumn prop="LOT_NAME" label="批号" align="center" />
+          <ElTableColumn prop="BUSINESS_QTY" label="测试数量" align="center" />
+          <ElTableColumn prop="RECEIPT_QTY" label="完成数量" align="center" />
+          <ElTableColumn prop="WIP_QTY" label="剩余数量" align="center" />
+          <ElTableColumn prop="PROGRESS_NAME" label="测试流程" align="center" />
+          <ElTableColumn prop="TESTING_PROGRAM_NAME" label="测试程序" align="center" />
+          <ElTableColumn prop="DOC_DATE" label="订单日期" align="center" />
+          <ElTableColumn prop="SUPPLIER" label="供应商" align="center" />
         </ElTable>
       </div>
     </ResizeDialog>

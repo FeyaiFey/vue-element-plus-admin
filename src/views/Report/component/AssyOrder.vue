@@ -146,7 +146,7 @@ const fetchWaferInfo = async () => {
     }
 
     // 设置品号为固定格式: "BC-"+itemName+"-AB"
-    formData.itemCode = `BC-${props.itemName}-AB`
+    formData.itemCode = `BC-${props.itemName.replace(/_/g, '-')}-AB`
 
     // 设置晶圆信息
     if (waferInfo.value) {

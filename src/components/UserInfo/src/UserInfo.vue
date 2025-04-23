@@ -35,7 +35,7 @@ const lockScreen = () => {
 }
 
 const toDocument = () => {
-  window.open('https://github.com/FeyaiFey/vue-element-plus-admin')
+  window.open('https://github.com/FeyaiFey/hsun-app.git')
 }
 
 const toPage = (path: string) => {

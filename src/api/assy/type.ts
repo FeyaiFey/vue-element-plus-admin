@@ -198,25 +198,78 @@ export interface AssySupplyAnalyzeResponse {
   PackageTypeCount: number
 }
 
+export interface AssyRequireOrdersQuery {
+  assy_requirements_id?: string
+  itemName?: string
+  requirementType?: string
+  abtr?: string
+  sales?: string
+  status?: string
+  order_date_start?: string
+  order_date_end?: string
+  pageIndex?: number
+  pageSize?: number
+}
+
+export interface AssyRequireOrdersList {
+  ASSY_REQUIREMENTS_ID: string
+  ITEM_NAME: string
+  ITEM_CODE: string
+  ABTR: string
+  BUSINESS_QTY: number // 以"只"为单位的数量
+  REQUIREMENT_TYPE: string // 需求类型
+  EMERGENCY: string // 紧急程度
+  SALES: string // 销售员
+  REMARK: string
+  CHIP_A: string
+  CHIP_A_QTY: number
+  CHIP_B: string
+  CHIP_B_QTY: number
+  STATUS: string
+  CreateDate: string
+  CreateBy: string
+}
+
+export interface AssyRequireOrdersResponse {
+  list: AssyRequireOrdersList[]
+  total: number
+}
+
+export interface AssyRequireOrdersCancel {
+  id: string
+}
+
 // 封装单提交参数类型
 export interface AssySubmitOrderItem {
-  itemName: string
-  itemCode: string
-  abtr: string
-  businessQty: number // 以"只"为单位的数量
-  requirementType: string // 需求类型
-  emergency: string // 紧急程度
-  sales: string // 销售员
-  remark: string
+  assy_requirements_id?: string
+  itemName?: string
+  itemCode?: string
+  abtr?: string
+  businessQty?: number // 以"只"为单位的数量
+  requirementType?: string // 需求类型
+  emergency?: string // 紧急程度
+  sales?: string // 销售员
+  remark?: string
   mainChip?: string
   deputyChip?: string
   mainChipUsage?: number
   deputyChipUsage?: number
+  status?: string
 }
 
 // 批量提交封装单请求参数
 export interface AssySubmitOrdersRequest {
-  orders: AssySubmitOrderItem[]
+  orders?: AssySubmitOrderItem[]
+}
+
+// 作废封装单请求参数
+export interface AssyCancelOrderRequest {
+  id: string
+}
+
+// 批量作废封装单请求参数
+export interface AssyCancelOrdersRequest {
+  ids: string[]
 }
 
 export interface CpTestOrdersQuery {

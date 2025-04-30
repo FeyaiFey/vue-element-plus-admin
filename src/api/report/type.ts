@@ -43,5 +43,50 @@ export interface SopAnalyzeResponse {
   WIP_QTY_WITHOUT_STOCK?: number
   ASSY_STOCK?: number
   TOTAL_STOCK?: number
-  INVENTORT_GAP?: number
+  INVENTORY_GAP?: number
+  INVENTORY_GAP_TOTAL?: number
+}
+
+export interface ChipInfoTraceQuery {
+  CHIP_LOT_CODE?: string
+  WAFER_LOT_CODE?: string
+  SUPPLIER?: string
+  CHIP_NAME?: string
+  WAFER_NAME?: string
+  TESTING_PROGRAM_NAME?: string
+  pageIndex?: number
+  pageSize?: number
+}
+
+export interface ChipInfoTrace {
+  ID?: number
+  DOC_NO?: string
+  ITEM_CODE?: string
+  Z_PACKAGE_TYPE_NAME?: string
+  LOT_CODE?: string
+  BUSINESS_QTY?: number
+  RECEIPTED_PRICE_QTY?: number
+  WIP_QTY?: number
+  Z_PROCESSING_PURPOSE_NAME?: string
+  Z_TESTING_PROGRAM_NAME?: string
+  Z_ASSEMBLY_CODE?: string
+  Z_WIRE_NAME?: string
+  REMARK?: string
+  PURCHASE_DATE?: string
+  FIRST_ARRIVAL_DATE?: string
+  SUPPLIER_FULL_NAME?: string
+  MAIN_CHIP?: string
+  CHIP_CODE?: string
+  LOT_CODE_NAME?: string
+  WAFER_QTY?: number
+  S_QTY?: number
+  WAFER_ID?: string
+  PROGRESS_NAME?: string
+  TESTING_PROGRAM_NAME?: string
+  SUPPLIER?: string
+}
+
+export interface ChipInfoTraceResponse {
+  list: ChipInfoTrace[]
+  total: number
 }

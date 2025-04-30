@@ -212,7 +212,9 @@ export default {
     report: '报表管理',
     globalReport: '外协报表',
     sopReport: '产销协调',
-    cpTest: '中测列表'
+    cpTest: '中测列表',
+    assyOrder: '封装需求',
+    chipTrace: '芯片追溯'
   },
   permission: {
     hasPermission: '请设置操作权限值'

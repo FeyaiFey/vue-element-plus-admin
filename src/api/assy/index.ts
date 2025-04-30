@@ -20,7 +20,10 @@ import type {
   AssySupplyAnalyzeResponse,
   AssySubmitOrdersRequest,
   CpTestOrdersQuery,
-  CpTestOrdersResponse
+  CpTestOrdersResponse,
+  AssyRequireOrdersQuery,
+  AssyRequireOrdersResponse,
+  AssyRequireOrdersCancel
 } from './type'
 
 export const getAssyListApi = (query: AssyOrderQuery) => {
@@ -106,17 +109,38 @@ export const getAssySupplyAnalyzeApi = () => {
  * @param data 封装单数据列表
  * @returns 提交结果
  */
-export const submitAssyOrdersApi = (data: AssySubmitOrdersRequest) => {
+
+export const getAssyRequireOrdersApi = (query: AssyRequireOrdersQuery) => {
+  return request.get<AssyRequireOrdersResponse>({
+    url: '/assy/orders/table',
+    params: query
+  })
+}
+
+export const submitAssyRequireOrdersApi = (data: AssySubmitOrdersRequest) => {
   return request.post<IResponse>({
     url: '/assy/orders/batch',
     data
   })
 }
 
-export const exportAssyOrderApi = (data: AssySubmitOrdersRequest) => {
+export const cancelAssyRequireOrderApi = (data: AssyRequireOrdersCancel) => {
+  return request.post<IResponse>({
+    url: '/assy/orders/cancel',
+    data
+  })
+}
+
+export const deleteAssyRequireOrderApi = (data: AssyRequireOrdersCancel) => {
+  return request.delete<IResponse>({
+    url: '/assy/orders/delete',
+    data
+  })
+}
+
+export const exportAssyRequireOrdersApi = () => {
   return request.post<AxiosResponse>({
     url: '/assy/orders/export',
-    data,
     responseType: 'blob',
     headers: {
       'Content-Type': 'application/json'

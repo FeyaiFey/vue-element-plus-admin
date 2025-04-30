@@ -217,7 +217,9 @@ export default {
     report: 'Report',
     globalReport: 'External Report',
     sopReport: 'SOP Report',
-    cpTest: 'CP Test List'
+    cpTest: 'CP Test List',
+    assyOrder: 'ASSY Order List',
+    chipTrace: 'Chip Trace'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

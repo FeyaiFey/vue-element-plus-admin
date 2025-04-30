@@ -19,6 +19,13 @@ export const sendEmailApi = (data: EmailSendRequest) => {
   })
 }
 
+export const emailAssyRequireOrderApi = (data: EmailSendRequest) => {
+  return request.post<IResponse>({
+    url: '/email/orders',
+    data
+  })
+}
+
 /**
  * 创建邮件模板
  * @param data 模板数据

@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, onMounted, computed, reactive, nextTick } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -12,23 +12,23 @@ import {
   ElButton,
   ElNotification,
   ElMessage,
-  ElMessageBox,
-  ElLoading,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElTag,
-  ElCard
+  ElMessageBox
 } from 'element-plus'
 import { getSopAnalyzeApi, exportSopReportApi } from '@/api/report'
-import { submitAssyOrdersApi, exportAssyOrderApi } from '@/api/assy'
-import { sendEmailApi } from '@/api/email'
+import {
+  getAssyRequireOrdersApi,
+  submitAssyRequireOrdersApi,
+  deleteAssyRequireOrderApi,
+  exportAssyRequireOrdersApi
+} from '@/api/assy'
+import { emailAssyRequireOrderApi } from '@/api/email'
 import type { SopAnalyzeResponse } from '@/api/report/type'
-import type { EmailSendRequest } from '@/api/email/type'
 import { Icon } from '@/components/Icon'
 import { AxiosResponse } from 'axios'
+import AssyOrderTable from '@/views/Assy/Order/components/AssyOrderTable.vue'
+import AssyOrderForm from '@/views/Assy/Order/components/AssyOrderForm.vue'
 import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
-import AssyOrder from './component/AssyOrder.vue'
+import Email from '@/views/Email/Email.vue'
 import { useUserStore } from '@/store/modules/user'
 
 const sopAnalyzeData = ref<SopAnalyzeResponse[]>([])
@@ -45,7 +45,8 @@ const filters = ref<Record<string, string>>({
   wipQty: '',
   assyStock: '',
   totalStock: '',
-  inventoryGap: ''
+  inventoryGap: '',
+  inventoryGapTotal: ''
 })
 
 // ABTR选项
@@ -138,12 +139,21 @@ const columns = ref([
     sortable: true
   },
   {
-    prop: 'INVENTORT_GAP',
+    prop: 'INVENTORY_GAP',
     label: '库存缺口',
-    width: 150,
+    width: 130,
     align: 'right',
     isNumber: true,
     filterKey: 'inventoryGap',
+    sortable: true
+  },
+  {
+    prop: 'INVENTORY_GAP_TOTAL',
+    label: '总库存缺口',
+    width: 130,
+    align: 'right',
+    isNumber: true,
+    filterKey: 'inventoryGapTotal',
     sortable: true
   }
 ])
@@ -301,7 +311,15 @@ const filteredData = computed(() => {
     // 库存缺口过滤
     if (filters.value.inventoryGap) {
       const filter = parseNumberFilter(filters.value.inventoryGap)
-      if (!evaluateNumberFilter(Number(row.INVENTORT_GAP), filter)) {
+      if (!evaluateNumberFilter(Number(row.INVENTORY_GAP), filter)) {
+        return false
+      }
+    }
+
+    // 库存缺口过滤
+    if (filters.value.inventoryGapTotal) {
+      const filter = parseNumberFilter(filters.value.inventoryGapTotal)
+      if (!evaluateNumberFilter(Number(row.INVENTORY_GAP_TOTAL), filter)) {
         return false
       }
     }
@@ -331,8 +349,10 @@ const getFilterKey = (prop: string) => {
       return 'assyStock'
     case 'TOTAL_STOCK':
       return 'totalStock'
-    case 'INVENTORT_GAP':
+    case 'INVENTORY_GAP':
       return 'inventoryGap'
+    case 'INVENTORY_GAP_TOTAL':
+      return 'inventoryGapTotal'
     default:
       return prop.toLowerCase()
   }
@@ -362,117 +382,131 @@ const handleSelectionChange = (val: SopAnalyzeResponse[]) => {
   )
 }
 
-// 封装单列表
-const assyOrderList = ref<any[]>([])
-const isEditing = ref(false)
-const editIndex = ref(-1)
-const selectedOrders = ref<any[]>([])
-const formModel = reactive({
-  itemName: '',
-  itemCode: '',
-  abtr: '',
-  businessQty: 0,
-  requirementType: '安全库存',
-  emergency: '普通',
-  sales: '',
-  remark: '',
-  mainChip: '',
-  deputyChip: '',
-  mainChipUsage: 0,
-  deputyChipUsage: 0,
-  waferInfo: null
-})
+// 待处理封装单列表
+const pendingOrders = ref<any[]>([])
+const pendingOrdersLoading = ref(false)
+const orderTableRef = ref()
 
-// 重置表单
-const resetForm = () => {
-  formModel.itemName = ''
-  formModel.itemCode = ''
-  formModel.abtr = ''
-  formModel.businessQty = 0
-  formModel.requirementType = '安全库存'
-  formModel.emergency = '普通'
-  formModel.sales = ''
-  formModel.remark = ''
-  formModel.mainChip = ''
-  formModel.deputyChip = ''
-  formModel.mainChipUsage = 0
-  formModel.deputyChipUsage = 0
-  formModel.waferInfo = null
-  isEditing.value = false
-  editIndex.value = -1
-}
+// 创建封装单相关
+const createDialogVisible = ref(false)
+const currentRow = ref<any>(null)
 
-// 创建封装单
-const dialogVisible = ref(false)
-const currentRow = ref<SopAnalyzeResponse | null>(null)
-
-const handleCreatePackage = (row: SopAnalyzeResponse) => {
-  resetForm()
-  currentRow.value = row
-  dialogVisible.value = true
-}
-
-// 处理表单提交
-const handleSubmitForm = (formData: any) => {
-  if (isEditing.value && editIndex.value !== -1) {
-    // 更新现有记录
-    assyOrderList.value[editIndex.value] = { ...formData }
-    ElMessage.success({
-      message: '记录已更新',
-      duration: 3000
-    })
-  } else {
-    // 添加新记录
-    assyOrderList.value.push({ ...formData })
-    ElMessage.success({
-      message: '记录已添加',
-      duration: 3000
-    })
+// 获取待处理封装单
+const getPendingOrders = async () => {
+  try {
+    pendingOrdersLoading.value = true
+    const res = await getAssyRequireOrdersApi({ status: '0' })
+    pendingOrders.value = res.data.list || []
+  } catch (error) {
+    console.error('获取待处理封装单失败:', error)
+    ElMessage.error('获取待处理封装单失败')
+  } finally {
+    pendingOrdersLoading.value = false
   }
-  dialogVisible.value = false
 }
 
-// 编辑记录
-const handleEditOrder = (index: number) => {
-  // 获取要编辑的记录
-  const order = assyOrderList.value[index]
-  // 将数据填充到formModel中进行编辑
-  Object.assign(formModel, order)
-  // 设置currentRow以确保表单显示
+// 处理创建封装单
+const handleCreatePackage = (row: any) => {
+  // 设置默认值
   currentRow.value = {
-    ITEM_NAME: order.itemName,
-    ABTR: order.abtr
-  } as SopAnalyzeResponse
-  // 打开对话框
-  dialogVisible.value = true
-  // 设置编辑模式标记
-  isEditing.value = true
-  editIndex.value = index
+    ...row,
+    ITEM_NAME: row.ITEM_NAME,
+    ITEM_CODE: `BC-${row.ITEM_NAME.replace(/_/g, '-')}-AB`,
+    REQUIREMENT_TYPE: '安全库存',
+    SALES: '方美容'
+  }
+  createDialogVisible.value = true
 }
 
-// 删除记录
-const handleDeleteOrder = (index: number) => {
-  // 弹窗确认
-  ElMessageBox.confirm('确定要删除这条记录吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-    .then(() => {
-      // 删除记录
-      assyOrderList.value.splice(index, 1)
-      ElMessage.success('删除成功')
-    })
-    .catch(() => {
-      // 用户取消删除
-    })
+// 处理提交
+const handleSubmit = async (data: any) => {
+  try {
+    // 设置状态为待处理
+    data.orders[0].status = '0'
+    await submitAssyRequireOrdersApi(data)
+    ElMessage.success('创建成功')
+    createDialogVisible.value = false
+
+    // 刷新表格
+    await orderTableRef.value?.getOrderList()
+
+    // 如果待处理订单列表为空，则重新获取
+    if (pendingOrders.value.length === 0) {
+      await getPendingOrders()
+    }
+  } catch (error) {
+    console.error('创建失败:', error)
+    ElMessage.error('创建失败')
+  }
 }
 
-// 关闭对话框
-const handleDialogClose = () => {
-  dialogVisible.value = false
-  currentRow.value = null
+// 处理删除
+const handleDelete = async (row: any) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该订单吗？删除后将无法恢复', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await deleteAssyRequireOrderApi({ id: row.ASSY_REQUIREMENTS_ID })
+    ElMessage.success('订单已删除')
+    // 刷新表格
+    orderTableRef.value?.getOrderList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除订单失败:', error)
+      ElMessage.error('删除订单失败')
+    }
+  }
 }
+
+// 导出SOP报表
+const handleSopExport = async () => {
+  try {
+    const loadingMessage = ElMessage({
+      type: 'info',
+      message: '正在导出数据...',
+      duration: 0
+    })
+
+    const res = (await exportSopReportApi()) as unknown as AxiosResponse<Blob>
+
+    // 创建 Blob 对象
+    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+
+    // 从响应头中获取文件名
+    const contentDisposition = res.headers['content-disposition']
+    let filename = `SOP报表_${new Date().getTime()}.xlsx`
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+      if (filenameMatch && filenameMatch[1]) {
+        filename = decodeURIComponent(filenameMatch[1])
+      }
+    }
+
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    loadingMessage.close()
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败，请重试')
+  }
+}
+
+onMounted(() => {
+  getReportData()
+  getPendingOrders()
+})
 
 // 获取库存缺口等级
 const getInventoryGapLevel = (value: number) => {
@@ -483,571 +517,94 @@ const getInventoryGapLevel = (value: number) => {
   return 'normal'
 }
 
-// 导出报表
+// 导出封装单
 const handleExport = async () => {
   try {
     const loadingMessage = ElMessage({
       type: 'info',
-      message: '正在导出，请稍候...',
-      duration: 0 // 设置为0表示不自动关闭
+      message: '正在导出数据...',
+      duration: 0
     })
 
-    const res = (await exportSopReportApi()) as unknown as AxiosResponse
-    // 如果是文件流，直接创建blob
-    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
-    const disposition = res.headers?.['content-disposition']
-    console.log(res)
-    let filename = `SOP报表_${new Date().getTime()}.xlsx`
-    if (disposition) {
-      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-      const matches = filenameRegex.exec(disposition)
-      if (matches != null && matches[1]) {
-        // 移除UTF-8前缀
-        const rawFilename = matches[1].replace(/['"]/g, '')
-        filename = decodeURIComponent(rawFilename.replace(/^UTF-8/, ''))
-      }
-    }
+    const res = (await exportAssyRequireOrdersApi()) as unknown as AxiosResponse<Blob>
+
+    // 创建 Blob 对象
+    const blob = new Blob([res.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    // 创建下载链接
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
+
+    // 从响应头中获取文件名
+    const contentDisposition = res.headers['content-disposition']
+    let filename = `封装需求表_${new Date().getTime()}.xlsx`
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+      if (filenameMatch && filenameMatch[1]) {
+        filename = decodeURIComponent(filenameMatch[1])
+      }
+    }
+
     link.download = filename
+    document.body.appendChild(link)
     link.click()
+    document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    // 在文件下载框弹出后关闭提示消息
     loadingMessage.close()
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error('导出失败，请重试')
   }
 }
 
-// 处理表格选择变化
-const handleOrderSelectionChange = (selection: any[]) => {
-  selectedOrders.value = selection
-}
-
-// 批量删除选中记录
-const handleBatchDelete = () => {
-  if (selectedOrders.value.length === 0) {
-    ElMessage.warning('请先选择要删除的记录')
-    return
-  }
-
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedOrders.value.length} 条记录吗?`, '批量删除', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-    .then(() => {
-      // 获取选中记录的索引
-      const selectedIds = selectedOrders.value
-        .map((item) => {
-          return assyOrderList.value.findIndex((order) => order === item)
-        })
-        .filter((index) => index !== -1)
-
-      // 从后往前删除，避免索引变化
-      selectedIds
-        .sort((a, b) => b - a)
-        .forEach((index) => {
-          assyOrderList.value.splice(index, 1)
-        })
-
-      ElMessage.success(`成功删除 ${selectedIds.length} 条记录`)
-      selectedOrders.value = []
-    })
-    .catch(() => {
-      // 用户取消删除
-    })
-}
-
-// 导出封装订单
-const handleExportAssyOrders = async () => {
-  if (assyOrderList.value.length === 0) {
-    ElMessage.warning('没有可导出的记录')
-    return
-  }
-
-  try {
-    const loadingMessage = ElMessage({
-      type: 'info',
-      message: '正在导出，请稍候...',
-      duration: 0 // 设置为0表示不自动关闭
-    })
-
-    // 构造导出参数
-    const exportParams = {
-      orders: assyOrderList.value.map((item) => ({
-        itemName: item?.itemName || '',
-        itemCode: item?.itemCode || '',
-        abtr: item?.abtr || '',
-        businessQty: item?.businessQty || 0,
-        requirementType: item?.requirementType || '安全库存',
-        emergency: item?.emergency || '普通',
-        sales: item?.sales || '',
-        remark: item?.remark || '',
-        mainChip: item?.mainChip || '',
-        deputyChip: item?.deputyChip || '',
-        mainChipUsage: item?.mainChipUsage || 0,
-        deputyChipUsage: item?.deputyChipUsage || 0
-      }))
-    }
-
-    const res = (await exportAssyOrderApi(exportParams)) as unknown as AxiosResponse
-    // 如果是文件流，直接创建blob
-    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
-    const disposition = res.headers?.['content-disposition']
-    let filename = `封装订单_${new Date().getTime()}.xlsx`
-    if (disposition) {
-      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-      const matches = filenameRegex.exec(disposition)
-      if (matches != null && matches[1]) {
-        // 移除UTF-8前缀
-        const rawFilename = matches[1].replace(/['"]/g, '')
-        filename = decodeURIComponent(rawFilename.replace(/^UTF-8/, ''))
-      }
-    }
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    link.click()
-    window.URL.revokeObjectURL(url)
-
-    // 在文件下载框弹出后关闭提示消息
-    loadingMessage.close()
-    ElMessage.success('导出成功')
-  } catch (error) {
-    console.error('导出失败:', error)
-    ElMessage.error('导出失败: ' + (error instanceof Error ? error.message : String(error)))
-  }
-}
-
-// 自动提交封装单(不需要确认)
-const autoSubmitOrders = async () => {
-  if (assyOrderList.value.length === 0) {
-    return
-  }
-
-  try {
-    // 构造符合API要求的数据格式
-    const requestData = {
-      orders: assyOrderList.value.map((item) => ({
-        itemName: item.itemName,
-        itemCode: item.itemCode,
-        abtr: item.abtr,
-        businessQty: item.businessQty, // 这里已经是"只"为单位
-        requirementType: item.requirementType,
-        emergency: item.emergency,
-        sales: item.sales,
-        remark: item.remark,
-        mainChip: item.mainChip || '',
-        deputyChip: item.deputyChip || '',
-        mainChipUsage: item.mainChipUsage || 0,
-        deputyChipUsage: item.deputyChipUsage || 0
-      }))
-    }
-
-    // 调用API提交数据
-    const res = await submitAssyOrdersApi(requestData)
-
-    if (res.code === 200) {
-      console.log('批量提交数据成功:', requestData)
-
-      // 提交成功后清空列表
-      assyOrderList.value = []
-    } else {
-      ElMessage.error(`提交失败: ${res.message || '未知错误'}`)
-    }
-  } catch (error) {
-    console.error('提交失败:', error)
-    ElMessage.error('提交失败: ' + (error instanceof Error ? error.message : String(error)))
-  }
-}
-
-// 获取用户信息
+// 导出并发送邮件相关
 const userStore = useUserStore()
-const userInfo = computed(() => userStore.getUserInfo)
-
-// 发送邮件对话框
+const userInfo = userStore.getUserInfo
 const emailDialogVisible = ref(false)
-const emailLoading = ref(false)
-const emailForm = reactive<{
-  to: string[]
-  cc: string[]
-  subject: string
-  content: string
-  templateId: number
+const emailFormData = ref({
+  to: ['1206354516@qq.com'],
+  cc: [] as string[],
+  subject: `封装需求表 ${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')}`,
+  templateId: 1,
   templateVariables: {
-    user_name: string
-    department: string
-    content: string
-  }
-}>({
-  to: ['wxb1@h-sun.com'], // 默认收件人
-  cc: [],
-  subject: `封装订单_${new Date().toLocaleDateString()}`,
-  content: '', // 不再直接设置内容，因为将使用模板
-  templateId: 1, // 使用模板ID为1
-  templateVariables: {
-    user_name: '管理员', // 用户名默认值
-    department: '生产部', // 部门默认值
-    content: '请查收附件中的封装订单。' // 内容默认值
+    user_name: userInfo?.username || '',
+    department: userInfo?.department_name || '',
+    content: `请查收封装需求表，请及时查看。`
   }
 })
 
-// 打开邮件发送对话框
-const openEmailDialog = () => {
-  // 更新主题日期部分
-  emailForm.subject = `封装订单_${new Date().toLocaleDateString()}`
-
-  // 确保默认收件人存在
-  if (!emailForm.to.includes('wxb1@h-sun.com')) {
-    emailForm.to = ['wxb1@h-sun.com']
-  }
-
-  // 默认模板参数，添加空值检查
-  emailForm.templateVariables = {
-    user_name: userInfo.value?.username || '管理员', // 使用用户名，如果没有则使用"管理员"
-    department: userInfo.value?.department_name || '生产部', // 使用部门名称，如果没有则使用"生产部"
-    content: `请查收附件中的封装订单（${assyOrderList.value?.length || 0}条记录）。`
-  }
-
-  emailDialogVisible.value = true
-}
-
-// 发送邮件，包含Excel附件
-const sendEmailWithAttachment = async () => {
-  if (!assyOrderList.value || assyOrderList.value.length === 0) {
-    ElMessage.warning('没有可发送的记录')
-    return
-  }
-
-  if (!emailForm.to || emailForm.to.length === 0) {
-    ElMessage.warning('请至少添加一个收件人')
-    return
-  }
-
-  emailLoading.value = true
-  let loadingInstance: any = null
-  let excelBlob: Blob | null = null
-  let excelFilename = `封装订单_${new Date().getTime()}.xlsx`
-
+// 导出并发送邮件
+const handleExportAndSendEmail = async () => {
   try {
-    // 显示加载状态
-    loadingInstance = ElLoading.service({
-      lock: true,
-      text: '正在处理导出请求...',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
-
-    // 构造导出参数
-    const exportParams = {
-      orders: assyOrderList.value.map((item) => ({
-        itemName: item?.itemName || '',
-        itemCode: item?.itemCode || '',
-        abtr: item?.abtr || '',
-        businessQty: item?.businessQty || 0,
-        requirementType: item?.requirementType || '安全库存',
-        emergency: item?.emergency || '普通',
-        sales: item?.sales || '',
-        remark: item?.remark || '',
-        mainChip: item?.mainChip || '',
-        deputyChip: item?.deputyChip || '',
-        mainChipUsage: item?.mainChipUsage || 0,
-        deputyChipUsage: item?.deputyChipUsage || 0
-      }))
-    }
-
-    // 步骤1: 先导出Excel文件
-    if (loadingInstance) {
-      loadingInstance.setText('正在导出Excel文件...')
-    }
-
-    console.log('开始导出Excel文件...')
-    const res = (await exportAssyOrderApi(exportParams)) as unknown as AxiosResponse
-    console.log('Excel文件导出成功')
-
-    // 关闭loading，让用户可以看到浏览器的保存对话框
-    if (loadingInstance) {
-      loadingInstance.close()
-      loadingInstance = null
-    }
-
-    // 检查响应数据是否有效
-    if (!res || !res.data) {
-      throw new Error('导出的Excel文件响应无效')
-    }
-
-    // 创建一个用于保存的Blob对象
-    excelBlob = new Blob([res.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
-
-    // 检查blob大小
-    console.log(`Excel文件大小: ${excelBlob.size} 字节`)
-
-    if (excelBlob.size === 0) {
-      throw new Error('导出的Excel文件为空')
-    }
-
-    // 处理文件名
-    const disposition = res.headers?.['content-disposition']
-    if (disposition) {
-      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-      const matches = filenameRegex.exec(disposition)
-      if (matches != null && matches[1]) {
-        // 移除UTF-8前缀
-        const rawFilename = matches[1].replace(/['"]/g, '')
-        excelFilename = decodeURIComponent(rawFilename.replace(/^UTF-8/, ''))
-      }
-    }
-
-    // 创建并自动下载文件，这会触发浏览器的保存对话框
-    const url = window.URL.createObjectURL(excelBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = excelFilename
-    link.click()
-
-    // 等待一小段时间让浏览器显示保存对话框
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    // 由于文件下载是用户交互过程，我们需要显示一个确认对话框
-    // 等待用户确认文件已保存完成
-    await ElMessageBox.confirm(
-      '请等待Excel文件下载完成并保存。完成后请点击【确定】继续发送邮件',
-      '等待文件保存',
-      {
-        confirmButtonText: '确定，文件已保存',
-        cancelButtonText: '取消操作',
-        closeOnClickModal: false,
-        closeOnPressEscape: false,
-        type: 'info'
-      }
-    )
-
-    // 用户已确认文件保存完成，继续发送邮件流程
-    window.URL.revokeObjectURL(url)
-
-    // 显示新的loading
-    loadingInstance = ElLoading.service({
-      lock: true,
-      text: '正在处理邮件...',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
-
-    // 步骤2: 发送邮件
-    if (loadingInstance) {
-      loadingInstance.setText('正在处理文件以便发送邮件...')
-    }
-
-    if (!excelBlob) {
-      throw new Error('Excel文件数据丢失，请重试')
-    }
-
-    // 使用FileReader直接读取Blob对象转为Base64
-    const base64Data = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          // 提取base64编码部分（去掉MIME类型前缀）
-          const base64 = reader.result.split(',')[1]
-          resolve(base64)
-        } else {
-          reject(new Error('FileReader返回了非字符串结果'))
-        }
-      }
-      reader.onerror = () => reject(reader.error)
-
-      // 确保excelBlob不为null
-      if (!excelBlob) {
-        reject(new Error('Excel文件数据丢失，请重试'))
-        return
-      }
-
-      reader.readAsDataURL(excelBlob)
-    })
-
-    console.log(`Base64编码完成，长度: ${base64Data.length}`)
-
-    if (!base64Data || base64Data.length === 0) {
-      throw new Error('文件编码失败: Base64数据为空')
-    }
-
-    // 更新加载状态
-    if (loadingInstance) {
-      loadingInstance.setText('正在发送邮件...')
-    }
-
-    // 构造邮件请求数据
-    const emailData: EmailSendRequest = {
-      to: emailForm.to || [],
-      cc: emailForm.cc && emailForm.cc.length > 0 ? emailForm.cc : undefined,
-      template_id: emailForm.templateId || 1, // 使用模板ID
-      template_vars: emailForm.templateVariables || {
-        user_name: '管理员',
-        department: '生产部',
-        content: `请查收附件`
-      }, // 使用模板变量
-      use_template_subject: true, // 使用模板主题
-      attachments: [
-        {
-          filename: excelFilename,
-          content: base64Data,
-          encoding: 'base64',
-          content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }
-      ]
-    }
-
-    // 发送邮件
-    console.log('开始发送邮件...')
-    const emailRes = await sendEmailApi(emailData)
-    console.log('邮件发送完成')
-
-    if (emailRes.data.success) {
-      ElMessage.success('邮件发送成功')
-      emailDialogVisible.value = false
-
-      // 步骤3: 提交封装单
-      if (loadingInstance) {
-        loadingInstance.setText('正在提交封装单...')
-      }
-
-      console.log('开始提交封装单...')
-      try {
-        await autoSubmitOrders()
-        console.log('封装单提交成功')
-        ElMessage.success('封装单已成功提交')
-      } catch (submitError) {
-        console.error('提交封装单时出错:', submitError)
-        ElMessage.error(
-          '封装单提交失败: ' +
-            (submitError instanceof Error ? submitError.message : String(submitError))
-        )
-      }
-    } else {
-      ElMessage.error(`邮件发送失败: ${emailRes.data.error || '未知错误'}`)
-    }
+    // 打开邮件发送对话框
+    emailDialogVisible.value = true
   } catch (error) {
-    // 检查是否是用户取消的操作
-    if (error === 'cancel') {
-      console.log('用户取消了操作')
-      ElMessage.info('操作已取消')
-    } else {
-      console.error('处理失败:', error)
-      ElMessage.error('操作失败: ' + (error instanceof Error ? error.message : String(error)))
-    }
-  } finally {
-    emailLoading.value = false
-    if (loadingInstance) {
-      loadingInstance.close()
-    }
+    console.error('打开邮件对话框失败:', error)
+    ElMessage.error('打开邮件对话框失败，请重试')
   }
 }
 
-// 收件人输入相关
-const recipientInputVisible = ref(false)
-const ccInputVisible = ref(false)
-const recipientInput = ref('')
-const ccInput = ref('')
-const recipientInputRef = ref()
-const ccInputRef = ref()
+// 处理邮件发送成功
+const handleEmailSuccess = async (data: any) => {
+  console.log('邮件发送成功:', data)
+  emailDialogVisible.value = false
 
-// 显示收件人输入
-const showRecipientInput = () => {
-  recipientInputVisible.value = true
-  nextTick(() => {
-    recipientInputRef.value?.focus()
-  })
-}
+  // 刷新表格数据
+  await orderTableRef.value?.getOrderList()
 
-// 显示抄送输入
-const showCcInput = () => {
-  ccInputVisible.value = true
-  nextTick(() => {
-    ccInputRef.value?.focus()
-  })
-}
-
-// 校验邮箱格式
-const isValidEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
-// 处理收件人输入确认
-const handleRecipientInputConfirm = (type: 'to' | 'cc') => {
-  const inputValue = (type === 'to' ? recipientInput.value : ccInput.value) || ''
-  if (inputValue && isValidEmail(inputValue)) {
-    // 确保数组已初始化
-    if (!emailForm.to) emailForm.to = []
-    if (!emailForm.cc) emailForm.cc = []
-
-    // 确保不重复添加
-    if (type === 'to' && !emailForm.to.includes(inputValue)) {
-      emailForm.to.push(inputValue)
-    } else if (type === 'cc' && !emailForm.cc.includes(inputValue)) {
-      emailForm.cc.push(inputValue)
-    }
-  } else if (inputValue) {
-    ElMessage.warning('请输入有效的邮箱地址')
-  }
-
-  if (type === 'to') {
-    recipientInputVisible.value = false
-    recipientInput.value = ''
-  } else {
-    ccInputVisible.value = false
-    ccInput.value = ''
+  // 如果待处理订单列表为空，则重新获取
+  if (pendingOrders.value.length === 0) {
+    await getPendingOrders()
   }
 }
 
-// 移除收件人
-const removeRecipient = (email: string, type: 'to' | 'cc') => {
-  if (!email) return
-
-  // 确保数组已初始化
-  if (!emailForm.to) emailForm.to = []
-  if (!emailForm.cc) emailForm.cc = []
-
-  if (type === 'to') {
-    emailForm.to = emailForm.to.filter((item) => item !== email)
-  } else {
-    emailForm.cc = emailForm.cc.filter((item) => item !== email)
-  }
-}
-
-// 处理粘贴多个邮箱
-const handleRecipientPaste = (type: 'to' | 'cc', e: ClipboardEvent) => {
-  e.preventDefault()
-  const pasteText = e.clipboardData?.getData('text')
-
-  if (!pasteText) return
-
-  // 按分隔符分割并处理粘贴的多个邮箱
-  const emails = pasteText
-    .split(/[\s,;]+/) // 按空格、逗号或分号分割
-    .map((email) => email.trim())
-    .filter((email) => email && isValidEmail(email)) // 只保留有效邮箱
-
-  if (emails.length) {
-    if (type === 'to') {
-      // 过滤掉已存在的邮箱
-      const newEmails = emails.filter((email) => !emailForm.to.includes(email))
-      emailForm.to.push(...newEmails)
-      recipientInputVisible.value = false
-      recipientInput.value = ''
-    } else {
-      const newEmails = emails.filter((email) => !emailForm.cc.includes(email))
-      emailForm.cc.push(...newEmails)
-      ccInputVisible.value = false
-      ccInput.value = ''
-    }
-  }
+// 处理邮件发送失败
+const handleEmailError = (error: any) => {
+  console.error('邮件发送失败:', error)
 }
 
 ElNotification.warning({
@@ -1055,7 +612,7 @@ ElNotification.warning({
   message:
     '对只设了编带安全库存的产品请注意该产品管装产品库存和封装数量(管装和编带都设有安全库存的产品除外)!!',
   position: 'top-right',
-  duration: 300000
+  duration: 30000
 })
 </script>
 
@@ -1071,7 +628,7 @@ ElNotification.warning({
         <Icon icon="vi-icon-park-outline:refresh" class="mr-2" />
         刷新数据
       </ElButton>
-      <ElButton type="success" class="ml-2" @click="handleExport">
+      <ElButton type="success" class="ml-2" @click="handleSopExport">
         <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
         导出Excel
       </ElButton>
@@ -1131,7 +688,7 @@ ElNotification.warning({
               <div class="header-title">{{ col.label }}</div>
             </template>
             <template #default="{ row }">
-              <template v-if="col.prop === 'INVENTORT_GAP'">
+              <template v-if="col.prop === 'INVENTORY_GAP' || col.prop === 'INVENTORY_GAP_TOTAL'">
                 <span
                   :class="['inventory-gap', `level-${getInventoryGapLevel(Number(row[col.prop]))}`]"
                 >
@@ -1158,284 +715,81 @@ ElNotification.warning({
     </ElCol>
   </ElRow>
 
-  <!-- 封装单记录列表 -->
-  <ElRow v-if="assyOrderList.length > 0" class="mt-6">
+  <!-- 待处理封装单列表 -->
+  <ElRow v-if="pendingOrders.length > 0" class="mt-1">
     <ElCol :span="24">
-      <div class="record-list-container">
-        <div class="record-list-header">
-          <h3>待提交封装单记录 ({{ assyOrderList.length }}条)</h3>
-          <div class="header-actions">
-            <ElButton
-              v-if="selectedOrders.length > 0"
-              type="danger"
-              @click="handleBatchDelete"
-              class="mr-2"
-            >
-              <Icon icon="vi-ri:delete-bin-line" class="mr-1" />
-              删除所选({{ selectedOrders.length }})
-            </ElButton>
-            <ElButton type="success" class="mr-2" @click="handleExportAssyOrders">
-              <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
-              导出Excel
-            </ElButton>
-            <ElButton type="primary" class="mr-2" @click="openEmailDialog">
-              <Icon icon="vi-ri:mail-line" class="mr-2" />
-              导出并发送邮件
-            </ElButton>
+      <div class="pending-orders-container">
+        <div class="pending-orders-title">
+          <div class="title-content">
+            <h3>待处理封装单</h3>
+            <div class="button-group">
+              <ElButton type="success" @click="handleExport">
+                <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
+                导出Excel
+              </ElButton>
+              <ElButton type="primary" class="ml-2" @click="handleExportAndSendEmail">
+                <Icon icon="vi-ri:mail-send-line" class="mr-2" />
+                发送邮件
+              </ElButton>
+            </div>
           </div>
         </div>
-        <ElTable
-          :data="assyOrderList"
-          border
-          stripe
-          style="width: 100%"
-          @selection-change="handleOrderSelectionChange"
-        >
-          <ElTableColumn type="selection" width="55" header-align="center" align="center" />
-          <ElTableColumn
-            prop="itemName"
-            label="品名"
-            width="200"
-            header-align="center"
-            align="right"
-          />
-          <ElTableColumn
-            prop="itemCode"
-            label="品号"
-            width="250"
-            header-align="center"
-            align="right"
-          />
-          <ElTableColumn
-            prop="abtr"
-            label="管装/编带"
-            width="120"
-            header-align="center"
-            align="center"
-          />
-          <ElTableColumn
-            prop="businessQty"
-            label="需求数量"
-            width="120"
-            header-align="center"
-            align="center"
-          />
-          <ElTableColumn
-            prop="requirementType"
-            label="需求类型"
-            width="120"
-            header-align="center"
-            align="center"
-          />
-          <ElTableColumn
-            prop="emergency"
-            label="紧急程度"
-            width="120"
-            header-align="center"
-            align="center"
-          />
-          <ElTableColumn
-            prop="sales"
-            label="销售员"
-            width="120"
-            header-align="center"
-            align="center"
-          />
-          <ElTableColumn
-            prop="remark"
-            label="备注"
-            min-width="180"
-            header-align="center"
-            align="left"
-          />
-          <ElTableColumn
-            label="操作"
-            width="200"
-            fixed="right"
-            header-align="center"
-            align="center"
-          >
-            <template #default="{ $index }">
-              <ElButton type="primary" size="small" @click="handleEditOrder($index)" text>
-                <Icon icon="vi-ri:edit-line" class="mr-1" />
-                编辑
-              </ElButton>
-              <ElButton type="danger" size="small" @click="handleDeleteOrder($index)" text>
-                <Icon icon="vi-ri:delete-bin-line" class="mr-1" />
-                删除
-              </ElButton>
-            </template>
-          </ElTableColumn>
-        </ElTable>
+        <AssyOrderTable
+          ref="orderTableRef"
+          :show-query-form="false"
+          :show-create-button="false"
+          :show-operations="true"
+          :status="'0'"
+          v-loading="pendingOrdersLoading"
+          @delete="handleDelete"
+        />
       </div>
     </ElCol>
   </ElRow>
 
-  <!-- 对话框 -->
+  <!-- 创建封装单对话框 -->
   <ResizeDialog
-    v-model="dialogVisible"
-    :title="isEditing ? '编辑封装单' : '创建封装单'"
-    :fullscreen="true"
+    v-model="createDialogVisible"
+    title="创建封装单"
     :initWidth="1000"
     :initHeight="600"
-    @close="handleDialogClose"
+    :fullscreen="true"
+    destroy-on-close
   >
-    <AssyOrder
-      v-if="currentRow"
-      ref="assyOrderRef"
-      :itemName="isEditing ? formModel.itemName : currentRow.ITEM_NAME || ''"
-      :abtr="isEditing ? formModel.abtr : currentRow.ABTR || ''"
-      :edit-mode="isEditing"
-      :initial-quantity="isEditing ? formModel.businessQty : 0"
-      :initial-demand-type="isEditing ? formModel.requirementType : '安全库存'"
-      :initial-urgency-level="isEditing ? formModel.emergency : '普通'"
-      :initial-sales-person="isEditing ? formModel.sales : ''"
-      :initial-remark="isEditing ? formModel.remark : ''"
-      :initial-wafer-info="isEditing && formModel.waferInfo ? formModel.waferInfo : {}"
-      @close="handleDialogClose"
-      @submit="handleSubmitForm"
+    <AssyOrderForm
+      v-if="createDialogVisible"
+      :initial-data="currentRow"
+      @close="createDialogVisible = false"
+      @submit="handleSubmit"
     />
   </ResizeDialog>
 
-  <!-- 添加邮件发送对话框 -->
-  <ElDialog
+  <!-- 邮件发送对话框 -->
+  <ResizeDialog
     v-model="emailDialogVisible"
-    title="发送封装单邮件"
-    width="650px"
-    :close-on-click-modal="false"
-    :close-on-press-escape="false"
-    top="5vh"
-    class="email-dialog"
+    title="发送邮件"
+    :initWidth="800"
+    :initHeight="600"
+    destroy-on-close
   >
-    <ElForm label-width="100px" :model="emailForm" class="email-form">
-      <ElFormItem label="收件人" required>
-        <div class="recipient-input">
-          <div class="recipient-tags">
-            <ElTag
-              v-for="email in emailForm.to"
-              :key="email"
-              class="recipient-tag"
-              type="primary"
-              effect="light"
-              closable
-              @close="removeRecipient(email, 'to')"
-            >
-              {{ email }}
-            </ElTag>
-            <ElInput
-              v-if="recipientInputVisible"
-              ref="recipientInputRef"
-              v-model="recipientInput"
-              class="input-new-tag"
-              size="small"
-              placeholder="请输入收件人邮箱，按回车添加"
-              @keyup.enter="handleRecipientInputConfirm('to')"
-              @blur="handleRecipientInputConfirm('to')"
-              @paste="handleRecipientPaste('to', $event)"
-            />
-            <ElTag v-else class="button-new-tag" @click="showRecipientInput"> + 添加 </ElTag>
-          </div>
-        </div>
-      </ElFormItem>
-
-      <ElFormItem label="抄送">
-        <div class="recipient-input">
-          <div class="recipient-tags">
-            <ElTag
-              v-for="email in emailForm.cc"
-              :key="email"
-              class="recipient-tag"
-              type="info"
-              effect="light"
-              closable
-              @close="removeRecipient(email, 'cc')"
-            >
-              {{ email }}
-            </ElTag>
-            <ElInput
-              v-if="ccInputVisible"
-              ref="ccInputRef"
-              v-model="ccInput"
-              class="input-new-tag"
-              size="small"
-              placeholder="请输入抄送邮箱，按回车添加"
-              @keyup.enter="handleRecipientInputConfirm('cc')"
-              @blur="handleRecipientInputConfirm('cc')"
-              @paste="handleRecipientPaste('cc', $event)"
-            />
-            <ElTag v-else class="button-new-tag" @click="showCcInput"> + 添加 </ElTag>
-          </div>
-        </div>
-      </ElFormItem>
-
-      <!-- 模板ID和模板变量 -->
-      <ElFormItem label="模板">
-        <div class="template-info">
-          <ElTag type="success">使用模板ID: {{ emailForm.templateId || 1 }}</ElTag>
-        </div>
-      </ElFormItem>
-
-      <!-- 模板变量编辑 -->
-      <ElFormItem label="模板变量">
-        <div class="template-variables">
-          <ElCard shadow="never" class="template-vars-card">
-            <ElForm
-              label-position="top"
-              :model="emailForm.templateVariables || {}"
-              class="vars-form"
-            >
-              <ElRow :gutter="20">
-                <ElCol :span="12">
-                  <ElFormItem label="用户名">
-                    <ElInput
-                      v-model="emailForm.templateVariables.user_name"
-                      placeholder="请输入用户名"
-                    />
-                  </ElFormItem>
-                </ElCol>
-                <ElCol :span="12">
-                  <ElFormItem label="部门">
-                    <ElInput
-                      v-model="emailForm.templateVariables.department"
-                      placeholder="请输入部门"
-                    />
-                  </ElFormItem>
-                </ElCol>
-              </ElRow>
-
-              <ElFormItem label="内容">
-                <ElInput
-                  v-model="emailForm.templateVariables.content"
-                  type="textarea"
-                  :rows="3"
-                  placeholder="请输入内容"
-                />
-              </ElFormItem>
-            </ElForm>
-          </ElCard>
-        </div>
-      </ElFormItem>
-
-      <ElFormItem label="附件">
-        <div class="attachment-info">
-          <Icon icon="vi-ri:attachment-2" class="mr-2" />
-          <span>封装订单.xlsx (自动生成，共{{ assyOrderList?.length || 0 }}条记录)</span>
-        </div>
-      </ElFormItem>
-    </ElForm>
-
-    <template #footer>
-      <div class="dialog-footer">
-        <ElButton @click="emailDialogVisible = false">取消</ElButton>
-        <ElButton type="primary" @click="sendEmailWithAttachment" :loading="emailLoading">
-          <Icon icon="vi-ri:send-plane-fill" class="mr-2" />
-          发送邮件
-        </ElButton>
-      </div>
-    </template>
-  </ElDialog>
+    <Email
+      v-if="emailDialogVisible"
+      :to="emailFormData.to"
+      :cc="emailFormData.cc"
+      :subject="emailFormData.subject"
+      :templateId="emailFormData.templateId"
+      :templateVariables="emailFormData.templateVariables"
+      :customSendEmailApi="emailAssyRequireOrderApi"
+      @success="handleEmailSuccess"
+      @error="handleEmailError"
+      @update:to="(val) => (emailFormData.to = val)"
+      @update:cc="(val) => (emailFormData.cc = val)"
+      @update:subject="(val) => (emailFormData.subject = val)"
+      @update:templateId="(val) => (emailFormData.templateId = val)"
+      @update:templateVariables="(val) => (emailFormData.templateVariables = val)"
+    />
+  </ResizeDialog>
 </template>
-
 <style lang="less" scoped>
 .header-title {
   display: inline;
@@ -1693,5 +1047,34 @@ ElNotification.warning({
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.pending-orders-container {
+  margin-top: 20px;
+}
+
+.pending-orders-title {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background-color: var(--el-fill-color-light);
+  border-bottom: 1px solid var(--el-border-color-light);
+
+  .title-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
 }
 </style>

@@ -28,7 +28,6 @@ const props = defineProps<{
   attachments: {
     filename: string
     content: string
-    encoding: string
     content_type: string
   }[]
 }>()
@@ -286,10 +285,11 @@ const handleFileUpload = (uploadFile: UploadFile) => {
         </div>
         <ElUpload
           class="upload-demo"
-          action="#"
           :auto-upload="false"
           :show-file-list="false"
           :on-change="handleFileUpload"
+          :limit="5"
+          :on-exceed="() => ElMessage.warning('最多只能上传5个文件')"
         >
           <ElButton type="primary">
             <Icon icon="vi-ri:upload-2-line" class="mr-2" />

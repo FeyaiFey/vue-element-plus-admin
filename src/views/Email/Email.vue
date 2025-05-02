@@ -33,7 +33,6 @@ const emailForm = reactive<{
   attachments: {
     filename: string
     content: string
-    encoding: string
     content_type: string
   }[]
 }>({
@@ -53,7 +52,9 @@ const emailForm = reactive<{
 watch(
   () => props.to,
   (newVal) => {
-    emailForm.to = newVal
+    if (newVal) {
+      emailForm.to = [...newVal]
+    }
   },
   { immediate: true }
 )
@@ -61,7 +62,9 @@ watch(
 watch(
   () => props.cc,
   (newVal) => {
-    emailForm.cc = newVal
+    if (newVal) {
+      emailForm.cc = [...newVal]
+    }
   },
   { immediate: true }
 )
@@ -69,7 +72,9 @@ watch(
 watch(
   () => props.subject,
   (newVal) => {
-    emailForm.subject = newVal
+    if (newVal) {
+      emailForm.subject = newVal
+    }
   },
   { immediate: true }
 )
@@ -77,7 +82,9 @@ watch(
 watch(
   () => props.templateId,
   (newVal) => {
-    emailForm.templateId = newVal
+    if (newVal) {
+      emailForm.templateId = newVal
+    }
   },
   { immediate: true }
 )
@@ -85,7 +92,9 @@ watch(
 watch(
   () => props.templateVariables,
   (newVal) => {
-    emailForm.templateVariables = newVal
+    if (newVal) {
+      emailForm.templateVariables = { ...newVal }
+    }
   },
   { immediate: true, deep: true }
 )
@@ -100,11 +109,17 @@ const handleSendEmail = async () => {
     return
   }
 
+  if (!emailForm.subject.trim()) {
+    ElMessage.warning('请输入邮件主题')
+    return
+  }
+
   try {
     loading.value = true
     const emailData: EmailSendRequest = {
       to: emailForm.to,
       cc: emailForm.cc.length > 0 ? emailForm.cc : undefined,
+      subject: emailForm.subject,
       template_id: emailForm.templateId,
       template_vars: emailForm.templateVariables,
       use_template_subject: true,
@@ -119,6 +134,11 @@ const handleSendEmail = async () => {
       ElMessage.success('邮件发送成功')
       // 发送成功事件
       emit('success', res.data)
+      // 清空表单
+      emailForm.to = []
+      emailForm.cc = []
+      emailForm.subject = ''
+      emailForm.attachments = []
     } else {
       ElMessage.error(`邮件发送失败: ${res.data?.error || '未知错误'}`)
       // 发送失败事件
@@ -143,7 +163,6 @@ const handleAddAttachment = (file: File) => {
       emailForm.attachments.push({
         filename: file.name,
         content: base64Content,
-        encoding: 'base64',
         content_type: file.type
       })
     }

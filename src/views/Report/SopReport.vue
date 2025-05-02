@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -19,7 +19,8 @@ import {
   getAssyRequireOrdersApi,
   submitAssyRequireOrdersApi,
   deleteAssyRequireOrderApi,
-  exportAssyRequireOrdersApi
+  exportAssyRequireOrdersApi,
+  cancelAssyRequireOrderApi
 } from '@/api/assy'
 import { emailAssyRequireOrderApi } from '@/api/email'
 import type { SopAnalyzeResponse } from '@/api/report/type'
@@ -33,6 +34,10 @@ import { useUserStore } from '@/store/modules/user'
 
 const sopAnalyzeData = ref<SopAnalyzeResponse[]>([])
 const loading = ref(false)
+
+// 对话框相关
+const dialogType = ref<'create' | 'view'>('create')
+const dialogTitle = ref('创建封装单')
 
 // 添加筛选状态
 const filters = ref<Record<string, string>>({
@@ -364,6 +369,12 @@ const getReportData = async () => {
     loading.value = true
     const res = await getSopAnalyzeApi()
     sopAnalyzeData.value = Array.isArray(res.data) ? res.data : [res.data]
+    // 初始数据按ID升序排序
+    sopAnalyzeData.value.sort((a, b) => {
+      const aValue = Number(a.ID) || 0
+      const bValue = Number(b.ID) || 0
+      return aValue - bValue
+    })
   } catch (error) {
     console.error('获取报表数据失败:', error)
   } finally {
@@ -566,8 +577,8 @@ const userStore = useUserStore()
 const userInfo = userStore.getUserInfo
 const emailDialogVisible = ref(false)
 const emailFormData = ref({
-  to: ['1206354516@qq.com'],
-  cc: [] as string[],
+  to: ['fanlm@h-sun.com'] as string[],
+  cc: ['wxb1@h-sun.com', 'wanghq@h-sun.com'] as string[],
   subject: `封装需求表 ${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')}`,
   templateId: 1,
   templateVariables: {
@@ -614,6 +625,100 @@ ElNotification.warning({
   position: 'top-right',
   duration: 30000
 })
+
+// 排序配置
+const sortConfig = ref({
+  field: '',
+  order: 'asc'
+})
+
+// 监听排序变化
+watch([() => sortConfig.value.field, () => sortConfig.value.order], () => {
+  if (!sortConfig.value.field) return
+  sortData()
+})
+
+// 处理排序
+const sortData = () => {
+  const { field, order } = sortConfig.value
+  if (!field) return
+
+  sopAnalyzeData.value.sort((a, b) => {
+    const aValue = Number(a[field]) || 0
+    const bValue = Number(b[field]) || 0
+    return order === 'asc' ? aValue - bValue : bValue - aValue
+  })
+}
+
+// 清除排序
+const handleSortClear = () => {
+  sortConfig.value.field = ''
+  sortConfig.value.order = 'asc'
+  // 按ID升序排序
+  sopAnalyzeData.value.sort((a, b) => {
+    const aValue = Number(a.ID) || 0
+    const bValue = Number(b.ID) || 0
+    return aValue - bValue
+  })
+}
+
+// 排序和筛选后的数据
+const sortedAndFilteredData = computed(() => {
+  // 如果没有选择排序字段，默认按ID升序
+  if (!sortConfig.value.field) {
+    return filteredData.value.slice().sort((a, b) => {
+      const aValue = Number(a.ID) || 0
+      const bValue = Number(b.ID) || 0
+      return aValue - bValue
+    })
+  }
+  return filteredData.value
+})
+
+// 处理筛选清除
+const handleFilterClear = (prop: string) => {
+  const filterKey = getFilterKey(prop)
+  filters.value[filterKey] = ''
+}
+
+// 处理查看
+const handleView = async (row: any) => {
+  try {
+    const res = await getAssyRequireOrdersApi({ assy_requirements_id: row.ASSY_REQUIREMENTS_ID })
+    if (res.data && res.data.list && res.data.list.length > 0) {
+      dialogType.value = 'view'
+      dialogTitle.value = '查看封装单'
+      currentRow.value = res.data.list[0]
+      createDialogVisible.value = true
+    } else {
+      ElMessage.warning('未找到订单详情')
+    }
+  } catch (error) {
+    console.error('获取订单详情失败:', error)
+    ElMessage.error('获取订单详情失败')
+  }
+}
+
+// 处理作废
+const handleCancel = async (row: any) => {
+  try {
+    await ElMessageBox.confirm('确定要作废该订单吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await cancelAssyRequireOrderApi({ id: row.ASSY_REQUIREMENTS_ID })
+    ElMessage.success('订单已作废')
+    // 刷新表格
+    orderTableRef.value?.getOrderList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('作废订单失败:', error)
+      ElMessage.error('作废订单失败')
+    }
+  }
+}
 </script>
 
 <template>
@@ -623,8 +728,8 @@ ElNotification.warning({
     </ElCol>
   </ElRow>
   <ElRow class="mt-6">
-    <ElCol :span="24" class="flex justify-end mb-4">
-      <ElButton type="primary" @click="getReportData">
+    <ElCol :span="18">
+      <ElButton type="primary" class="ml-2" @click="getReportData">
         <Icon icon="vi-icon-park-outline:refresh" class="mr-2" />
         刷新数据
       </ElButton>
@@ -633,42 +738,43 @@ ElNotification.warning({
         导出Excel
       </ElButton>
     </ElCol>
+    <ElCol :span="6" class="flex justify-end items-center">
+      <!-- 排序表单 -->
+      <div class="sort-form">
+        <ElSelect
+          v-model="sortConfig.field"
+          size="small"
+          placeholder="选择排序字段"
+          clearable
+          @clear="handleSortClear"
+        >
+          <ElOption
+            v-for="col in columns.filter((col) => col.isNumber)"
+            :key="col.prop"
+            :label="col.label"
+            :value="col.prop"
+          />
+        </ElSelect>
+        <ElSelect
+          v-model="sortConfig.order"
+          size="small"
+          placeholder="排序方式"
+          :disabled="!sortConfig.field"
+        >
+          <ElOption label="升序" value="asc" />
+          <ElOption label="降序" value="desc" />
+        </ElSelect>
+      </div>
+    </ElCol>
   </ElRow>
 
   <ElRow class="mt-2">
     <ElCol :span="24">
       <ElSkeleton v-if="loading" :rows="50" animated />
       <div v-else>
-        <!-- 筛选行 -->
-        <div class="filter-row">
-          <div class="filter-cell" style="width: 50px"></div>
-          <template v-for="col in columns" :key="col.prop">
-            <div class="filter-cell" :style="{ width: col.width + 'px' }">
-              <template v-if="col.prop === 'ABTR'">
-                <ElSelect v-model="filters.abtr" size="small" class="filter-select" clearable>
-                  <ElOption
-                    v-for="option in abtrOptions"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
-                  />
-                </ElSelect>
-              </template>
-              <ElInput
-                v-else
-                v-model="filters[getFilterKey(col.prop)]"
-                :placeholder="col.isNumber ? '例如: >=100' : '筛选'"
-                size="small"
-                class="filter-input"
-                clearable
-              />
-            </div>
-          </template>
-        </div>
-        <!-- 数据表格 -->
         <ElTable
-          :data="filteredData"
-          height="calc(100vh - 300px)"
+          :data="sortedAndFilteredData"
+          height="calc(100vh - 250px)"
           style="width: 100%"
           border
           @selection-change="handleSelectionChange"
@@ -678,14 +784,44 @@ ElNotification.warning({
             v-for="col in columns"
             :key="col.prop"
             :prop="col.prop"
-            :label="col.label"
             :width="col.width"
             :align="col.align"
-            :sortable="col.sortable"
+            :sortable="false"
             header-align="center"
           >
             <template #header>
-              <div class="header-title">{{ col.label }}</div>
+              <div class="custom-header">
+                <div class="header-row">
+                  <span>{{ col.label }}</span>
+                </div>
+                <div class="filter-row" @click.stop>
+                  <template v-if="col.prop === 'ABTR'">
+                    <ElSelect
+                      v-model="filters.abtr"
+                      size="small"
+                      class="filter-select"
+                      clearable
+                      @clear="handleFilterClear(col.prop)"
+                    >
+                      <ElOption
+                        v-for="option in abtrOptions"
+                        :key="option.value"
+                        :label="option.label"
+                        :value="option.value"
+                      />
+                    </ElSelect>
+                  </template>
+                  <ElInput
+                    v-else
+                    v-model="filters[getFilterKey(col.prop)]"
+                    :placeholder="col.isNumber ? '例如: >=100' : '筛选'"
+                    size="small"
+                    class="filter-input"
+                    clearable
+                    @clear="handleFilterClear(col.prop)"
+                  />
+                </div>
+              </div>
             </template>
             <template #default="{ row }">
               <template v-if="col.prop === 'INVENTORY_GAP' || col.prop === 'INVENTORY_GAP_TOTAL'">
@@ -702,11 +838,11 @@ ElNotification.warning({
             </template>
           </ElTableColumn>
           <!-- 操作列 -->
-          <ElTableColumn label="操作" align="center" header-align="center">
+          <ElTableColumn label="操作" align="center" header-align="center" width="100">
             <template #default="{ row }">
               <ElButton type="primary" size="small" @click="handleCreatePackage(row)">
                 <Icon icon="vi-ri:add-line" class="mr-1" />
-                创建封装单
+                新建
               </ElButton>
             </template>
           </ElTableColumn>
@@ -742,6 +878,8 @@ ElNotification.warning({
           :status="'0'"
           v-loading="pendingOrdersLoading"
           @delete="handleDelete"
+          @view="handleView"
+          @cancel="handleCancel"
         />
       </div>
     </ElCol>
@@ -791,44 +929,51 @@ ElNotification.warning({
   </ResizeDialog>
 </template>
 <style lang="less" scoped>
-.header-title {
-  display: inline;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
+.sort-form {
+  display: inline-flex;
+  align-items: right;
+  gap: 8px;
+
+  :deep(.el-select) {
+    width: 120px;
+  }
+}
+
+.custom-header {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.header-row {
+  display: flex;
+  min-height: 24px;
+  padding: 1px;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--el-text-color-primary);
+  }
 }
 
 .filter-row {
-  display: flex;
-  border: 1px solid var(--el-border-color-lighter);
-}
-
-.filter-cell {
-  padding: 4px;
-  text-align: center;
-  border-right: 1px solid var(--el-border-color-lighter);
-
-  &:last-child {
-    border-right: none;
-  }
-}
-
-.filter-input,
-.filter-select {
   width: 100%;
+  padding: 0 2px 1px;
 
-  :deep(.el-input__inner) {
-    height: 24px;
-    padding: 0 8px;
-    font-size: 12px;
-    line-height: 24px;
-  }
-}
+  .filter-input,
+  .filter-select {
+    width: 100%;
 
-:deep(.el-table) {
-  .el-button--small {
-    padding: 4px 8px;
-    font-size: 12px;
+    :deep(.el-input__inner) {
+      height: 22px;
+      padding: 0 8px;
+      font-size: 12px;
+      line-height: 22px;
+    }
   }
 }
 
@@ -1076,5 +1221,13 @@ ElNotification.warning({
 .button-group {
   display: flex;
   align-items: center;
+}
+
+:deep(.el-table) {
+  .el-table__header {
+    .el-table__cell {
+      padding: 2px 0;
+    }
+  }
 }
 </style>

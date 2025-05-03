@@ -9,6 +9,7 @@ import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
 import EditEmail from './components/EditEmail.vue'
 import { getUserInfoApi } from '@/api/login'
+import { uploadUserAvatarApi } from '@/api/user'
 import { UserType } from '@/api/login/types'
 import { useUserStore } from '@/store/modules/user'
 
@@ -55,14 +56,24 @@ const saveAvatar = async () => {
   try {
     avatarLoading.value = true
     const base64 = unref(uploadAvatarRef)?.getBase64()
-    console.log(base64)
-    // 这里可以调用修改头像接口
-    await fetchDetailUserApi()
-    ElMessage.success('修改成功')
-    dialogVisible.value = false
+    if (!base64) {
+      ElMessage.error('获取图片数据失败')
+      return
+    }
+
+    // 调用上传头像 API
+    const res = await uploadUserAvatarApi({ avatar: base64 })
+    if (res.code === 200) {
+      ElMessage.success('头像修改成功')
+      // 重新获取用户信息
+      await fetchDetailUserApi()
+      dialogVisible.value = false
+    } else {
+      ElMessage.error(res.message || '头像修改失败')
+    }
   } catch (error) {
     console.error('更新头像失败:', error)
-    ElMessage.error('修改失败')
+    ElMessage.error('头像修改失败')
   } finally {
     avatarLoading.value = false
   }

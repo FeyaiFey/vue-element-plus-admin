@@ -6,6 +6,8 @@ export interface StockQuery {
   warehouse_name?: string
   testing_program?: string[]
   burning_program?: string[]
+  pageIndex?: number
+  pageSize?: number
 }
 
 export interface Stock {
@@ -23,6 +25,7 @@ export interface Stock {
 
 export interface StockResponse {
   list: Stock[]
+  total: number
 }
 
 export interface WaferIdQtyDetailQuery {

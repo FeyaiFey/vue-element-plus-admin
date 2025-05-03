@@ -34,3 +34,14 @@ export const updateEmailPasswordApi = (data: updateEmailPasswordParams) => {
 export const getUserEmailInfoApi = () => {
   return request.get<UserEmailInfo>({ url: '/user/email-info' })
 }
+
+// 上传用户头像
+export const uploadUserAvatarApi = (data: { avatar: string }) => {
+  return request.post({
+    url: '/user/avatar',
+    data,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}

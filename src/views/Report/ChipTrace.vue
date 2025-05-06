@@ -118,6 +118,14 @@ const columns = ref<ColumnType[]>([
   { label: '在制数量', prop: 'WIP_QTY', align: 'center', width: 100 },
   { label: '加工方式', prop: 'Z_PROCESSING_PURPOSE_NAME', align: 'center', width: 130 },
   { label: '成测程序', prop: 'Z_TESTING_PROGRAM_NAME', align: 'center', width: 130 },
+  { label: '打线图号', prop: 'Z_ASSEMBLY_CODE', align: 'center', width: 130 },
+  { label: '打线材料', prop: 'Z_WIRE_NAME', align: 'center', width: 130 },
+  {
+    label: '封装供应商',
+    prop: 'SUPPLIER_FULL_NAME',
+    align: 'left',
+    width: 160
+  },
   { label: '芯片类型', prop: 'MAIN_CHIP', align: 'center', width: 100 },
   { label: '芯片编码', prop: 'CHIP_CODE', align: 'center', width: 160, showOverflowTooltip: true },
   {
@@ -129,17 +137,16 @@ const columns = ref<ColumnType[]>([
   },
   { label: '晶圆数量', prop: 'WAFER_QTY', align: 'center', width: 100 },
   { label: '测试数量', prop: 'S_QTY', align: 'center', width: 100 },
-  { label: '晶圆ID', prop: 'WAFER_ID', align: 'center', width: 160, showOverflowTooltip: true },
+  { label: '晶圆ID', prop: 'WAFER_ID', align: 'center', width: 160 },
   { label: '流程名称', prop: 'PROGRESS_NAME', align: 'center', width: 150 },
   { label: '测试程序', prop: 'TESTING_PROGRAM_NAME', align: 'center', width: 150 },
   { label: '订单日期', prop: 'PURCHASE_DATE', align: 'center', width: 120 },
   { label: '到货日期', prop: 'FIRST_ARRIVAL_DATE', align: 'center', width: 120 },
   {
-    label: '供应商',
+    label: 'CP供应商',
     prop: 'SUPPLIER',
     align: 'left',
     width: 160,
-    showOverflowTooltip: true,
     fixed: 'right'
   }
 ])
@@ -196,10 +203,10 @@ const handleCurrentChange = (val: number) => {
           </ElFormItem>
         </ElCol>
         <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="供应商">
+          <ElFormItem label="CP供应商">
             <ElInput
               v-model="searchParams.SUPPLIER"
-              placeholder="请输入供应商"
+              placeholder="请输入CP供应商"
               clearable
               @keyup.enter="handleSearch"
             />

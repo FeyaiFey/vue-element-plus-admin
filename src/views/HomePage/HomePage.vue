@@ -87,8 +87,6 @@ const handleCardClick = (path: string) => {
 </template>
 
 <style lang="less" scoped>
-
-
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -155,7 +153,6 @@ const handleCardClick = (path: string) => {
     color: var(--el-text-color-primary);
     background: linear-gradient(120deg, var(--el-color-primary) 0%, var(--el-color-success) 100%);
     background-clip: text;
-    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
@@ -167,7 +164,7 @@ const handleCardClick = (path: string) => {
 
 .shortcuts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   padding: 0 12px;
 }

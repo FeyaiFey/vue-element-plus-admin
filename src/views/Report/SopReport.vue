@@ -63,11 +63,11 @@ const abtrOptions = [
 
 // 列配置
 const columns = ref([
-  { prop: 'ID', label: 'ID', width: 80, align: 'center', isNumber: false, filterKey: 'id' },
+  { prop: 'ID', label: 'ID', width: 100, align: 'center', isNumber: false, filterKey: 'id' },
   {
     prop: 'ITEM_NAME',
     label: '品名',
-    width: 200,
+    width: 240,
     align: 'right',
     isNumber: false,
     filterKey: 'itemName'
@@ -146,20 +146,22 @@ const columns = ref([
   {
     prop: 'INVENTORY_GAP',
     label: '库存缺口',
-    width: 130,
+    width: 140,
     align: 'right',
     isNumber: true,
     filterKey: 'inventoryGap',
-    sortable: true
+    sortable: true,
+    fixed: 'right'
   },
   {
     prop: 'INVENTORY_GAP_TOTAL',
     label: '总库存缺口',
-    width: 130,
+    width: 140,
     align: 'right',
     isNumber: true,
     filterKey: 'inventoryGapTotal',
-    sortable: true
+    sortable: true,
+    fixed: 'right'
   }
 ])
 
@@ -787,6 +789,7 @@ const handleCancel = async (row: any) => {
             :width="col.width"
             :align="col.align"
             :sortable="false"
+            :fixed="col.fixed"
             header-align="center"
           >
             <template #header>
@@ -838,7 +841,7 @@ const handleCancel = async (row: any) => {
             </template>
           </ElTableColumn>
           <!-- 操作列 -->
-          <ElTableColumn label="操作" align="center" header-align="center" width="100">
+          <ElTableColumn label="操作" align="center" header-align="center" fixed="right">
             <template #default="{ row }">
               <ElButton type="primary" size="small" @click="handleCreatePackage(row)">
                 <Icon icon="vi-ri:add-line" class="mr-1" />

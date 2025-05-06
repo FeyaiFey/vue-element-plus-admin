@@ -327,7 +327,7 @@ const columns = [
   {
     prop: 'ITEM_CODE',
     label: '物料编码',
-    minWidth: 260,
+    minWidth: 320,
     isNumber: false,
     align: 'center',
     sortable: true,
@@ -336,7 +336,7 @@ const columns = [
   {
     prop: 'LOT_CODE',
     label: '批号',
-    minWidth: 180,
+    minWidth: 260,
     isNumber: false,
     align: 'center',
     sortable: true,
@@ -345,7 +345,7 @@ const columns = [
   {
     prop: 'INVENTORY_QTY',
     label: '库存数量',
-    minWidth: 100,
+    minWidth: 160,
     isNumber: true,
     align: 'center',
     sortable: true,
@@ -355,7 +355,7 @@ const columns = [
   {
     prop: 'WAREHOUSE_NAME',
     label: '仓库',
-    minWidth: 160,
+    minWidth: 220,
     isNumber: false,
     align: 'center',
     sortable: true,
@@ -364,7 +364,7 @@ const columns = [
   {
     prop: 'SECOND_QTY',
     label: '片数',
-    minWidth: 100,
+    minWidth: 130,
     isNumber: true,
     align: 'center',
     sortable: true,
@@ -373,7 +373,7 @@ const columns = [
   {
     prop: 'Z_BURNING_PROGRAM_NAME',
     label: '烧录程序',
-    minWidth: 200,
+    minWidth: 320,
     isNumber: false,
     align: 'center',
     sortable: true,
@@ -382,7 +382,7 @@ const columns = [
   {
     prop: 'Z_TESTING_PROGRAM_NAME',
     label: '测试程序',
-    minWidth: 200,
+    minWidth: 320,
     isNumber: false,
     align: 'center',
     sortable: true,
@@ -391,7 +391,7 @@ const columns = [
   {
     prop: 'FEATURE_GROUP_NAME',
     label: '品号群组',
-    minWidth: 120,
+    minWidth: 260,
     isNumber: false,
     align: 'center',
     sortable: true,

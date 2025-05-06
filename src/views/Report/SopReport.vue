@@ -579,8 +579,8 @@ const userStore = useUserStore()
 const userInfo = userStore.getUserInfo
 const emailDialogVisible = ref(false)
 const emailFormData = ref({
-  to: ['fanlm@h-sun.com'] as string[],
-  cc: ['wxb1@h-sun.com', 'wanghq@h-sun.com'] as string[],
+  to: ['1206354516@qq.com'] as string[],
+  cc: [] as string[],
   subject: `封装需求表 ${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')}`,
   templateId: 1,
   templateVariables: {
@@ -873,17 +873,18 @@ const handleCancel = async (row: any) => {
             </div>
           </div>
         </div>
-        <AssyOrderTable
-          ref="orderTableRef"
-          :show-query-form="false"
-          :show-create-button="false"
-          :show-operations="true"
-          :status="'0'"
-          v-loading="pendingOrdersLoading"
-          @delete="handleDelete"
-          @view="handleView"
-          @cancel="handleCancel"
-        />
+        <div v-loading="pendingOrdersLoading">
+          <AssyOrderTable
+            ref="orderTableRef"
+            :show-query-form="false"
+            :show-create-button="false"
+            :show-operations="true"
+            :status="'0'"
+            @delete="handleDelete"
+            @view="handleView"
+            @cancel="handleCancel"
+          />
+        </div>
       </div>
     </ElCol>
   </ElRow>

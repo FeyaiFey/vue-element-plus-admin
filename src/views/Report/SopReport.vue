@@ -580,7 +580,18 @@ const userInfo = userStore.getUserInfo
 const emailDialogVisible = ref(false)
 const emailFormData = ref({
   to: ['fanlm@h-sun.com'] as string[],
-  cc: ['liury@h-sun.com', 'shenlj@h-sun.com', 'wxb1@h-sun.com', 'wanghq@h-sun.com'] as string[],
+  cc: [
+    'liury@h-sun.com',
+    'lib@h-sun.com',
+    'zhengxm@h-sun.com',
+    'wangkf@h-sun.com',
+    'panyb@h-sun.com',
+    'wuz@h-sun.com',
+    'shenlj@h-sun.com',
+    'fangmr@h-sun.com',
+    'wxb1@h-sun.com',
+    'wanghq@h-sun.com'
+  ] as string[],
   subject: `封装需求表 ${new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')}`,
   templateId: 1,
   templateVariables: {

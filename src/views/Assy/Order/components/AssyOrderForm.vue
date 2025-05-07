@@ -163,8 +163,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             remark: formData.remark,
             mainChip: formData.mainChip,
             deputyChip: formData.deputyChip,
-            mainChipUsage: formData.mainChipUsage,
-            deputyChipUsage: formData.deputyChipUsage,
+            mainChipUsage: Number(mainChipUsage.value),
+            deputyChipUsage: Number(deputyChipUsage.value),
             status: '1'
           }
         ]

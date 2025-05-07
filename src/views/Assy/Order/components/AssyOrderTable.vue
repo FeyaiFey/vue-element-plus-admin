@@ -298,7 +298,7 @@ onMounted(() => {
         prop="ITEM_NAME"
         label="品名"
         align="right"
-        width="150"
+        width="240"
         header-align="center"
         show-overflow-tooltip
       />

@@ -214,7 +214,9 @@ export default {
     sopReport: '产销协调',
     cpTest: '中测列表',
     assyOrder: '封装需求',
-    chipTrace: '芯片追溯'
+    chipTrace: '芯片追溯',
+    saleAnalyze: '销售分析',
+    saleTarget: '维护销售目标'
   },
   permission: {
     hasPermission: '请设置操作权限值'

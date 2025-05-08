@@ -219,7 +219,9 @@ export default {
     sopReport: 'SOP Report',
     cpTest: 'CP Test List',
     assyOrder: 'ASSY Order List',
-    chipTrace: 'Chip Trace'
+    chipTrace: 'Chip Trace',
+    saleAnalyze: 'Sale Analyze',
+    saleTarget: 'Maintain Sale Target'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

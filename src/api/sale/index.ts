@@ -1,5 +1,14 @@
 import request from '@/axios'
-import type { SaleTableQuery, SaleTableResponse, SaleTargetCreate, SaleTargetUpdate } from './type'
+import type {
+  SaleTableQuery,
+  SaleTableResponse,
+  SaleTargetCreate,
+  SaleTargetUpdate,
+  SaleTargetSummaryQuery,
+  SaleTargetSummaryResponse,
+  SaleTargetDetailQuery,
+  SaleTargetDetailResponse
+} from './type'
 
 export const getSaleTableApi = (query: SaleTableQuery) => {
   return request.get<SaleTableResponse>({
@@ -26,5 +35,19 @@ export const deleteSaleTargetApi = (data: SaleTargetUpdate) => {
   return request.delete<SaleTargetUpdate>({
     url: '/sale/target',
     data
+  })
+}
+
+export const getSaleTargetSummaryApi = (query: SaleTargetSummaryQuery) => {
+  return request.get<SaleTargetSummaryResponse>({
+    url: '/sale/target/summary',
+    params: query
+  })
+}
+
+export const getSaleTargetDetailApi = (query: SaleTargetDetailQuery) => {
+  return request.get<SaleTargetDetailResponse>({
+    url: '/sale/target/detail',
+    params: query
   })
 }

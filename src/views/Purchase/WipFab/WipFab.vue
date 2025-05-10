@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, unref, onMounted, h } from 'vue'
+import { ref, reactive, onMounted, h } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -13,10 +13,10 @@ import {
   ElRow,
   ElCol,
   ElCollapseTransition,
-  ElButton
+  ElButton,
+  ElMessage,
+  ElSkeleton
 } from 'element-plus'
-import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
-import { ContentWrap } from '@/components/ContentWrap'
 import { getPurchaseWipListApi, getPurchaseWipSupplierListApi } from '@/api/purchase'
 import type {
   PurchaseWip,
@@ -24,7 +24,6 @@ import type {
   PurchaseWipSupplierResponse
 } from '@/api/purchase/type'
 import { Icon } from '@/components/Icon'
-import { useTable } from '@/hooks/web/useTable'
 
 // 折叠状态
 const isCollapse = ref(true)
@@ -63,43 +62,42 @@ const searchParams = reactive<PurchaseWipQuery>({
   days: undefined
 })
 
-// 使用 table hook
-const { tableState, tableMethods } = useTable({
-  fetchDataApi: async () => {
-    const { currentPage } = tableState
+// 移除 useTable，改用直接的数据获取方式
+const loading = ref(false)
+const dataList = ref<PurchaseWip[]>([])
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(50)
+
+// 获取列表数据
+const getList = async () => {
+  try {
+    loading.value = true
     const res = await getPurchaseWipListApi({
-      pageIndex: unref(currentPage),
-      pageSize: 50,
+      pageIndex: currentPage.value,
+      pageSize: pageSize.value,
       ...searchParams
     })
-    return {
-      list: res.data.list,
-      total: res.data.total
-    }
+    dataList.value = res.data.list || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取数据失败:', error)
+    ElMessage.error('获取数据失败')
+  } finally {
+    loading.value = false
   }
-})
+}
 
-const { getList } = tableMethods
-const { loading, dataList, total, currentPage } = tableState
-
-// 搜索方法
-const handleSearch = () => {
-  currentPage.value = 1
+// 处理分页变化
+const handlePageChange = (page: number) => {
+  currentPage.value = page
   getList()
 }
 
-// 重置方法
-const handleReset = () => {
-  formRef.value?.resetFields()
-  // 设置默认参数
-  searchParams.purchase_order = ''
-  searchParams.item_name = ''
-  searchParams.supplier = ''
-  searchParams.status = ''
-  searchParams.is_finished = 0
-  searchParams.is_stranded = ''
-  searchParams.days = undefined
-  handleSearch()
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  currentPage.value = 1
+  getList()
 }
 
 // 获取状态标签类型
@@ -128,16 +126,26 @@ const getDeliveryDateType = (
   return 'info'
 }
 
-// 表格列配置
-interface ColumnType extends Partial<TableColumnCtx<PurchaseWip>> {
+// 表格列配置接口
+interface TableColumn {
+  type?: 'selection' | 'expand' | 'index'
+  label?: string
+  prop?: string
+  width?: number
+  align?: 'left' | 'center' | 'right'
+  fixed?: 'left' | 'right'
+  showOverflowTooltip?: boolean
+  headerAlign?: 'left' | 'center' | 'right'
+  headerCellClassName?: string
+  sortable?: boolean
+  formatter?: (row: PurchaseWip) => any
   hidden?: boolean
   slots?: {
-    default?: (scope: { row: PurchaseWip }) => JSX.Element
+    default?: (scope: any) => any
   }
-  headerCellClassName?: string
 }
 
-const columns = ref<ColumnType[]>([
+const columns = ref<TableColumn[]>([
   {
     type: 'selection',
     width: 50,
@@ -165,7 +173,6 @@ const columns = ref<ColumnType[]>([
   { label: '剩余层数', prop: 'remainLayerCount', align: 'center', width: 120 },
   { label: '当前位置', prop: 'currentPosition', align: 'center', hidden: true },
   { label: '完成日期', prop: 'finished_at', align: 'center', width: 120 },
-  { label: '提前期', prop: 'leadTime', align: 'center', width: 120 },
   { label: '滞留天数', prop: 'stranded', align: 'center', width: 120 },
   {
     label: '预计交期',
@@ -192,6 +199,20 @@ const columns = ref<ColumnType[]>([
   { label: '供应商', prop: 'supplier', align: 'center', fixed: 'right' }
 ])
 
+// 重置方法
+const handleReset = () => {
+  formRef.value?.resetFields()
+  // 设置默认参数
+  searchParams.purchase_order = ''
+  searchParams.item_name = ''
+  searchParams.supplier = ''
+  searchParams.status = ''
+  searchParams.is_finished = 0
+  searchParams.is_stranded = ''
+  searchParams.days = undefined
+  getList()
+}
+
 // 在组件挂载时获取数据
 onMounted(() => {
   getList()
@@ -200,251 +221,191 @@ onMounted(() => {
 </script>
 
 <template>
-  <ContentWrap>
-    <!-- 搜索表单 -->
-    <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
-      <ElRow :gutter="20">
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="订单号">
-            <ElInput
-              v-model="searchParams.purchase_order"
-              placeholder="请输入订单号"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="物料名称">
-            <ElInput
-              v-model="searchParams.item_name"
-              placeholder="请输入物料名称"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="供应商">
-            <ElSelect
-              v-model="searchParams.supplier"
-              placeholder="请选择供应商"
-              clearable
-              filterable
-              :loading="supplierLoading"
-              @keyup.enter="handleSearch"
-            >
-              <ElOption
-                v-for="item in supplierOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </ElSelect>
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-      <ElCollapseTransition>
-        <div v-show="!isCollapse">
-          <ElRow :gutter="20">
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="状态">
-                <ElSelect v-model="searchParams.status" placeholder="请选择状态" clearable>
-                  <ElOption label="全部" value="" />
-                  <ElOption label="HOLD" value="HOLD" />
-                  <ElOption label="STOCK" value="STOCK" />
-                </ElSelect>
-              </ElFormItem>
-            </ElCol>
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="是否完成">
-                <ElSelect v-model="searchParams.is_finished" placeholder="请选择是否完成" clearable>
-                  <ElOption label="全部" value="" />
-                  <ElOption label="已完成" :value="1" />
-                  <ElOption label="未完成" :value="0" />
-                </ElSelect>
-              </ElFormItem>
-            </ElCol>
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="是否滞留">
-                <ElSelect v-model="searchParams.is_stranded" placeholder="请选择是否滞留" clearable>
-                  <ElOption label="全部" value="" />
-                  <ElOption label="是" :value="1" />
-                  <ElOption label="否" :value="0" />
-                </ElSelect>
-              </ElFormItem>
-            </ElCol>
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="提前天数">
-                <ElSelect v-model="searchParams.days" placeholder="请选择提前天数" clearable>
-                  <ElOption label="7天" :value="7" />
-                  <ElOption label="15天" :value="15" />
-                  <ElOption label="30天" :value="30" />
-                </ElSelect>
-              </ElFormItem>
-            </ElCol>
-          </ElRow>
-        </div>
-      </ElCollapseTransition>
-      <ElRow>
-        <ElCol :span="24" class="search-buttons">
-          <ElButton type="primary" @click="handleSearch">
-            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
-            查询
-          </ElButton>
-          <ElButton @click="handleReset">重置</ElButton>
-          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
-            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
-            <Icon
-              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
-              :size="20"
-              class="collapse-icon"
-            />
-          </ElButton>
-        </ElCol>
-      </ElRow>
-    </ElForm>
-
-    <!-- 表格区域 -->
-    <div class="mt-4 table-container">
-      <!-- 表格 -->
-      <div class="table-wrapper">
-        <ElTable
-          v-loading="loading"
-          :data="dataList"
-          border
-          class="w-full"
-          header-cell-class-name="table-header"
-        >
-          <template v-for="item in columns" :key="item.prop || item.type">
-            <ElTableColumn v-bind="item" v-if="!item.hidden">
-              <template #header>
-                <span :class="item.headerCellClassName">{{ item.label }}</span>
-              </template>
-              <template #default="scope" v-if="!item.type">
-                <template v-if="item.prop === 'status'">
-                  <ElTag :type="getStatusType(scope.row.status)" class="status-tag">
-                    {{ scope.row.status || '-' }}
-                  </ElTag>
-                </template>
-                <template v-else-if="item.prop === 'forecastDate'">
-                  <ElTag
-                    v-if="scope.row.forecastDate"
-                    :type="getDeliveryDateType(scope.row.forecastDate)"
-                    effect="dark"
-                    class="delivery-date-tag"
-                  >
-                    {{ scope.row.forecastDate }}
-                  </ElTag>
-                  <span v-else>-</span>
-                </template>
-                <template v-else>
-                  {{ scope.row[item.prop as keyof PurchaseWip] }}
-                </template>
-              </template>
-            </ElTableColumn>
-          </template>
-        </ElTable>
-
-        <!-- 分页 -->
-        <div class="flex justify-end mt-4">
-          <ElPagination
-            v-model:current-page="currentPage"
-            :page-size="50"
-            :total="total"
-            layout="total, prev, pager, next, jumper"
-            @current-change="getList"
+  <!-- 搜索表单 -->
+  <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
+    <ElRow :gutter="20">
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="订单号">
+          <ElInput
+            v-model="searchParams.purchase_order"
+            placeholder="请输入订单号"
+            clearable
+            @keyup.enter="getList"
           />
-        </div>
+        </ElFormItem>
+      </ElCol>
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="物料名称">
+          <ElInput
+            v-model="searchParams.item_name"
+            placeholder="请输入物料名称"
+            clearable
+            @keyup.enter="getList"
+          />
+        </ElFormItem>
+      </ElCol>
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="供应商">
+          <ElSelect
+            v-model="searchParams.supplier"
+            placeholder="请选择供应商"
+            clearable
+            filterable
+            :loading="supplierLoading"
+            @keyup.enter="getList"
+          >
+            <ElOption
+              v-for="item in supplierOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </ElSelect>
+        </ElFormItem>
+      </ElCol>
+    </ElRow>
+    <ElCollapseTransition>
+      <div v-show="!isCollapse">
+        <ElRow :gutter="20">
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="状态">
+              <ElSelect v-model="searchParams.status" placeholder="请选择状态" clearable>
+                <ElOption label="全部" value="" />
+                <ElOption label="HOLD" value="HOLD" />
+                <ElOption label="STOCK" value="STOCK" />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="是否完成">
+              <ElSelect v-model="searchParams.is_finished" placeholder="请选择是否完成" clearable>
+                <ElOption label="全部" value="" />
+                <ElOption label="已完成" :value="1" />
+                <ElOption label="未完成" :value="0" />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="是否滞留">
+              <ElSelect v-model="searchParams.is_stranded" placeholder="请选择是否滞留" clearable>
+                <ElOption label="全部" value="" />
+                <ElOption label="是" :value="1" />
+                <ElOption label="否" :value="0" />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="提前天数">
+              <ElSelect v-model="searchParams.days" placeholder="请选择提前天数" clearable>
+                <ElOption label="7天" :value="7" />
+                <ElOption label="15天" :value="15" />
+                <ElOption label="30天" :value="30" />
+              </ElSelect>
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
       </div>
+    </ElCollapseTransition>
+    <ElRow>
+      <ElCol :span="24" class="search-buttons">
+        <ElButton type="primary" @click="getList">
+          <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+          查询
+        </ElButton>
+        <ElButton @click="handleReset">重置</ElButton>
+        <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+          <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
+          <Icon
+            :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+            :size="20"
+            class="collapse-icon"
+          />
+        </ElButton>
+      </ElCol>
+    </ElRow>
+  </ElForm>
+
+  <!-- 表格区域 -->
+  <div class="table-container">
+    <ElSkeleton v-if="loading" :rows="20" animated class="table-skeleton" />
+    <ElTable
+      v-else
+      v-loading="loading"
+      :data="dataList"
+      border
+      class="w-full"
+      header-cell-class-name="table-header"
+      row-key="purchaseOrder"
+      height="calc(100vh - 280px)"
+    >
+      <template v-for="item in columns" :key="item.prop || item.type">
+        <ElTableColumn v-bind="item" v-if="!item.hidden">
+          <template #header>
+            <span :class="item.headerCellClassName">{{ item.label }}</span>
+          </template>
+          <template #default="scope" v-if="!item.type">
+            <template v-if="item.prop === 'status'">
+              <ElTag :type="getStatusType(scope.row.status)" class="status-tag">
+                {{ scope.row.status || '-' }}
+              </ElTag>
+            </template>
+            <template v-else-if="item.prop === 'forecastDate'">
+              <ElTag
+                v-if="scope.row.forecastDate"
+                :type="getDeliveryDateType(scope.row.forecastDate)"
+                effect="dark"
+                class="delivery-date-tag"
+              >
+                {{ scope.row.forecastDate }}
+              </ElTag>
+              <span v-else>-</span>
+            </template>
+            <template v-else>
+              {{ scope.row[item.prop as keyof PurchaseWip] }}
+            </template>
+          </template>
+        </ElTableColumn>
+      </template>
+    </ElTable>
+  </div>
+
+  <!-- 分页组件 -->
+  <div class="pagination-wrapper">
+    <div class="pagination-container">
+      <ElPagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[50, 100, 200, 500]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
     </div>
-  </ContentWrap>
+  </div>
 </template>
 
 <style lang="less" scoped>
 .table-container {
-  display: flex;
-  flex-direction: column;
-  overflow-x: auto;
-}
-
-.table-wrapper {
-  min-width: 800px;
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 280px);
+  background-color: var(--el-bg-color);
   border: 1px solid var(--el-border-color-light);
   border-radius: 4px;
 }
 
-:deep(.el-table) {
-  // 移除表格边框
-  border: none !important;
+.table-skeleton {
+  height: 100%;
+  padding: 20px;
 
-  // 移动端适配
-  @media screen and (width <= 768px) {
-    // 减小字体大小
-    font-size: 12px;
-    // 减小单元格内边距
-    td,
-    th {
-      padding: 8px !important;
-    }
-  }
-
-  // 表头样式
-  .el-table__body-header {
-    th {
-      font-weight: bold;
-      color: var(--el-color-primary);
-      text-align: center !important;
-      background-color: var(--el-color-primary-light-9);
-    }
-  }
-
-  // 表格内容居中
-  .el-table__body {
-    td {
-      text-align: center !important;
-    }
-  }
-
-  // 选中行样式
-  .el-table__row.selected {
-    td {
-      color: var(--el-color-primary);
-      background-color: var(--el-color-primary-light-8) !important;
-    }
-  }
-
-  // 鼠标悬停样式
-  .el-table__row:hover {
-    td {
-      background-color: var(--el-color-primary-light-9) !important;
-    }
-  }
-
-  // 固定列样式
-  .el-table__fixed,
-  .el-table__fixed-right {
-    height: 100% !important;
-    box-shadow: none;
-
-    &::before {
-      display: none;
-    }
-
-    // 固定列的选中行样式
-    .el-table__row.selected {
-      td {
-        color: var(--el-color-primary);
-        background-color: var(--el-color-primary-light-8) !important;
-      }
-    }
+  :deep(.el-skeleton__item) {
+    height: 20px;
+    margin-bottom: 16px;
   }
 }
 
 .search-form {
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: var(--el-bg-color);
   border-radius: 4px;
 
   :deep(.el-row) {
@@ -460,7 +421,7 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     gap: 12px;
-    margin-top: 16px;
+    margin-bottom: 16px;
 
     .el-button {
       min-width: 120px;
@@ -531,5 +492,24 @@ onMounted(() => {
   100% {
     opacity: 1;
   }
+}
+
+.pagination-wrapper {
+  position: relative;
+  width: 100%;
+  height: 60px;
+}
+
+.pagination-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  padding: 10px 20px;
+  background-color: var(--el-bg-color);
+  border-top: 1px solid var(--el-border-color-light);
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

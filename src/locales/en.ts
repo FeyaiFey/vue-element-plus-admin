@@ -220,8 +220,9 @@ export default {
     cpTest: 'CP Test List',
     assyOrder: 'ASSY Order List',
     chipTrace: 'Chip Trace',
+    sale: 'Sale',
     saleAnalyze: 'Sale Analyze',
-    saleTarget: 'Maintain Sale Target'
+    saleTarget: 'Sale Target'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

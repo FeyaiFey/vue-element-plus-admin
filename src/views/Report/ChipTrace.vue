@@ -11,11 +11,12 @@ import {
   ElInput,
   ElCollapseTransition,
   ElButton,
-  ElMessage
+  ElMessage,
+  ElSkeleton
 } from 'element-plus'
-import { ContentWrap } from '@/components/ContentWrap'
-import { getChipInfoTraceApi } from '@/api/report'
+import { getChipInfoTraceApi, exportChipInfoTraceApi } from '@/api/report'
 import type { ChipInfoTraceQuery, ChipInfoTrace } from '@/api/report/type'
+import type { AxiosResponse } from '@/axios/types'
 import { Icon } from '@/components/Icon'
 
 // 折叠状态
@@ -91,6 +92,63 @@ const handleReset = () => {
   // 重置后清空数据
   dataList.value = []
   total.value = 0
+}
+
+// 导出Excel
+const handleExport = async () => {
+  try {
+    // 显示导出进度提示
+    const loadingInstance = ElMessage({
+      type: 'info',
+      message: '正在导出数据，请稍候...',
+      duration: 0,
+      showClose: true
+    })
+
+    const res = (await exportChipInfoTraceApi({
+      ...searchParams
+    })) as unknown as AxiosResponse
+
+    // 关闭加载提示
+    loadingInstance.close()
+
+    // 检查响应数据
+    if (!res.data) {
+      throw new Error('导出数据为空')
+    }
+
+    // 创建blob对象
+    const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+
+    // 获取文件名
+    const disposition = res.headers?.['content-disposition']
+    let filename = `packageOrders_${new Date().toLocaleDateString()}.xlsx`
+
+    if (disposition) {
+      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+      const matches = filenameRegex.exec(disposition)
+      if (matches?.[1]) {
+        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''))
+      }
+    }
+
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+
+    // 清理
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error(error instanceof Error ? error.message : '导出失败，请稍后重试')
+  }
 }
 
 // 表格列配置接口
@@ -178,156 +236,236 @@ const handleCurrentChange = (val: number) => {
 </script>
 
 <template>
-  <ContentWrap>
-    <!-- 搜索表单 -->
-    <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
-      <ElRow :gutter="20">
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="芯片批号">
-            <ElInput
-              v-model="searchParams.CHIP_LOT_CODE"
-              placeholder="请输入芯片批号"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="晶圆批号">
-            <ElInput
-              v-model="searchParams.WAFER_LOT_CODE"
-              placeholder="请输入晶圆批号"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="CP供应商">
-            <ElInput
-              v-model="searchParams.SUPPLIER"
-              placeholder="请输入CP供应商"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-      <ElCollapseTransition>
-        <div v-show="!isCollapse">
-          <ElRow :gutter="20">
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="芯片名称">
-                <ElInput
-                  v-model="searchParams.CHIP_NAME"
-                  placeholder="请输入芯片名称"
-                  clearable
-                  @keyup.enter="handleSearch"
-                />
-              </ElFormItem>
-            </ElCol>
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="晶圆名称">
-                <ElInput
-                  v-model="searchParams.WAFER_NAME"
-                  placeholder="请输入晶圆名称"
-                  clearable
-                  @keyup.enter="handleSearch"
-                />
-              </ElFormItem>
-            </ElCol>
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="测试程序">
-                <ElInput
-                  v-model="searchParams.TESTING_PROGRAM_NAME"
-                  placeholder="请输入测试程序"
-                  clearable
-                  @keyup.enter="handleSearch"
-                />
-              </ElFormItem>
-            </ElCol>
-          </ElRow>
-        </div>
-      </ElCollapseTransition>
-      <ElRow>
-        <ElCol :span="24" class="search-buttons">
-          <ElButton type="primary" @click="handleSearch">
-            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
-            查询
-          </ElButton>
-          <ElButton @click="handleReset">重置</ElButton>
-          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
-            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
-            <Icon
-              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
-              :size="20"
-              class="collapse-icon"
-            />
-          </ElButton>
-        </ElCol>
-      </ElRow>
-    </ElForm>
+  <!-- 搜索表单 -->
+  <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
+    <ElRow :gutter="20">
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="芯片批号">
+          <ElInput
+            v-model="searchParams.CHIP_LOT_CODE"
+            placeholder="请输入芯片批号"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </ElFormItem>
+      </ElCol>
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="晶圆批号">
+          <ElInput
+            v-model="searchParams.WAFER_LOT_CODE"
+            placeholder="请输入晶圆批号"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </ElFormItem>
+      </ElCol>
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="CP供应商">
+          <ElInput
+            v-model="searchParams.SUPPLIER"
+            placeholder="请输入CP供应商"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </ElFormItem>
+      </ElCol>
+    </ElRow>
+    <ElCollapseTransition>
+      <div v-show="!isCollapse">
+        <ElRow :gutter="20">
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="芯片名称">
+              <ElInput
+                v-model="searchParams.CHIP_NAME"
+                placeholder="请输入芯片名称"
+                clearable
+                @keyup.enter="handleSearch"
+              />
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="晶圆名称">
+              <ElInput
+                v-model="searchParams.WAFER_NAME"
+                placeholder="请输入晶圆名称"
+                clearable
+                @keyup.enter="handleSearch"
+              />
+            </ElFormItem>
+          </ElCol>
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="测试程序">
+              <ElInput
+                v-model="searchParams.TESTING_PROGRAM_NAME"
+                placeholder="请输入测试程序"
+                clearable
+                @keyup.enter="handleSearch"
+              />
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
+      </div>
+    </ElCollapseTransition>
+    <ElRow>
+      <ElCol :span="24" class="search-buttons">
+        <ElButton type="primary" @click="handleSearch">
+          <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+          查询
+        </ElButton>
+        <ElButton @click="handleReset">重置</ElButton>
+        <ElButton @click="handleExport">
+          <Icon icon="vi-vscode-icons:file-type-excel" class="mr-2" />
+          导出Excel
+        </ElButton>
+        <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+          <span class="collapse-text">{{ isCollapse ? '更多查询' : '收起' }}</span>
+          <Icon
+            :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+            :size="20"
+            class="collapse-icon"
+          />
+        </ElButton>
+      </ElCol>
+    </ElRow>
+  </ElForm>
 
-    <!-- 表格 -->
-    <div class="mt-4">
-      <ElTable
-        v-loading="loading"
-        :data="dataList"
-        border
-        class="w-full"
-        :row-class-name="tableRowClassName"
-        header-cell-class-name="table-header"
-        @selection-change="handleSelectionChange"
-        row-key="ID"
-      >
-        <ElTableColumn type="selection" width="50" align="center" fixed="left" />
-        <template v-for="item in columns" :key="item.prop">
-          <ElTableColumn
-            v-if="!item.hidden"
-            :prop="item.prop"
-            :label="item.label"
-            :width="item.width"
-            :min-width="item.minWidth"
-            :align="item.align || 'center'"
-            :show-overflow-tooltip="item.showOverflowTooltip"
-            :fixed="item.fixed"
-          >
-            <template v-if="item.formatter" #default="scope">
-              {{ item.formatter(scope.row) }}
-            </template>
-          </ElTableColumn>
-        </template>
-      </ElTable>
-      <!-- 分页 -->
-      <div class="flex justify-left mt-4">
-        <ElPagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+  <!-- 表格区域 -->
+  <div class="table-container">
+    <ElSkeleton v-if="loading" :rows="20" animated class="table-skeleton" />
+    <ElTable
+      v-else
+      v-loading="loading"
+      :data="dataList"
+      border
+      class="w-full"
+      :row-class-name="tableRowClassName"
+      header-cell-class-name="table-header"
+      @selection-change="handleSelectionChange"
+      row-key="ID"
+      height="calc(100vh - 280px)"
+    >
+      <ElTableColumn type="selection" width="50" align="center" fixed="left" />
+      <template v-for="item in columns" :key="item.prop">
+        <ElTableColumn
+          v-if="!item.hidden"
+          :prop="item.prop"
+          :label="item.label"
+          :width="item.width"
+          :min-width="item.minWidth"
+          :align="item.align || 'center'"
+          :show-overflow-tooltip="item.showOverflowTooltip"
+          :fixed="item.fixed"
+        >
+          <template v-if="item.formatter" #default="scope">
+            {{ item.formatter(scope.row) }}
+          </template>
+        </ElTableColumn>
+      </template>
+    </ElTable>
+  </div>
+
+  <!-- 分页组件 -->
+  <div class="pagination-wrapper">
+    <div class="pagination-container">
+      <ElPagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[50, 100, 200, 500]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+      <div class="summary-content">
+        <div class="summary-left">
+          <span class="summary-item">
+            已选择: <span class="summary-value">{{ selection.length }}</span> 项
+          </span>
+        </div>
       </div>
     </div>
-  </ContentWrap>
+  </div>
 </template>
 
 <style lang="less" scoped>
-:deep(.table-header) {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--el-text-color-primary);
-  text-align: center !important;
-  background-color: var(--el-fill-color-light) !important;
-  border-bottom: 1px solid var(--el-border-color-lighter);
+.table-container {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 280px);
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 4px;
+}
+
+.table-skeleton {
+  height: 100%;
+  padding: 20px;
+
+  :deep(.el-skeleton__item) {
+    height: 20px;
+    margin-bottom: 16px;
+  }
+}
+
+.table-wrapper {
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 4px;
+  flex: 1;
+}
+
+:deep(.el-table-v2__cell) {
+  border-right: 1px solid var(--el-border-color-light);
+  border-bottom: 1px solid var(--el-border-color-light);
+}
+
+.table-summary {
+  display: flex;
+  padding: 8px 12px;
+  background-color: var(--el-color-primary-light-9);
+  border: 1px solid var(--el-border-color-light);
+  border-bottom: none;
+  align-items: center;
+  border-radius: 4px 4px 0 0;
+
+  .summary-content {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .summary-left {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .summary-item {
+    display: flex;
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    align-items: center;
+    gap: 4px;
+
+    .summary-value {
+      font-weight: 600;
+      color: var(--el-color-primary);
+    }
+  }
+
+  .sort-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    :deep(.el-select) {
+      width: 120px;
+    }
+  }
 }
 
 .search-form {
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: var(--el-bg-color);
   border-radius: 4px;
 
   :deep(.el-row) {
@@ -347,7 +485,7 @@ const handleCurrentChange = (val: number) => {
     display: flex;
     justify-content: center;
     gap: 12px;
-    margin-top: 16px;
+    margin-bottom: 16px;
 
     .el-button {
       min-width: 120px;
@@ -376,6 +514,160 @@ const handleCurrentChange = (val: number) => {
         color: var(--el-color-primary);
         transition: transform 0.3s;
       }
+    }
+  }
+}
+
+.pagination-wrapper {
+  position: relative;
+  width: 100%;
+  height: 60px;
+}
+
+.pagination-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  padding: 10px 20px;
+  background-color: var(--el-bg-color);
+  border-top: 1px solid var(--el-border-color-light);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.summary-left {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.summary-item {
+  display: flex;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  align-items: center;
+  gap: 4px;
+
+  .summary-value {
+    font-weight: 600;
+    color: var(--el-color-primary);
+  }
+}
+
+.sort-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  :deep(.el-select) {
+    width: 120px;
+  }
+}
+
+.custom-header {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+}
+
+.header-row {
+  display: flex;
+  min-height: 20px;
+  padding: 1px;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--el-text-color-primary);
+  }
+}
+
+.filter-row {
+  width: 100%;
+  padding: 0 2px 1px;
+
+  .filter-input {
+    width: 100%;
+
+    :deep(.el-input__inner) {
+      height: 22px;
+      padding: 0 8px;
+      font-size: 12px;
+      line-height: 22px;
+    }
+  }
+}
+
+:deep(.table-header) {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--el-text-color-primary);
+  text-align: center !important;
+  background-color: var(--el-fill-color-light) !important;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+:deep(.el-table) {
+  --el-table-header-bg-color: var(--el-fill-color-light);
+  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+
+  .el-table__header {
+    th {
+      height: 40px;
+      padding: 4px 0;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+      background-color: var(--el-fill-color-light);
+      border-bottom: 2px solid var(--el-border-color-lighter);
+      transition: all 0.3s;
+
+      &:hover {
+        background-color: var(--el-fill-color);
+      }
+    }
+  }
+
+  .el-table__row {
+    td {
+      height: 40px;
+      padding: 8px 0;
+      transition: all 0.3s;
+    }
+  }
+
+  .el-table__cell {
+    .cell {
+      line-height: 1.5;
+    }
+  }
+
+  // 多选框选中行样式
+  .el-table__row.is-selected {
+    background-color: var(--el-color-primary-light-9) !important;
+
+    td {
+      font-weight: 500;
+      color: var(--el-color-primary);
+      background-color: var(--el-color-primary-light-9) !important;
+    }
+  }
+
+  // 多选框选中行悬停样式
+  .el-table__row.is-selected:hover {
+    td {
+      background-color: var(--el-color-primary-light-8) !important;
     }
   }
 }

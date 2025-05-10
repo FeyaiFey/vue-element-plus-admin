@@ -16,7 +16,8 @@ import type {
   BurningProgramResponse,
   ItemWaferInfoQuery,
   ItemWaferInfoResponse,
-  SalesResponse
+  SalesResponse,
+  SaleUnitResponse
 } from './type'
 
 export const getFeatureGroupNameApi = (query: FeatureGroupNameQuery) => {
@@ -78,5 +79,11 @@ export const getWaferInfoApi = (query: ItemWaferInfoQuery) => {
 export const getSalesApi = () => {
   return request.get<SalesResponse>({
     url: '/params/requirement/sales'
+  })
+}
+
+export const getSaleUnitApi = () => {
+  return request.get<SaleUnitResponse>({
+    url: '/params/sale/unit'
   })
 }

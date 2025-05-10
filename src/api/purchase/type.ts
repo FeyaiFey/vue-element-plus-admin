@@ -58,7 +58,6 @@ export interface PurchaseWip {
   supplier: string
   finished_at: Date
   stranded: number
-  leadTime: number
 }
 
 export interface PurchaseWipResponse {

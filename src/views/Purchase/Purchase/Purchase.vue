@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, unref, h, onMounted, watch } from 'vue'
+import { ref, reactive, h, onMounted, watch } from 'vue'
 import {
   ElTable,
   ElTableColumn,
@@ -15,11 +15,10 @@ import {
   ElRow,
   ElCol,
   ElCollapseTransition,
-  ElButton
+  ElButton,
+  ElMessage,
+  ElSkeleton
 } from 'element-plus'
-import type { TableColumnCtx } from 'element-plus/es/components/table/src/table-column/defaults'
-import { ContentWrap } from '@/components/ContentWrap'
-import { useTable } from '@/hooks/web/useTable'
 import {
   getPurchaseOrderListApi,
   getPurchaseWipListApi,
@@ -34,6 +33,7 @@ import type {
 import { Table } from '@/components/Table'
 import { Dialog } from '@/components/Dialog'
 import type { FormInstance } from 'element-plus'
+import { Icon } from '@/components/Icon'
 
 // 供应商列表
 const supplierList = ref<PurchaseSupplierResponse[]>([])
@@ -57,6 +57,7 @@ const getSupplierList = async () => {
 // 在组件挂载时获取供应商列表
 onMounted(() => {
   getSupplierList()
+  getList()
 })
 
 // 折叠状态
@@ -108,31 +109,59 @@ const handleReset = () => {
   handleSearch()
 }
 
-// 使用 table hook
-const { tableState, tableMethods } = useTable({
-  fetchDataApi: async () => {
-    const { currentPage, pageSize } = tableState
+// 移除 useTable，改用直接的数据获取方式
+const loading = ref(false)
+const dataList = ref<PurchaseOrder[]>([])
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(50)
+
+// 获取列表数据
+const getList = async () => {
+  try {
+    loading.value = true
     const res = await getPurchaseOrderListApi({
-      pageIndex: unref(currentPage),
-      pageSize: unref(pageSize),
+      pageIndex: currentPage.value,
+      pageSize: pageSize.value,
       ...searchParams
     })
-    return {
-      list: res.data.list,
-      total: res.data.total
-    }
+    dataList.value = res.data.list || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取数据失败:', error)
+    ElMessage.error('获取数据失败')
+  } finally {
+    loading.value = false
   }
-})
+}
 
-// 修改初始pageSize
-tableState.pageSize.value = 20
+// 处理分页变化
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  getList()
+}
 
-const { getList } = tableMethods
-const { loading, dataList, total, currentPage, pageSize } = tableState
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  currentPage.value = 1
+  getList()
+}
 
 // 表格列配置接口
-interface ColumnType extends Partial<TableColumnCtx<PurchaseOrder>> {
-  hidden?: boolean // 是否隐藏列
+interface TableColumn {
+  type?: 'selection' | 'expand'
+  label?: string
+  prop?: string
+  width?: number
+  align?: 'left' | 'center' | 'right'
+  fixed?: 'left' | 'right'
+  headerAlign?: 'left' | 'center' | 'right'
+  showOverflowTooltip?: boolean
+  formatter?: (row: PurchaseOrder) => any
+  hidden?: boolean
+  slots?: {
+    default?: (scope: any) => any
+  }
 }
 
 // Dialog 相关状态
@@ -249,7 +278,7 @@ const handleWipClick = (row: PurchaseOrder) => {
 }
 
 // 表格列配置
-const columns = ref<ColumnType[]>([
+const columns = ref<TableColumn[]>([
   {
     type: 'selection',
     width: 50,
@@ -427,182 +456,206 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
 </script>
 
 <template>
-  <ContentWrap>
-    <!-- 搜索表单 -->
-    <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
-      <ElRow :gutter="20">
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="物料名称">
-            <ElInput
-              v-model="searchParams.item_name"
-              placeholder="请输入物料名称"
-              clearable
-              @keyup.enter="handleSearch"
+  <!-- 搜索表单 -->
+  <ElForm ref="formRef" :model="searchParams" label-width="100px" class="search-form">
+    <ElRow :gutter="20">
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="物料名称">
+          <ElInput
+            v-model="searchParams.item_name"
+            placeholder="请输入物料名称"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </ElFormItem>
+      </ElCol>
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="供应商">
+          <ElSelect
+            v-model="searchParams.supplier"
+            placeholder="请选择供应商"
+            clearable
+            filterable
+            :loading="supplierLoading"
+            @keyup.enter="handleSearch"
+          >
+            <ElOption
+              v-for="item in supplierList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
             />
-          </ElFormItem>
-        </ElCol>
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="供应商">
-            <ElSelect
-              v-model="searchParams.supplier"
-              placeholder="请选择供应商"
-              clearable
-              filterable
-              :loading="supplierLoading"
-              @keyup.enter="handleSearch"
-            >
-              <ElOption
-                v-for="item in supplierList"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+          </ElSelect>
+        </ElFormItem>
+      </ElCol>
+      <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+        <ElFormItem label="订单状态">
+          <ElSelect v-model="searchParams.receipt_close" placeholder="请选择状态" clearable>
+            <ElOption label="全部" value="" />
+            <ElOption label="已关闭" :value="1" />
+            <ElOption label="未关闭" :value="0" />
+          </ElSelect>
+        </ElFormItem>
+      </ElCol>
+    </ElRow>
+    <ElCollapseTransition>
+      <div v-show="!isCollapse">
+        <ElRow :gutter="20">
+          <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+            <ElFormItem label="采购日期">
+              <ElDatePicker
+                v-model="dateRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                value-format="YYYY-MM-DD"
+                clearable
               />
-            </ElSelect>
-          </ElFormItem>
-        </ElCol>
-        <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-          <ElFormItem label="订单状态">
-            <ElSelect v-model="searchParams.receipt_close" placeholder="请选择状态" clearable>
-              <ElOption label="全部" value="" />
-              <ElOption label="已关闭" :value="1" />
-              <ElOption label="未关闭" :value="0" />
-            </ElSelect>
-          </ElFormItem>
-        </ElCol>
-      </ElRow>
-      <ElCollapseTransition>
-        <div v-show="!isCollapse">
-          <ElRow :gutter="20">
-            <ElCol :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-              <ElFormItem label="采购日期">
-                <ElDatePicker
-                  v-model="dateRange"
-                  type="daterange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                  value-format="YYYY-MM-DD"
-                  clearable
-                />
-              </ElFormItem>
-            </ElCol>
-          </ElRow>
-        </div>
-      </ElCollapseTransition>
-      <ElRow>
-        <ElCol :span="24" class="search-buttons">
-          <ElButton type="primary" @click="handleSearch">
-            <Icon icon="vi-icon-park-outline:search" class="mr-2" />
-            查询
-          </ElButton>
-          <ElButton @click="handleReset">重置</ElButton>
-          <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
-            <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
-            <Icon
-              :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
-              :size="20"
-              class="collapse-icon"
-            />
-          </ElButton>
-        </ElCol>
-      </ElRow>
-    </ElForm>
+            </ElFormItem>
+          </ElCol>
+        </ElRow>
+      </div>
+    </ElCollapseTransition>
+    <ElRow>
+      <ElCol :span="24" class="search-buttons">
+        <ElButton type="primary" @click="handleSearch">
+          <Icon icon="vi-icon-park-outline:search" class="mr-2" />
+          查询
+        </ElButton>
+        <ElButton @click="handleReset">重置</ElButton>
+        <ElButton link class="collapse-button" @click="isCollapse = !isCollapse">
+          <span class="collapse-text">{{ isCollapse ? '展开' : '收起' }}</span>
+          <Icon
+            :icon="isCollapse ? 'vi-ic:baseline-expand-more' : 'vi-ic:outline-expand-less'"
+            :size="20"
+            class="collapse-icon"
+          />
+        </ElButton>
+      </ElCol>
+    </ElRow>
+  </ElForm>
 
-    <!-- 表格 -->
-    <div class="mt-4">
-      <ElTable
-        v-loading="loading"
-        :data="dataList"
-        border
-        class="w-full"
-        :row-class-name="tableRowClassName"
-        header-cell-class-name="table-header"
-        @selection-change="handleSelectionChange"
-      >
-        <template v-for="item in columns" :key="item.prop">
-          <ElTableColumn v-bind="item" v-if="!item.hidden" />
-        </template>
+  <!-- 表格区域 -->
+  <div class="table-container">
+    <ElSkeleton v-if="loading" :rows="20" animated class="table-skeleton" />
+    <ElTable
+      v-else
+      v-loading="loading"
+      :data="dataList"
+      border
+      class="w-full"
+      :row-class-name="tableRowClassName"
+      header-cell-class-name="table-header"
+      @selection-change="handleSelectionChange"
+      row-key="DOC_NO"
+      height="calc(100vh - 280px)"
+    >
+      <template v-for="item in columns" :key="item.prop">
+        <ElTableColumn v-bind="item" v-if="!item.hidden" />
+      </template>
 
-        <!-- 合计行 -->
-        <template #append>
-          <div v-if="selection.length > 0" class="summary-row">
-            <div class="summary-header">
-              <span class="summary-title">已选择 {{ selection.length }} 项</span>
-              <div class="summary-fields">
-                <div v-for="field in summaryFields" :key="field.field" class="field-config">
-                  <ElCheckbox v-model="field.checked" class="summary-checkbox">
-                    {{ field.label }}
-                  </ElCheckbox>
-                  <ElSelect
-                    v-if="field.checked"
-                    v-model="field.calculationType"
-                    size="small"
-                    style="width: 90px"
-                  >
-                    <ElOption label="求和" :value="calculationTypes.SUM" />
-                    <ElOption label="平均" :value="calculationTypes.AVERAGE" />
-                  </ElSelect>
-                </div>
-              </div>
-            </div>
-            <div class="summary-content">
-              <div
-                v-for="field in summaryFields.filter((f) => f.checked)"
-                :key="field.field"
-                class="summary-item"
-              >
-                <span class="summary-label">
+      <!-- 合计行 -->
+      <template #append>
+        <div v-if="selection.length > 0" class="summary-row">
+          <div class="summary-header">
+            <span class="summary-title">已选择 {{ selection.length }} 项</span>
+            <div class="summary-fields">
+              <div v-for="field in summaryFields" :key="field.field" class="field-config">
+                <ElCheckbox v-model="field.checked" class="summary-checkbox">
                   {{ field.label }}
-                  ({{ field.calculationType === calculationTypes.AVERAGE ? '平均' : '合计' }}):
-                </span>
-                <span class="summary-value">
-                  {{ formatNumber(getSummaries()[field.field], field.field) }}
-                </span>
+                </ElCheckbox>
+                <ElSelect
+                  v-if="field.checked"
+                  v-model="field.calculationType"
+                  size="small"
+                  style="width: 90px"
+                >
+                  <ElOption label="求和" :value="calculationTypes.SUM" />
+                  <ElOption label="平均" :value="calculationTypes.AVERAGE" />
+                </ElSelect>
               </div>
             </div>
           </div>
-        </template>
-      </ElTable>
-      <!-- 分页 -->
-      <div class="flex justify-left mt-4">
-        <ElPagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="getList"
-          @current-change="getList"
-        />
-      </div>
+          <div class="summary-content">
+            <div
+              v-for="field in summaryFields.filter((f) => f.checked)"
+              :key="field.field"
+              class="summary-item"
+            >
+              <span class="summary-label">
+                {{ field.label }}
+                ({{ field.calculationType === calculationTypes.AVERAGE ? '平均' : '合计' }}):
+              </span>
+              <span class="summary-value">
+                {{ formatNumber(getSummaries()[field.field], field.field) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </ElTable>
+  </div>
 
-      <!-- WIP 详情弹窗 -->
-      <Dialog v-model="dialogVisible" title="在制明细" width="1000px">
-        <Table
-          v-loading="wipTableState.loading"
-          :columns="wipColumns"
-          :data="wipTableState.list"
-          :pagination="{
-            total: wipTableState.total,
-            pageSize: wipTableState.pageSize,
-            currentPage: wipTableState.currentPage
-          }"
-          :show-summary="true"
-          sum-text="合计"
-          :summary-method="getSummaryMethod"
-          @update:current-page="
-            (page) => {
-              wipTableState.currentPage = page
-              getWipList()
-            }
-          "
-        />
-      </Dialog>
+  <!-- 分页组件 -->
+  <div class="pagination-wrapper">
+    <div class="pagination-container">
+      <ElPagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[50, 100, 200, 500]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
     </div>
-  </ContentWrap>
+  </div>
+
+  <!-- WIP 详情弹窗 -->
+  <Dialog v-model="dialogVisible" title="在制明细" width="1000px">
+    <Table
+      v-loading="wipTableState.loading"
+      :columns="wipColumns"
+      :data="wipTableState.list"
+      :pagination="{
+        total: wipTableState.total,
+        pageSize: wipTableState.pageSize,
+        currentPage: wipTableState.currentPage
+      }"
+      :show-summary="true"
+      sum-text="合计"
+      :summary-method="getSummaryMethod"
+      @update:current-page="
+        (page) => {
+          wipTableState.currentPage = page
+          getWipList()
+        }
+      "
+    />
+  </Dialog>
 </template>
 
 <style lang="less" scoped>
+.table-container {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 280px);
+  background-color: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 4px;
+}
+
+.table-skeleton {
+  height: 100%;
+  padding: 20px;
+
+  :deep(.el-skeleton__item) {
+    height: 20px;
+    margin-bottom: 16px;
+  }
+}
+
 :deep(.table-header) {
   font-size: 16px;
   font-weight: bold;
@@ -715,9 +768,6 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
 }
 
 .search-form {
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: var(--el-bg-color);
   border-radius: 4px;
 
   :deep(.el-row) {
@@ -733,7 +783,7 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
     display: flex;
     justify-content: center;
     gap: 12px;
-    margin-top: 16px;
+    margin-bottom: 16px;
 
     .el-button {
       min-width: 120px;
@@ -764,5 +814,24 @@ const getSummaryMethod = (param: { columns: any[]; data: any[] }) => {
       }
     }
   }
+}
+
+.pagination-wrapper {
+  position: relative;
+  width: 100%;
+  height: 60px;
+}
+
+.pagination-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  padding: 10px 20px;
+  background-color: var(--el-bg-color);
+  border-top: 1px solid var(--el-border-color-light);
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

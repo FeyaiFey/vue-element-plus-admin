@@ -1,11 +1,11 @@
 import request from '@/axios'
 import type {
   GlobalReport,
-  AxiosResponse,
   SopAnalyzeResponse,
   ChipInfoTraceResponse,
   ChipInfoTraceQuery
 } from './type'
+import type { AxiosResponse } from '@/axios/types'
 
 export const getGlobalReportApi = () => {
   return request.get<GlobalReport>({
@@ -42,6 +42,17 @@ export const exportSopReportApi = () => {
 export const getChipInfoTraceApi = (params: ChipInfoTraceQuery) => {
   return request.get<ChipInfoTraceResponse>({
     url: '/report/chipInfoTrace/table',
+    params
+  })
+}
+
+export const exportChipInfoTraceApi = (params: ChipInfoTraceQuery) => {
+  return request.get<AxiosResponse>({
+    url: '/report/chipInfoTrace/export',
+    responseType: 'blob',
+    headers: {
+      'Content-Type': 'application/json'
+    },
     params
   })
 }

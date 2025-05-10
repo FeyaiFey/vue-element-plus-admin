@@ -474,45 +474,58 @@ const handleDelete = async (row: any) => {
   }
 }
 
-// 导出SOP报表
+// 导出Excel
 const handleSopExport = async () => {
   try {
-    const loadingMessage = ElMessage({
+    // 显示导出进度提示
+    const loadingInstance = ElMessage({
       type: 'info',
-      message: '正在导出数据...',
-      duration: 0
+      message: '正在导出数据，请稍候...',
+      duration: 0,
+      showClose: true
     })
 
-    const res = (await exportSopReportApi()) as unknown as AxiosResponse<Blob>
+    const res = (await exportSopReportApi()) as unknown as AxiosResponse
 
-    // 创建 Blob 对象
+    // 关闭加载提示
+    loadingInstance.close()
+
+    // 检查响应数据
+    if (!res.data) {
+      throw new Error('导出数据为空')
+    }
+
+    // 创建blob对象
     const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+
+    // 获取文件名
+    const disposition = res.headers?.['content-disposition']
+    let filename = `packageOrders_${new Date().toLocaleDateString()}.xlsx`
+
+    if (disposition) {
+      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+      const matches = filenameRegex.exec(disposition)
+      if (matches?.[1]) {
+        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''))
+      }
+    }
+
     // 创建下载链接
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-
-    // 从响应头中获取文件名
-    const contentDisposition = res.headers['content-disposition']
-    let filename = `SOP报表_${new Date().getTime()}.xlsx`
-    if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/)
-      if (filenameMatch && filenameMatch[1]) {
-        filename = decodeURIComponent(filenameMatch[1])
-      }
-    }
-
     link.download = filename
     document.body.appendChild(link)
     link.click()
+
+    // 清理
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    loadingMessage.close()
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
-    ElMessage.error('导出失败，请重试')
+    ElMessage.error(error instanceof Error ? error.message : '导出失败，请稍后重试')
   }
 }
 

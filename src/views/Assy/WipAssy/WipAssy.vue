@@ -133,7 +133,7 @@ const defaultColumns: ColumnType[] = [
   },
   { label: '在线合计', prop: 'ONLINE_TOTAL', align: 'center', width: 100 },
   { label: '仓库库存', prop: 'WAREHOUSE_INVENTORY', align: 'center', width: 100 },
-  { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', width: 160, showOverflowTooltip: true },
+  { label: '扣留信息', prop: 'HOLD_INFO', align: 'center', showOverflowTooltip: true },
   { label: '明日预计', prop: 'NEXT_DAY_EXPECTED', align: 'center', width: 100 },
   { label: '三日预计', prop: 'THREE_DAY_EXPECTED', align: 'center', width: 100 },
   { label: '七日预计', prop: 'SEVEN_DAY_EXPECTED', align: 'center', width: 100 },

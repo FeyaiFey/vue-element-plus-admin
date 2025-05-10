@@ -28,7 +28,7 @@ const shortcuts = [
     description: '库存数据查询'
   },
   {
-    title: 'SOP报表',
+    title: 'S&OP报表',
     icon: 'vi-ri:file-chart-line',
     path: '/report/sop',
     color: '#E6A23C',

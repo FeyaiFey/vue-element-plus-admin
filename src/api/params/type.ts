@@ -118,3 +118,8 @@ export interface SalesResponse {
   label: string
   value: string
 }
+
+export interface SaleUnitResponse {
+  label: string
+  value: string
+}

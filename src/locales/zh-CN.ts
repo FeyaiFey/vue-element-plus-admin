@@ -215,8 +215,9 @@ export default {
     cpTest: '中测列表',
     assyOrder: '封装需求',
     chipTrace: '芯片追溯',
+    sale: '销售管理',
     saleAnalyze: '销售分析',
-    saleTarget: '维护销售目标'
+    saleTarget: '销售目标'
   },
   permission: {
     hasPermission: '请设置操作权限值'

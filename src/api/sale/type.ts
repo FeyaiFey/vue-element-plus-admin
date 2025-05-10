@@ -39,3 +39,44 @@ export interface SaleTargetUpdate {
   monthly_target?: number
   annual_target?: number
 }
+
+export interface SaleTargetSummaryQuery {
+  year?: number
+  month?: number
+}
+
+export interface SaleTargetSummary {
+  YEAR: number
+  MONTH: number
+  ADMIN_UNIT_NAME: string
+  EMPLOYEE_NAME: string
+  FORECAST_QTY: number
+  PRICE_QTY: number
+  PERCENTAGE: number
+}
+
+export interface SaleTargetSummaryResponse {
+  list: SaleTargetSummary[]
+}
+
+export interface SaleTargetDetailQuery {
+  year?: number
+  month?: number
+  employee_name?: string
+}
+
+export interface SaleTargetDetail {
+  YEAR: number
+  MONTH: number
+  ADMIN_UNIT_NAME: string
+  EMPLOYEE_NAME: string
+  SHORTCUT: string
+  ITEM_NAME: string
+  FORECAST_QTY: number
+  PRICE_QTY: number
+  PERCENTAGE: number
+}
+
+export interface SaleTargetDetailResponse {
+  list: SaleTargetDetail[]
+}

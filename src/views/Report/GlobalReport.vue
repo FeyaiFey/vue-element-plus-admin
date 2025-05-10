@@ -599,34 +599,58 @@ const getReportData = async () => {
   }
 }
 
-// 导出报表
+// 导出Excel
 const handleExport = async () => {
   try {
-    ElMessage.info('正在导出，请稍候...')
+    // 显示导出进度提示
+    const loadingInstance = ElMessage({
+      type: 'info',
+      message: '正在导出数据，请稍候...',
+      duration: 0,
+      showClose: true
+    })
+
     const res = (await exportGlobalReportApi()) as unknown as AxiosResponse
-    // 如果是文件流，直接创建blob
+
+    // 关闭加载提示
+    loadingInstance.close()
+
+    // 检查响应数据
+    if (!res.data) {
+      throw new Error('导出数据为空')
+    }
+
+    // 创建blob对象
     const blob = new Blob([res.data], { type: 'application/vnd.ms-excel' })
+
+    // 获取文件名
     const disposition = res.headers?.['content-disposition']
-    let filename = `外协报表_${new Date().getTime()}.xlsx`
+    let filename = `packageOrders_${new Date().toLocaleDateString()}.xlsx`
+
     if (disposition) {
       const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
       const matches = filenameRegex.exec(disposition)
-      if (matches != null && matches[1]) {
-        // 移除UTF-8前缀
-        const rawFilename = matches[1].replace(/['"]/g, '')
-        filename = decodeURIComponent(rawFilename.replace(/^UTF-8/, ''))
+      if (matches?.[1]) {
+        filename = decodeURIComponent(matches[1].replace(/['"]/g, ''))
       }
     }
+
+    // 创建下载链接
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = filename
+    document.body.appendChild(link)
     link.click()
+
+    // 清理
+    document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
+
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error(error instanceof Error ? error.message : '导出失败，请稍后重试')
   }
 }
 

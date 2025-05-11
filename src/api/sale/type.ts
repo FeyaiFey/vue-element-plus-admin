@@ -80,3 +80,54 @@ export interface SaleTargetDetail {
 export interface SaleTargetDetailResponse {
   list: SaleTargetDetail[]
 }
+
+export interface SaleAmountAnalyzeQuery {
+  year?: number
+  month?: number
+  shortcut?: string
+  admin_unit_name?: string
+  employee_name?: string
+  item_name?: string
+  group_by_year: boolean
+  group_by_month: boolean
+  group_by_shortcut: boolean
+  group_by_admin_unit_name: boolean
+  group_by_employee_name: boolean
+  group_by_item_name: boolean
+}
+
+export interface SaleAmountAnalyze {
+  YEAR?: number
+  MONTH?: number
+  ADMIN_UNIT_NAME?: string
+  EMPLOYEE_NAME?: string
+  SHORTCUT?: string
+  ITEM_NAME?: string
+  PRICE_QTY?: number
+  AMOUNT?: number
+}
+
+export interface SaleAmountAnalyzeResponse {
+  list: SaleAmountAnalyze[]
+}
+
+export interface SaleAnalysisPannel {
+  this_year_sale_qty: number
+  this_year_sale_amount: number
+  this_month_sale_qty: number
+  this_month_sale_amount: number
+  last_year_sale_qty: number
+  last_year_sale_amount: number
+  last_month_sale_qty: number
+  last_month_sale_amount: number
+  last_last_month_sale_qty: number
+  last_last_month_sale_amount: number
+  month_on_month_qty: number
+  month_on_month_amount: number
+  year_on_year_qty: number
+  year_on_year_amount: number
+}
+
+export interface SaleAnalysisPannelResponse {
+  list: SaleAnalysisPannel[]
+}

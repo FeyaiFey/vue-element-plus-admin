@@ -7,7 +7,10 @@ import type {
   SaleTargetSummaryQuery,
   SaleTargetSummaryResponse,
   SaleTargetDetailQuery,
-  SaleTargetDetailResponse
+  SaleTargetDetailResponse,
+  SaleAmountAnalyzeQuery,
+  SaleAmountAnalyzeResponse,
+  SaleAnalysisPannelResponse
 } from './type'
 
 export const getSaleTableApi = (query: SaleTableQuery) => {
@@ -49,5 +52,18 @@ export const getSaleTargetDetailApi = (query: SaleTargetDetailQuery) => {
   return request.get<SaleTargetDetailResponse>({
     url: '/sale/target/detail',
     params: query
+  })
+}
+
+export const getSaleAmountAnalyzeApi = (query: SaleAmountAnalyzeQuery) => {
+  return request.get<SaleAmountAnalyzeResponse>({
+    url: '/sale/amount/analyze',
+    params: query
+  })
+}
+
+export const getSaleAnalysisPannelApi = () => {
+  return request.get<SaleAnalysisPannelResponse>({
+    url: '/sale/pannel'
   })
 }

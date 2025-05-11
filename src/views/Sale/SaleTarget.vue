@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElForm, ElFormItem, ElInput, ElRow, ElCol } from 'element-plus'
-import SaleTargetSummary from './conponments/SaleTargetSummary.vue'
-import SaleTargerDetail from './conponments/SaleTargerDetail.vue'
+import SaleTargetSummaryTable from './conponments/SaleTargetSummaryTable.vue'
+import SaleTargetDetailTable from './conponments/SaleTargetDetailTable.vue'
 import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
+import SaleTargetChart from './conponments/SaleTargetChart.vue'
 import type { SaleTargetSummaryQuery, SaleTargetDetailQuery } from '@/api/sale/type'
 import type { FormItemRule } from 'element-plus'
 
@@ -40,8 +41,8 @@ const rules = {
     { type: 'number' as const, message: '年份必须为数字', trigger: 'blur' },
     {
       validator: (_: any, value: number, callback: Function) => {
-        if (value < 2023) {
-          callback(new Error('年份必须大于等于2023'))
+        if (value < 2025) {
+          callback(new Error('年份必须大于等于2025'))
         } else {
           callback()
         }
@@ -92,6 +93,7 @@ const handleSearch = async () => {
 // 表格引用
 const summaryTableRef = ref()
 const detailTableRef = ref()
+const saleTargetChartRef = ref()
 
 // 当前选中的行
 const currentRow = ref<any>(null)
@@ -154,7 +156,7 @@ onMounted(async () => {
   <!-- 搜索表单 -->
   <ElForm ref="formRef" :model="summaryQueryParams" :rules="rules" label-width="100px">
     <ElRow :gutter="20">
-      <ElCol :xs="24" :sm="12" :md="6" :lg="3" :xl="3">
+      <ElCol :xs="24" :sm="12" :md="6" :lg="4" :xl="4">
         <ElFormItem label="年份" prop="year">
           <ElInput
             v-model.number="summaryQueryParams.year"
@@ -163,7 +165,7 @@ onMounted(async () => {
           />
         </ElFormItem>
       </ElCol>
-      <ElCol :xs="24" :sm="12" :md="6" :lg="3" :xl="3">
+      <ElCol :xs="24" :sm="12" :md="6" :lg="4" :xl="4">
         <ElFormItem label="月份" prop="month">
           <ElInput
             v-model.number="summaryQueryParams.month"
@@ -178,13 +180,22 @@ onMounted(async () => {
   <!-- 表格区域 -->
   <ElRow :gutter="20">
     <!-- 汇总表格 -->
-    <ElCol :xs="24" :lg="24">
+    <ElCol :xs="24" :lg="12">
       <div class="table-container">
         <h3 class="table-title">销售目标汇总</h3>
-        <SaleTargetSummary
+        <SaleTargetSummaryTable
           ref="summaryTableRef"
           :query-params="summaryQueryParams"
           @row-click="handleSummaryRowClick"
+        />
+      </div>
+    </ElCol>
+    <ElCol :xs="24" :lg="12">
+      <div class="table-container">
+        <SaleTargetChart
+          ref="saleTargetChartRef"
+          :data="summaryTableRef?.originalData || []"
+          type="summary"
         />
       </div>
     </ElCol>
@@ -194,13 +205,27 @@ onMounted(async () => {
   <ResizeDialog
     v-model="dialogVisible"
     :title="`预测实际完成情况 - ${currentRow?.YEAR}年${currentRow?.MONTH}月 - ${currentRow?.EMPLOYEE_NAME || ''}`"
-    :init-width="800"
+    :init-width="1000"
     :init-height="600"
-    :min-resize-width="600"
-    :min-resize-height="400"
+    :min-resize-width="800"
+    :min-resize-height="500"
     @close="handleDialogClose"
   >
-    <SaleTargerDetail ref="detailTableRef" :query-params="detailQueryParams" />
+    <div class="detail-container">
+      <ElRow :gutter="20">
+        <ElCol :span="24">
+          <div class="detail-table-wrapper">
+            <h3 class="detail-title">详细销售数据</h3>
+            <SaleTargetDetailTable ref="detailTableRef" :query-params="detailQueryParams" />
+          </div>
+        </ElCol>
+        <ElCol :span="24">
+          <div class="detail-chart-wrapper">
+            <SaleTargetChart :data="detailTableRef?.tableData || []" type="detail" />
+          </div>
+        </ElCol>
+      </ElRow>
+    </div>
   </ResizeDialog>
 </template>
 
@@ -216,16 +241,43 @@ onMounted(async () => {
   .table-title {
     padding: 8px 0;
     margin: 0 0 16px;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: bold;
     color: var(--el-text-color-primary);
     text-align: center;
-    border-bottom: 1px solid var(--el-border-color-light);
   }
 
   :deep(.el-table) {
     flex: 1;
     height: calc(100% - 100px);
   }
+}
+
+.detail-container {
+  height: 100%;
+  overflow: hidden;
+}
+
+.detail-table-wrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+
+  .detail-title {
+    padding: 8px 0;
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--el-text-color-primary);
+  }
+
+  :deep(.el-table) {
+    flex: 1;
+    overflow: auto;
+  }
+}
+
+.detail-chart-wrapper {
+  padding-top: 34px; /* 与表格标题保持对齐 */
 }
 </style>

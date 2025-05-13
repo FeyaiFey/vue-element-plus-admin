@@ -222,7 +222,8 @@ export default {
     chipTrace: 'Chip Trace',
     sale: 'Sale',
     saleAnalyze: 'Sale Analyze',
-    saleTarget: 'Sale Target'
+    saleTarget: 'Sale Target',
+    maintainForecast: 'Maintain Forecast'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

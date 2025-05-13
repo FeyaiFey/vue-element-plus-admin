@@ -1,11 +1,11 @@
 import { EChartsOption } from 'echarts'
 
-// 生成销售额仪表盘选项
-export const generateSaleAmountGaugeOptions = (value: number, rate: number): EChartsOption => {
+// 生成本月销售额仪表盘选项
+export const generateSaleAmountMonthGaugeOptions = (value: number, rate: number): EChartsOption => {
   return {
     animationDuration: 2500,
     tooltip: {
-      formatter: '销售额:' + value + '<br/>{a} <br/>{b} : {c}%'
+      formatter: '本月销售额:' + value + '<br/>{a} <br/>{b} : {c}%'
     },
     series: [
       {
@@ -35,8 +35,8 @@ export const generateSaleAmountGaugeOptions = (value: number, rate: number): ECh
   }
 }
 
-// 生成销售量仪表盘选项
-export const generateSaleQtyGaugeOptions = (value: number, rate: number): EChartsOption => {
+// 生成今年销售额仪表盘选项
+export const generateSaleAmountYearGaugeOptions = (value: number, rate: number): EChartsOption => {
   return {
     animationDuration: 2500,
     tooltip: {
@@ -62,7 +62,7 @@ export const generateSaleQtyGaugeOptions = (value: number, rate: number): EChart
         data: [
           {
             value: rate,
-            name: '本月销售量完成率'
+            name: '今年销售额完成率'
           }
         ]
       }
@@ -70,7 +70,7 @@ export const generateSaleQtyGaugeOptions = (value: number, rate: number): EChart
   }
 }
 
-// 生成芯片销量占比饼图选项
+// 生成产品线销售额占比饼图选项
 export const generateSaleProportionOptions = (data: any[]): EChartsOption => {
   if (!data || !Array.isArray(data) || data.length === 0) {
     return {
@@ -86,7 +86,7 @@ export const generateSaleProportionOptions = (data: any[]): EChartsOption => {
   const pieData = data
     .map((item) => ({
       name: item.SHORTCUT,
-      value: item.PRICE_QTY || 0
+      value: item.AMOUNT || 0
     }))
     .filter((item) => item.value > 0)
     .sort((a, b) => b.value - a.value)
@@ -94,14 +94,14 @@ export const generateSaleProportionOptions = (data: any[]): EChartsOption => {
   return {
     animationDuration: 2500,
     title: {
-      text: '本月产品线销量占比',
+      text: '本月产品线销售额占比',
       left: 'center'
     },
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
         const value = Number(params.value).toLocaleString()
-        return `${params.name}<br/>销量: ${value}<br/>占比: ${params.percent}%`
+        return `${params.name}<br/>销售额: ${value}<br/>占比: ${params.percent}%`
       }
     },
     legend: {
@@ -112,7 +112,7 @@ export const generateSaleProportionOptions = (data: any[]): EChartsOption => {
     },
     series: [
       {
-        name: '本月产品线销量占比',
+        name: '本月产品线销售额占比',
         type: 'pie',
         radius: '70%',
         center: ['60%', '60%'],
@@ -126,8 +126,15 @@ export const generateSaleProportionOptions = (data: any[]): EChartsOption => {
         },
         label: {
           show: true,
-          formatter: '{b}: {d}%',
-          position: 'outside'
+          formatter: (params: any) => {
+            const value = Number(params.value / 10000)
+              .toFixed(2)
+              .toLocaleString()
+            return [params.name, `销售额: ${value} 万元`, `占比: ${params.percent}%`].join('\n')
+          },
+          position: 'outside',
+          lineHeight: 18,
+          fontSize: 12
         },
         labelLine: {
           show: true

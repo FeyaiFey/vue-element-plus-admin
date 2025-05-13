@@ -1,7 +1,8 @@
 export interface SaleTableQuery {
   year?: number
   month?: number
-  yearmonth?: string
+  admin_unit_name?: string
+  employee_name?: string
   pageIndex?: number
   pageSize?: number
 }
@@ -10,9 +11,9 @@ export interface SaleTable {
   Id: string
   Year: number
   Month: number
-  YearMonth: string
+  AdminUnitName: string
+  EmployeeName: string
   MonthlyTarget: number
-  AnnualTarget: number
   CreatedBy: string
   CreatedAt: string
   UpdatedAt: string
@@ -26,18 +27,18 @@ export interface SaleTableResponse {
 export interface SaleTargetCreate {
   year?: number
   month?: number
-  yearmonth?: string
+  admin_unit_name?: string
+  employee_name?: string
   monthly_target?: number
-  annual_target?: number
 }
 
 export interface SaleTargetUpdate {
   id?: string
   year?: number
   month?: number
-  yearmonth?: string
+  admin_unit_name?: string
+  employee_name?: string
   monthly_target?: number
-  annual_target?: number
 }
 
 export interface SaleTargetSummaryQuery {
@@ -96,15 +97,21 @@ export interface SaleAmountAnalyzeQuery {
   group_by_item_name: boolean
 }
 
+/**
+ * 销售数据分析项
+ */
 export interface SaleAmountAnalyze {
   YEAR?: number
   MONTH?: number
-  ADMIN_UNIT_NAME?: string
-  EMPLOYEE_NAME?: string
   SHORTCUT?: string
   ITEM_NAME?: string
+  EMPLOYEE_NAME?: string
+  ADMIN_UNIT_NAME?: string
   PRICE_QTY?: number
   AMOUNT?: number
+  FORECAST_AMOUNT?: number
+  PERCENTAGE?: number
+  [key: string]: any
 }
 
 export interface SaleAmountAnalyzeResponse {
@@ -130,4 +137,37 @@ export interface SaleAnalysisPannel {
 
 export interface SaleAnalysisPannelResponse {
   list: SaleAnalysisPannel[]
+}
+
+export interface SaleForecastResponse {
+  YearForecast: number
+  MonthForecast: number
+}
+
+/**
+ * 销售数据查询参数
+ */
+export interface SaleAmountQuery {
+  year?: number
+  month?: number
+  admin_unit_name?: string
+  employee_name?: string
+  group_by_year: boolean
+  group_by_month: boolean
+  group_by_admin_unit_name: boolean
+  group_by_employee_name: boolean
+}
+
+export interface SaleAmount {
+  YEAR?: number
+  MONTH?: number
+  ADMIN_UNIT_NAME?: string
+  EMPLOYEE_NAME?: string
+  FORECAST_AMOUNT?: number
+  PRICE_AMOUNT?: number
+  PERCENTAGE?: number
+}
+
+export interface SaleAmountResponse {
+  list: SaleAmount[]
 }

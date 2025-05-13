@@ -76,9 +76,10 @@ export const getWaferInfoApi = (query: ItemWaferInfoQuery) => {
   })
 }
 
-export const getSalesApi = () => {
+export const getSalesApi = (admin_unit_name?: string) => {
   return request.get<SalesResponse>({
-    url: '/params/requirement/sales'
+    url: '/params/requirement/sales',
+    params: { admin_unit_name }
   })
 }
 

@@ -10,34 +10,37 @@ import type {
   SaleTargetDetailResponse,
   SaleAmountAnalyzeQuery,
   SaleAmountAnalyzeResponse,
-  SaleAnalysisPannelResponse
+  SaleAnalysisPannelResponse,
+  SaleForecastResponse,
+  SaleAmountQuery,
+  SaleAmountResponse
 } from './type'
 
 export const getSaleTableApi = (query: SaleTableQuery) => {
   return request.get<SaleTableResponse>({
-    url: '/sale/table',
+    url: '/sale/target/table',
     params: query
   })
 }
 
 export const createSaleTargetApi = (data: SaleTargetCreate) => {
   return request.post<SaleTargetCreate>({
-    url: '/sale/target',
+    url: '/sale/target/create',
     data
   })
 }
 
 export const updateSaleTargetApi = (data: SaleTargetUpdate) => {
   return request.put<SaleTargetUpdate>({
-    url: '/sale/target',
+    url: '/sale/target/update',
     data
   })
 }
 
-export const deleteSaleTargetApi = (data: SaleTargetUpdate) => {
+export const deleteSaleTargetApi = (id: string) => {
   return request.delete<SaleTargetUpdate>({
-    url: '/sale/target',
-    data
+    url: '/sale/target/delete',
+    params: { id }
   })
 }
 
@@ -65,5 +68,18 @@ export const getSaleAmountAnalyzeApi = (query: SaleAmountAnalyzeQuery) => {
 export const getSaleAnalysisPannelApi = () => {
   return request.get<SaleAnalysisPannelResponse>({
     url: '/sale/pannel'
+  })
+}
+
+export const getSaleForecastApi = () => {
+  return request.get<SaleForecastResponse>({
+    url: '/sale/analyze/forecast'
+  })
+}
+
+export const getSaleAmountSummaryApi = (query: SaleAmountQuery) => {
+  return request.get<SaleAmountResponse>({
+    url: '/sale/analyze/amount',
+    params: query
   })
 }

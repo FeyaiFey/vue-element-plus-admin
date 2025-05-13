@@ -114,12 +114,20 @@ export interface ItemWaferInfoResponse {
   DEPUTY_CHIP_GROSS_DIE: number
 }
 
+export interface Sales {
+  label: string
+  value: string
+}
+
 export interface SalesResponse {
+  list: Sales[]
+}
+
+export interface SaleUnit {
   label: string
   value: string
 }
 
 export interface SaleUnitResponse {
-  label: string
-  value: string
+  list: SaleUnit[]
 }

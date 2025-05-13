@@ -217,7 +217,8 @@ export default {
     chipTrace: '芯片追溯',
     sale: '销售管理',
     saleAnalyze: '销售分析',
-    saleTarget: '销售目标'
+    saleTarget: '备货计划',
+    maintainForecast: '维护销售预测'
   },
   permission: {
     hasPermission: '请设置操作权限值'

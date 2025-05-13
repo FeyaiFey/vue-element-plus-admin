@@ -1,3 +1,4 @@
+<!-- Analyze的具体数据 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ElTable, ElTableColumn, ElEmpty } from 'element-plus'
@@ -11,7 +12,7 @@ const props = defineProps<{
 
 // 可能的列配置
 interface ColumnConfig {
-  prop: keyof SaleAmountAnalyze
+  prop: string
   label: string
   width?: string
   headerAlign?: 'left' | 'center' | 'right'

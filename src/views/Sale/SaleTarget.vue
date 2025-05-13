@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElForm, ElFormItem, ElInput, ElRow, ElCol } from 'element-plus'
-import SaleTargetSummaryTable from './conponments/SaleTargetSummaryTable.vue'
-import SaleTargetDetailTable from './conponments/SaleTargetDetailTable.vue'
+import SaleTargetSummaryTable from './target/SaleTargetSummaryTable.vue'
+import SaleTargetDetailTable from './target/SaleTargetDetailTable.vue'
 import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
-import SaleTargetChart from './conponments/SaleTargetChart.vue'
+import SaleTargetChart from './target/SaleTargetChart.vue'
 import type { SaleTargetSummaryQuery, SaleTargetDetailQuery } from '@/api/sale/type'
 import type { FormItemRule } from 'element-plus'
 
@@ -182,7 +182,7 @@ onMounted(async () => {
     <!-- 汇总表格 -->
     <ElCol :xs="24" :lg="12">
       <div class="table-container">
-        <h3 class="table-title">销售目标汇总</h3>
+        <h3 class="table-title">备货计划和实际对比</h3>
         <SaleTargetSummaryTable
           ref="summaryTableRef"
           :query-params="summaryQueryParams"

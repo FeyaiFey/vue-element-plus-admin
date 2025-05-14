@@ -336,10 +336,8 @@ export const generateSaleDataLineChart = (data: any[]): EChartsOption => {
         formatter: (params: any) => {
           // 对于较大的数值使用千分位或百万位表示
           const value = params.value
-          if (value >= 1000000) {
-            return `${(value / 1000000).toFixed(1)}M`
-          } else if (value >= 1000) {
-            return `${(value / 1000).toFixed(1)}k`
+          if (value >= 10000) {
+            return `${(value / 10000).toFixed(1)}万`
           } else if (value === 0) {
             return '' // 不显示0值
           }

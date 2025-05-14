@@ -13,7 +13,9 @@ import type {
   SaleAnalysisPannelResponse,
   SaleForecastResponse,
   SaleAmountQuery,
-  SaleAmountResponse
+  SaleAmountResponse,
+  SaleAmountBarChartQuery,
+  SaleAmountBarChartEChartsResponse
 } from './type'
 
 export const getSaleTableApi = (query: SaleTableQuery) => {
@@ -80,6 +82,13 @@ export const getSaleForecastApi = () => {
 export const getSaleAmountSummaryApi = (query: SaleAmountQuery) => {
   return request.get<SaleAmountResponse>({
     url: '/sale/analyze/amount',
+    params: query
+  })
+}
+
+export const getSaleAmountBarChartApi = (query: SaleAmountBarChartQuery) => {
+  return request.get<SaleAmountBarChartEChartsResponse>({
+    url: '/sale/analyze/bar',
     params: query
   })
 }

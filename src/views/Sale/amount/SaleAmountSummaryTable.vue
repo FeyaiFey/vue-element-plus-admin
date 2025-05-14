@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ElTable, ElTableColumn, ElSkeleton, ElSkeletonItem, ElEmpty } from 'element-plus'
+import { ElTable, ElTableColumn, ElSkeleton, ElSkeletonItem } from 'element-plus'
 import { getSaleAmountSummaryApi } from '@/api/sale'
 import type { SaleAmountQuery, SaleAmount } from '@/api/sale/type'
 
@@ -122,9 +122,6 @@ const visibleColumns = computed(() => {
   })
 })
 
-// 是否有数据
-const hasData = computed(() => tableData.value && tableData.value.length > 0)
-
 // 暴露方法给父组件
 defineExpose({
   getData,
@@ -197,7 +194,6 @@ defineExpose({
           </ElTableColumn>
         </template>
       </ElTable>
-      <ElEmpty v-if="!hasData && !loading" description="暂无数据" />
     </template>
   </ElSkeleton>
 </template>

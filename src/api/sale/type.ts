@@ -171,3 +171,24 @@ export interface SaleAmount {
 export interface SaleAmountResponse {
   list: SaleAmount[]
 }
+
+export interface SaleAmountBarChartQuery {
+  year?: string
+  month?: string
+}
+
+export interface SaleAmountBarChartEChartsDataItem {
+  name: string
+  value: number
+  group_id: string
+  child_group_id?: string
+}
+
+export interface SaleAmountBarChartEChartsLevelData {
+  level_id: string
+  items: SaleAmountBarChartEChartsDataItem[]
+}
+
+export interface SaleAmountBarChartEChartsResponse {
+  list: SaleAmountBarChartEChartsLevelData[]
+}

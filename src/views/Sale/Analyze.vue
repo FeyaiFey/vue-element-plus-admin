@@ -20,6 +20,7 @@ import {
 import PanelGroup from './components/PanelGroup.vue'
 import SaleAmountAnalyzeTable from './target/SaleAmountAnalyzeTable.vue'
 import SaleAmount from './amount/SaleAmount.vue'
+import SaleAmountBarChart from './bar/SaleAmountBarChart.vue'
 import { Echart } from '@/components/Echart'
 import { getSaleAmountAnalyzeApi, getSaleAnalysisPannelApi, getSaleForecastApi } from '@/api/sale'
 import { getSalesApi, getSaleUnitApi } from '@/api/params'
@@ -332,6 +333,11 @@ onMounted(() => {
       </ElCard>
     </ElCol>
   </ElRow>
+
+  <!-- 销售数据柱状图 -->
+  <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24" class="mb-20px">
+    <SaleAmountBarChart />
+  </ElCol>
 
   <!-- 销售额汇总 -->
   <ElCol :xl="24" :lg="8" :md="12" :sm="24" :xs="24">

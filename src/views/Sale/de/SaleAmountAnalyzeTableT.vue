@@ -1,3 +1,4 @@
+<!-- Analyze的具体数据 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ElTable, ElTableColumn, ElEmpty } from 'element-plus'
@@ -98,8 +99,8 @@ const sortedData = computed(() => {
   if (!sortBy.value) return props.data
 
   return [...props.data].sort((a, b) => {
-    const valueA = a[sortBy.value] || 0
-    const valueB = b[sortBy.value] || 0
+    const valueA = a[sortBy.value as keyof SaleAmountAnalyze] || 0
+    const valueB = b[sortBy.value as keyof SaleAmountAnalyze] || 0
 
     return sortOrder.value === 'ascending'
       ? valueA < valueB
@@ -124,7 +125,7 @@ const sortedData = computed(() => {
       border
       stripe
       style="width: 100%"
-      max-height="400px"
+      max-height="480px"
       :empty-text="loading ? '加载中...' : '暂无数据'"
       @sort-change="handleSortChange"
       default-sort-order="ascending"

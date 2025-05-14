@@ -55,20 +55,21 @@ getSaleAnalysisPannel()
             <div :class="`${prefixCls}__item flex justify-between`">
               <div>
                 <div
-                  :class="`${prefixCls}__item--icon ${prefixCls}__item--peoples p-16px inline-block rounded-6px`"
+                  :class="`${prefixCls}__item--icon ${prefixCls}__item--shopping p-16px inline-block rounded-6px`"
                 >
-                  <Icon icon="vi-mdi:sale-outline" :size="40" class="primary-icon" />
+                  <Icon icon="vi-ant-design:money-collect-filled" :size="40" class="primary-icon" />
                 </div>
               </div>
               <div class="flex flex-col justify-between">
                 <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-right`">{{
-                  '上年销售额' + '(万元)'
+                  '本月销售额' + '(万元)'
                 }}</div>
                 <CountTo
                   class="text-20px font-700 text-right"
                   :start-val="0"
-                  :end-val="totalState.last_year_sale_amount / 10000"
+                  :end-val="totalState.this_month_sale_amount / 10000"
                   :duration="2500"
+                  :decimals="2"
                 />
               </div>
             </div>
@@ -76,36 +77,6 @@ getSaleAnalysisPannel()
         </ElSkeleton>
       </ElCard>
     </ElCol>
-
-    <ElCol :xl="6" :lg="6" :md="12" :sm="12" :xs="24">
-      <ElCard shadow="hover" class="mb-20px">
-        <ElSkeleton :loading="loading" animated :rows="2">
-          <template #default>
-            <div :class="`${prefixCls}__item flex justify-between`">
-              <div>
-                <div
-                  :class="`${prefixCls}__item--icon ${prefixCls}__item--message p-16px inline-block rounded-6px`"
-                >
-                  <Icon icon="vi-grommet-icons:money" :size="40" class="primary-icon" />
-                </div>
-              </div>
-              <div class="flex flex-col justify-between">
-                <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-right`">{{
-                  '今年销售额' + '(万元)'
-                }}</div>
-                <CountTo
-                  class="text-20px font-700 text-right"
-                  :start-val="0"
-                  :end-val="totalState.this_year_sale_amount / 10000"
-                  :duration="2500"
-                />
-              </div>
-            </div>
-          </template>
-        </ElSkeleton>
-      </ElCard>
-    </ElCol>
-
     <ElCol :xl="6" :lg="6" :md="12" :sm="12" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
         <ElSkeleton :loading="loading" animated :rows="2">
@@ -184,6 +155,34 @@ getSaleAnalysisPannel()
         </ElSkeleton>
       </ElCard>
     </ElCol>
+    <ElCol :xl="6" :lg="6" :md="12" :sm="12" :xs="24">
+      <ElCard shadow="hover" class="mb-20px">
+        <ElSkeleton :loading="loading" animated :rows="2">
+          <template #default>
+            <div :class="`${prefixCls}__item flex justify-between`">
+              <div>
+                <div
+                  :class="`${prefixCls}__item--icon ${prefixCls}__item--peoples p-16px inline-block rounded-6px`"
+                >
+                  <Icon icon="vi-mdi:sale-outline" :size="40" class="primary-icon" />
+                </div>
+              </div>
+              <div class="flex flex-col justify-between">
+                <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-right`">{{
+                  '上年销售额' + '(万元)'
+                }}</div>
+                <CountTo
+                  class="text-20px font-700 text-right"
+                  :start-val="0"
+                  :end-val="totalState.last_year_sale_amount / 10000"
+                  :duration="2500"
+                />
+              </div>
+            </div>
+          </template>
+        </ElSkeleton>
+      </ElCard>
+    </ElCol>
 
     <ElCol :xl="6" :lg="6" :md="12" :sm="12" :xs="24">
       <ElCard shadow="hover" class="mb-20px">
@@ -192,21 +191,20 @@ getSaleAnalysisPannel()
             <div :class="`${prefixCls}__item flex justify-between`">
               <div>
                 <div
-                  :class="`${prefixCls}__item--icon ${prefixCls}__item--shopping p-16px inline-block rounded-6px`"
+                  :class="`${prefixCls}__item--icon ${prefixCls}__item--message p-16px inline-block rounded-6px`"
                 >
-                  <Icon icon="vi-ant-design:money-collect-filled" :size="40" class="primary-icon" />
+                  <Icon icon="vi-grommet-icons:money" :size="40" class="primary-icon" />
                 </div>
               </div>
               <div class="flex flex-col justify-between">
                 <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-right`">{{
-                  '本月销售额' + '(万元)'
+                  '今年销售额' + '(万元)'
                 }}</div>
                 <CountTo
                   class="text-20px font-700 text-right"
                   :start-val="0"
-                  :end-val="totalState.this_month_sale_amount / 10000"
+                  :end-val="totalState.this_year_sale_amount / 10000"
                   :duration="2500"
-                  :decimals="2"
                 />
               </div>
             </div>

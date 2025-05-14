@@ -47,9 +47,15 @@ const shortcuts = [
     path: '/report/chipTrace',
     color: '#909399',
     description: '根据批号追溯芯片信息,原材料信息'
+  },
+  {
+    title: '销售BI',
+    icon: 'vi-solar:chart-linear',
+    path: '/sale/analyze',
+    color: '#c21f30',
+    description: '销售相关图表展示分析'
   }
 ]
-
 // 处理卡片点击
 const handleCardClick = (path: string) => {
   router.push(path)

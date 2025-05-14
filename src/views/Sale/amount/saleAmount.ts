@@ -159,10 +159,8 @@ const processSummaryData = (
   const processedData = data.map((item) => ({
     ...item,
     FORECAST_AMOUNT: item.FORECAST_AMOUNT || 0,
-    PRICE_AMOUNT: item.AMOUNT || 0,
-    PERCENTAGE:
-      item.PERCENTAGE ||
-      (item.AMOUNT && item.FORECAST_AMOUNT ? (item.AMOUNT / item.FORECAST_AMOUNT) * 100 : 0)
+    PRICE_AMOUNT: item.PRICE_AMOUNT || 0,
+    PERCENTAGE: item.PERCENTAGE || 0
   }))
 
   // 根据字段和方向排序

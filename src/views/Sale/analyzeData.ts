@@ -276,7 +276,7 @@ export const generateSaleDataLineChart = (data: any[]): EChartsOption => {
           const itemMonth = getField(item, 'MONTH')
           const itemGroup =
             primaryGroupField === '默认分组' ? '全部' : getField(item, primaryGroupField)
-          const priceQty = Number(getField(item, 'PRICE_QTY') || 0)
+          const priceQty = Number(getField(item, 'AMOUNT') || 0)
 
           if (itemYear == Number(year) && itemMonth == Number(month) && itemGroup === seriesName) {
             value += priceQty
@@ -291,7 +291,7 @@ export const generateSaleDataLineChart = (data: any[]): EChartsOption => {
             const itemGroup =
               primaryGroupField === '默认分组' ? '全部' : getField(item, primaryGroupField)
             const itemCategory = getField(item, secondaryGroupField)
-            const priceQty = Number(getField(item, 'PRICE_QTY') || 0)
+            const priceQty = Number(getField(item, 'AMOUNT') || 0)
 
             if (itemGroup === seriesName && itemCategory === xValue) {
               value += priceQty
@@ -302,7 +302,7 @@ export const generateSaleDataLineChart = (data: any[]): EChartsOption => {
           data.forEach((item) => {
             const itemGroup =
               primaryGroupField === '默认分组' ? '全部' : getField(item, primaryGroupField)
-            const priceQty = Number(getField(item, 'PRICE_QTY') || 0)
+            const priceQty = Number(getField(item, 'AMOUNT') || 0)
 
             if (itemGroup === seriesName) {
               value += priceQty
@@ -364,13 +364,13 @@ export const generateSaleDataLineChart = (data: any[]): EChartsOption => {
   console.log('处理后的系列数据:', topSeries)
 
   // 确定Y轴标题
-  let yAxisName = '销售量'
+  let yAxisName = '销售额'
   if (data.some((item) => getField(item, 'AMOUNT') !== null)) {
-    yAxisName = '销售金额/销售量'
+    yAxisName = '销售金额'
   }
 
   // 确定图表标题
-  let chartTitle = '销售数据分析'
+  let chartTitle = '销售额汇总分析'
   if (primaryGroupField !== '默认分组') {
     chartTitle = `按${
       primaryGroupField === 'SHORTCUT'

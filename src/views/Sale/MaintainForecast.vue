@@ -258,7 +258,7 @@ const submitForm = async () => {
     if (dialogType.value === 'edit') {
       // 编辑
       await updateSaleTargetApi(editFormData)
-      ElMessage.success('更新销售预测成功')
+      ElMessage.success('更新成功！')
     } else {
       // 新增
       // 创建时不需要id字段
@@ -270,15 +270,15 @@ const submitForm = async () => {
         monthly_target: createFormData.monthly_target
       }
       await createSaleTargetApi(params)
-      ElMessage.success('新增销售预测成功')
+      ElMessage.success('创建成功！')
     }
 
     dialogCreateVisible.value = false
     dialogEditVisible.value = false
     getTableData()
   } catch (error) {
-    console.error('提交销售预测数据失败:', error)
-    ElMessage.error('提交销售预测数据失败')
+    console.error('提交失败:', error)
+    ElMessage.error('提交失败')
   }
 }
 

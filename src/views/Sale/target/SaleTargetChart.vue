@@ -16,7 +16,7 @@ const props = defineProps<{
 }>()
 
 // 选择的排序字段
-const sortField = ref<SortField>('FORECAST_QTY')
+const sortField = ref<SortField>('PRICE_QTY')
 // 选择的排序方向
 const sortDirection = ref<SortDirection>('asc')
 

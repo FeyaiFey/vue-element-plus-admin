@@ -309,7 +309,7 @@ onMounted(() => {
       <ElCard shadow="hover" class="mb-20px h-420px">
         <ElSkeleton :loading="loading" animated>
           <template #default>
-            <Echart :options="saleProportionOptionsData" :height="300" />
+            <Echart :options="saleProportionOptionsData" :height="380" />
           </template>
         </ElSkeleton>
       </ElCard>
@@ -344,7 +344,7 @@ onMounted(() => {
   <ElRow :gutter="20">
     <!-- 销售数据折线图 -->
     <ElCol :xl="16" :lg="16" :md="24" :sm="24" :xs="24">
-      <ElCard shadow="hover" class="mb-20 h-480px">
+      <ElCard shadow="hover" class="mb-5 h-600px">
         <template #header>
           <div class="card-header">
             <span>销售数据分析图表</span>
@@ -476,9 +476,13 @@ onMounted(() => {
                           :loading="queryLoading"
                           style="width: 120px"
                         >
+                          <Icon icon="ic:sharp-search" />
                           查询
                         </ElButton>
-                        <ElButton @click="resetQueryForm" style="width: 120px">重置</ElButton>
+                        <ElButton @click="resetQueryForm" style="width: 120px">
+                          <Icon icon="ic:sharp-restart-alt" />
+                          重置
+                        </ElButton>
                       </ElCol>
                     </ElRow>
                   </ElForm>
@@ -505,7 +509,7 @@ onMounted(() => {
         <div class="chart-container">
           <ElSkeleton :loading="queryLoading" animated>
             <template #default>
-              <Echart :options="saleDataLineChartOptions" :height="400" />
+              <Echart :options="saleDataLineChartOptions" />
               <div v-if="queryResultData.length === 0" class="no-data-tip">
                 暂无数据，请调整查询条件
               </div>
@@ -517,7 +521,7 @@ onMounted(() => {
 
     <!-- 销售数据表格 -->
     <ElCol :xl="8" :lg="8" :md="24" :sm="24" :xs="24">
-      <ElCard shadow="hover" class="w-full h-480px">
+      <ElCard shadow="hover" class="w-full h-600px">
         <SaleAmountAnalyzeTable :data="queryResultData" :loading="queryLoading" />
       </ElCard>
     </ElCol>
@@ -559,6 +563,7 @@ onMounted(() => {
 
 .chart-container {
   position: relative;
+  height: 100%;
   min-height: 400px;
 }
 

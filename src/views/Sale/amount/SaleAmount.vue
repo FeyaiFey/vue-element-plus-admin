@@ -255,9 +255,13 @@ onMounted(async () => {
                       :loading="queryLoading"
                       style="width: 120px"
                     >
+                      <Icon icon="ic:sharp-search" />
                       查询
                     </ElButton>
-                    <ElButton @click="handleReset" style="width: 120px">重置</ElButton>
+                    <ElButton @click="handleReset" style="width: 120px">
+                      <Icon icon="ic:sharp-restart-alt" />
+                      重置
+                    </ElButton>
                   </ElCol>
                 </ElRow>
               </ElForm>

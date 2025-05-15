@@ -34,7 +34,7 @@ const queryParams = reactive<SaleAmountQuery>({
   employee_name: '',
   group_by_year: true,
   group_by_month: true,
-  group_by_admin_unit_name: false,
+  group_by_admin_unit_name: true,
   group_by_employee_name: true
 })
 

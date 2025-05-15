@@ -92,3 +92,10 @@ export const getSaleAmountBarChartApi = (query: SaleAmountBarChartQuery) => {
     params: query
   })
 }
+
+export const getSalePercentageBarChartApi = (query: SaleAmountBarChartQuery) => {
+  return request.get<SaleAmountBarChartEChartsResponse>({
+    url: '/sale/analyze/percentage',
+    params: query
+  })
+}

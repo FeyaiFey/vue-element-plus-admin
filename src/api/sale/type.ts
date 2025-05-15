@@ -159,10 +159,11 @@ export interface SaleAmountQuery {
 }
 
 export interface SaleAmount {
-  YEAR?: number
-  MONTH?: number
+  YEAR?: any
+  MONTH?: any
   ADMIN_UNIT_NAME?: string
   EMPLOYEE_NAME?: string
+  PRICE_QTY?: number
   FORECAST_AMOUNT?: number
   PRICE_AMOUNT?: number
   PERCENTAGE?: number

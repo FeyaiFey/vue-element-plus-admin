@@ -20,8 +20,8 @@ const chartRef = ref()
 const currentLevel = ref(0)
 
 const queryForm = ref({
-  year: '2025',
-  month: '5'
+  year: String(new Date().getFullYear()),
+  month: String(new Date().getMonth() + 1)
 })
 
 // 初始化图表选项
@@ -153,10 +153,11 @@ onMounted(() => {
   <ElCard shadow="never" class="chart-card">
     <template #header>
       <div class="card-header">
-        <div class="back-button" @click="goBack">
+        <div v-if="currentLevel > 0" class="back-button" @click="goBack">
           <Icon icon="ep:back" class="mr-1" />
           返回上一级
         </div>
+        <div v-else class="placeholder"></div>
         <div class="right-button">
           <span>查询参数(可为空)：</span>
           <ElInput

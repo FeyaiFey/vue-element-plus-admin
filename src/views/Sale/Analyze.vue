@@ -5,22 +5,23 @@ import {
   ElRow,
   ElCol,
   ElSkeleton,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElButton,
-  ElCheckbox,
-  ElDivider,
-  ElMessage,
-  ElButtonGroup,
-  ElPopover
+  // ElForm,
+  // ElFormItem,
+  // ElInput,
+  // ElSelect,
+  // ElOption,
+  // ElButton,
+  // ElCheckbox,
+  // ElDivider,
+  ElMessage
+  // ElButtonGroup,
+  // ElPopover
 } from 'element-plus'
 import PanelGroup from './components/PanelGroup.vue'
-import SaleAmountAnalyzeTable from './target/SaleAmountAnalyzeTable.vue'
-import SaleAmount from './amount/SaleAmount.vue'
+// import SaleAmountAnalyzeTable from './target/SaleAmountAnalyzeTable.vue'
+// import SaleAmount from './amount/SaleAmount.vue'
 import SaleAmountBarChart from './bar/SaleAmountBarChart.vue'
+import AmountPercentage from './amountPercentage/AmountPercentage.vue'
 import { Echart } from '@/components/Echart'
 import { getSaleAmountAnalyzeApi, getSaleAnalysisPannelApi, getSaleForecastApi } from '@/api/sale'
 import { getSalesApi, getSaleUnitApi } from '@/api/params'
@@ -32,7 +33,7 @@ import {
   generateSaleProportionOptions,
   generateSaleDataLineChart
 } from './analyzeData'
-import { Icon } from '@/components/Icon'
+// import { Icon } from '@/components/Icon'
 
 // 加载状态
 const loading = ref(true)
@@ -190,23 +191,23 @@ const querySaleData = async () => {
 }
 
 // 重置表单
-const resetQueryForm = () => {
-  Object.assign(queryForm, {
-    year: new Date().getFullYear(),
-    month: undefined,
-    shortcut: '',
-    admin_unit_name: '',
-    employee_name: '',
-    item_name: '',
-    group_by_year: true,
-    group_by_month: true,
-    group_by_shortcut: false,
-    group_by_admin_unit_name: false,
-    group_by_employee_name: false,
-    group_by_item_name: false
-  })
-  querySaleData()
-}
+// const resetQueryForm = () => {
+//   Object.assign(queryForm, {
+//     year: new Date().getFullYear(),
+//     month: undefined,
+//     shortcut: '',
+//     admin_unit_name: '',
+//     employee_name: '',
+//     item_name: '',
+//     group_by_year: true,
+//     group_by_month: true,
+//     group_by_shortcut: false,
+//     group_by_admin_unit_name: false,
+//     group_by_employee_name: false,
+//     group_by_item_name: false
+//   })
+//   querySaleData()
+// }
 
 // 更新所有图表
 const updateAllCharts = () => {
@@ -243,38 +244,38 @@ const loadAllData = async () => {
 }
 
 // 刷新图表
-const refreshChart = () => {
-  querySaleData()
-}
+// const refreshChart = () => {
+//   querySaleData()
+// }
 
 // 更改图表类型
-const changeChartType = (type: 'line' | 'bar' | 'stack') => {
-  if (!saleDataLineChartOptions.series || queryResultData.value.length === 0) return
+// const changeChartType = (type: 'line' | 'bar' | 'stack') => {
+//   if (!saleDataLineChartOptions.series || queryResultData.value.length === 0) return
 
-  const newOptions = { ...saleDataLineChartOptions }
+//   const newOptions = { ...saleDataLineChartOptions }
 
-  // 更新所有系列的类型
-  if (Array.isArray(newOptions.series)) {
-    newOptions.series.forEach((series: any) => {
-      if (type === 'stack' && series.type !== 'bar') {
-        series.type = 'bar'
-        series.stack = '总量'
-      } else {
-        series.type = type === 'stack' ? 'bar' : type
-        if (type !== 'stack') {
-          delete series.stack
-        }
-      }
-    })
-  }
+//   // 更新所有系列的类型
+//   if (Array.isArray(newOptions.series)) {
+//     newOptions.series.forEach((series: any) => {
+//       if (type === 'stack' && series.type !== 'bar') {
+//         series.type = 'bar'
+//         series.stack = '总量'
+//       } else {
+//         series.type = type === 'stack' ? 'bar' : type
+//         if (type !== 'stack') {
+//           delete series.stack
+//         }
+//       }
+//     })
+//   }
 
-  // 更新X轴设置
-  if (newOptions.xAxis) {
-    ;(newOptions.xAxis as any).boundaryGap = type === 'bar' || type === 'stack'
-  }
+//   // 更新X轴设置
+//   if (newOptions.xAxis) {
+//     ;(newOptions.xAxis as any).boundaryGap = type === 'bar' || type === 'stack'
+//   }
 
-  Object.assign(saleDataLineChartOptions, newOptions)
-}
+//   Object.assign(saleDataLineChartOptions, newOptions)
+// }
 
 onMounted(() => {
   loadAllData()
@@ -294,7 +295,7 @@ onMounted(() => {
         <template #header>
           <div class="card-header">
             <span>本月销售额目标（万元）：</span>
-            <span>{{ amountTargetMonth / 10000 }}</span>
+            <span>￥ {{ (amountTargetMonth / 10000).toFixed(2).toLocaleString() }}</span>
           </div>
         </template>
         <ElSkeleton :loading="loading" animated>
@@ -322,7 +323,7 @@ onMounted(() => {
         <template #header>
           <div class="card-header">
             <span>今年销售额目标（万元）：</span>
-            <span>{{ amountTargetYear / 10000 }}</span>
+            <span>￥ {{ (amountTargetYear / 10000).toFixed(2).toLocaleString() }}</span>
           </div>
         </template>
         <ElSkeleton :loading="loading" animated>
@@ -334,21 +335,29 @@ onMounted(() => {
     </ElCol>
   </ElRow>
 
-  <!-- 销售数据柱状图 -->
-  <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24" class="mb-20px">
-    <SaleAmountBarChart />
-  </ElCol>
+  <!-- 销售额完成率 -->
+  <ElRow :gutter="20" class="mb-20px">
+    <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24">
+      <AmountPercentage />
+    </ElCol>
+  </ElRow>
 
-  <!-- 销售额汇总 -->
-  <ElCol :xl="24" :lg="8" :md="12" :sm="24" :xs="24">
+  <!-- 销售额下钻数据柱状图 -->
+  <ElRow :gutter="20">
+    <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24" class="mb-20px">
+      <SaleAmountBarChart />
+    </ElCol>
+  </ElRow>
+
+  <!-- 销售额汇总可筛选柱状图 -->
+  <!-- <ElCol :xl="24" :lg="24" :md="24" :sm="24" :xs="24">
     <ElCard shadow="hover" class="mb-5">
       <SaleAmount />
     </ElCard>
-  </ElCol>
+  </ElCol> -->
 
-  <!-- 查询结果展示 -->
+  <!-- 查询结果展示
   <ElRow :gutter="20">
-    <!-- 销售数据折线图 -->
     <ElCol :xl="16" :lg="16" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="mb-5 h-600px">
         <template #header>
@@ -367,7 +376,6 @@ onMounted(() => {
                     <Icon icon="vi-basil:filter-outline" />
                   </ElButton>
                 </template>
-                <!-- 查询表单 -->
                 <div class="search-form">
                   <ElForm :model="queryForm" label-width="80px" label-position="right" size="small">
                     <ElRow :gutter="16">
@@ -524,14 +532,13 @@ onMounted(() => {
         </div>
       </ElCard>
     </ElCol>
-
-    <!-- 销售数据表格 -->
+    详细表格
     <ElCol :xl="8" :lg="8" :md="24" :sm="24" :xs="24">
       <ElCard shadow="hover" class="w-full h-600px">
         <SaleAmountAnalyzeTable :data="queryResultData" :loading="queryLoading" />
       </ElCard>
     </ElCol>
-  </ElRow>
+  </ElRow>-->
 </template>
 
 <style lang="less" scoped>
@@ -539,6 +546,8 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 16px;
+  font-weight: bold;
 
   .chart-actions,
   .table-actions {

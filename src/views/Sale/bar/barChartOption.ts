@@ -73,7 +73,8 @@ export const generateAllDrillDownOptions = (
     const option: EChartsOption = {
       id: optionId,
       title: {
-        text: `${optionId} 销售金额分析`,
+        text: `${optionId} 销售金额柱状图`,
+        subtext: '点击柱子下钻',
         left: 'center'
       },
       grid: {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ElCard, ElSkeleton } from 'element-plus'
+import { ElCard, ElSkeleton, ElInput } from 'element-plus'
 import { Echart } from '@/components/Echart'
 import { Icon } from '@/components/Icon'
 import { ref, onMounted, nextTick } from 'vue'
@@ -19,6 +19,11 @@ const loading = ref(true)
 const chartRef = ref()
 const currentLevel = ref(0)
 
+const queryForm = ref({
+  year: '2025',
+  month: '5'
+})
+
 // 初始化图表选项
 const barOptionsData = ref<any>(generateBarChartOption({} as SaleAmountBarChartEChartsResponse))
 
@@ -33,7 +38,10 @@ const optionStack = ref<string[]>([])
 const getSaleAmountBarChart = async () => {
   loading.value = true
   try {
-    const res = await getSaleAmountBarChartApi({ year: '2025', month: '5' })
+    const res = await getSaleAmountBarChartApi({
+      year: queryForm.value.year,
+      month: queryForm.value.month
+    })
     if (res && res.data) {
       // 处理数据，转换为多层下钻格式
       processDrillDownData(res.data)
@@ -119,6 +127,13 @@ const handleChartClick = (params: any) => {
   }
 }
 
+// 处理输入框回车事件
+const handleKeyup = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    getSaleAmountBarChart()
+  }
+}
+
 // 初始化
 onMounted(() => {
   getSaleAmountBarChart()
@@ -142,7 +157,21 @@ onMounted(() => {
           <Icon icon="ep:back" class="mr-1" />
           返回上一级
         </div>
-        <span>销售金额分析(可点击柱子下钻分析)</span>
+        <div class="right-button">
+          <span>查询参数(可为空)：</span>
+          <ElInput
+            v-model="queryForm.year"
+            placeholder="年份"
+            @keyup.enter="handleKeyup"
+            style="width: 80px"
+          />
+          <ElInput
+            v-model="queryForm.month"
+            placeholder="月份"
+            @keyup.enter="handleKeyup"
+            style="width: 80px"
+          />
+        </div>
       </div>
     </template>
 
@@ -181,6 +210,12 @@ onMounted(() => {
       &:hover {
         text-decoration: underline;
       }
+    }
+
+    .right-button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
   }
 

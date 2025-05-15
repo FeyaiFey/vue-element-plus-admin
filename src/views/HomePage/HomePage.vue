@@ -194,7 +194,7 @@ const handleCardClick = (path: string) => {
     }
     .loop(@i - 1);
   }
-  .loop(6);
+  .loop(9);
 
   &:hover {
     transform: translateY(-5px);

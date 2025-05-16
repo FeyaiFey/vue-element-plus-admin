@@ -4,6 +4,7 @@ import { SaleAmountBarChartEChartsResponse } from '@/api/sale/type'
 export interface DrillDownDataItem {
   name: string
   value: number
+  quantity?: number
   groupId: string
   childGroupId?: string
 }
@@ -55,25 +56,33 @@ export const generateAllDrillDownOptions = (
     // 对数据进行降序排序
     const sortedData = [...levelData.data].sort((a, b) => b.value - a.value)
 
-    // 数据转换为万元单位
+    // 检查是否为最后两层（没有子层级的数据或子层级是最后一层）
+    const isLastLevel = !sortedData.some((item) => item.childGroupId)
+
+    // 计算层级深度，用于判断是否为倒数第二层
+    const levelDepth = optionId.split(' ').length
+
+    // 如果是最后一层或倒数第二层，则显示数量
+    const showQuantity = isLastLevel || levelDepth >= 3
+
+    // 数据转换
     const convertedData = sortedData.map((item) => ({
       ...item,
       // 保留原始值用于比较和下钻
       originalValue: item.value,
-      // 转换为万元
-      value: +(item.value / 10000).toFixed(2)
+      // 根据层级决定是否转换为万元
+      value: showQuantity
+        ? +(item.quantity !== undefined ? item.quantity / 10000 : item.value / 10000).toFixed(2) // 使用quantity字段或回退到value
+        : +(item.value / 10000).toFixed(2) // 其他层级转换为万元
     }))
 
     // 提取类别名称数组用于x轴（已排序后的）
     const categoryNames = convertedData.map((item) => item.name)
 
-    // 检查是否为最后一层（没有子层级的数据）
-    const isLastLevel = !convertedData.some((item) => item.childGroupId)
-
     const option: EChartsOption = {
       id: optionId,
       title: {
-        text: `${optionId} 销售金额柱状图`,
+        text: `${optionId} ${showQuantity ? '销售量' : '销售金额'}柱状图`,
         subtext: '点击柱子下钻',
         left: 'center'
       },
@@ -105,7 +114,7 @@ export const generateAllDrillDownOptions = (
       yAxis: {
         type: 'value',
         minInterval: 1,
-        name: '销售金额(万元)',
+        name: showQuantity ? '销售量(万颗)' : '销售金额(万元)',
         nameTextStyle: {
           padding: [0, 0, 0, 30]
         }
@@ -114,7 +123,7 @@ export const generateAllDrillDownOptions = (
         trigger: 'axis',
         formatter: function (params: any) {
           const param = params[0]
-          return `${param.name}: ${param.value} 万元`
+          return `${param.name}: ${param.value} ${showQuantity ? '万颗' : '万元'}`
         }
       },
       animationDurationUpdate: 500,

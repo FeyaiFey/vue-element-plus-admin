@@ -258,13 +258,19 @@ defineExpose({
           >
             <template #default="{ row }">
               <template v-if="column.prop === 'FORECAST_AMOUNT'">
-                {{ row.FORECAST_AMOUNT?.toLocaleString() ?? '-' }}
+                {{
+                  row.FORECAST_AMOUNT
+                    ? (row.FORECAST_AMOUNT / 10000).toFixed(2).toLocaleString()
+                    : '-'
+                }}
               </template>
               <template v-else-if="column.prop === 'PRICE_QTY'">
-                {{ row.PRICE_QTY?.toLocaleString() ?? '-' }}
+                {{ row.PRICE_QTY ? (row.PRICE_QTY / 10000).toFixed(2).toLocaleString() : '-' }}
               </template>
               <template v-else-if="column.prop === 'PRICE_AMOUNT'">
-                {{ row.PRICE_AMOUNT?.toLocaleString() ?? '-' }}
+                {{
+                  row.PRICE_AMOUNT ? (row.PRICE_AMOUNT / 10000).toFixed(2).toLocaleString() : '-'
+                }}
               </template>
               <template v-else-if="column.prop === 'PERCENTAGE'">
                 <div class="percentage-cell">

@@ -277,10 +277,10 @@ const loadAllData = async () => {
 //   Object.assign(saleDataLineChartOptions, newOptions)
 // }
 
-onMounted(() => {
-  loadAllData()
-  getAdminUnitList()
-  getEmployeeList()
+onMounted(async () => {
+  await loadAllData()
+  await getAdminUnitList()
+  await getEmployeeList()
 })
 </script>
 

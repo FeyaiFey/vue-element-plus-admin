@@ -183,6 +183,7 @@ export interface SaleAmountBarChartQuery {
 export interface SaleAmountBarChartEChartsDataItem {
   name: string
   value: number
+  quantity?: number
   group_id: string
   child_group_id?: string
 }

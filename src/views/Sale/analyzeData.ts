@@ -5,7 +5,7 @@ export const generateSaleAmountMonthGaugeOptions = (value: number, rate: number)
   return {
     animationDuration: 2500,
     tooltip: {
-      formatter: '本月销售额:' + value + '<br/>{a} <br/>{b} : {c}%'
+      formatter: '本月销售额:' + (value / 10000).toFixed(2) + '万元' + '<br/>{b} : {c}%'
     },
     series: [
       {
@@ -40,7 +40,7 @@ export const generateSaleAmountYearGaugeOptions = (value: number, rate: number):
   return {
     animationDuration: 2500,
     tooltip: {
-      formatter: '{a}: ' + value.toLocaleString() + '<br/>{b} : {c}%'
+      formatter: '今年销售额:' + (value / 10000).toFixed(2) + '万元' + '<br/>{b} : {c}%'
     },
     series: [
       {

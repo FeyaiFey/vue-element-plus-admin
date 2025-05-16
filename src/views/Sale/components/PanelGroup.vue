@@ -13,6 +13,8 @@ const prefixCls = getPrefixCls('panel')
 const loading = ref(true)
 
 let totalState = reactive<SaleAnalysisPannel>({
+  today_sale_amount: 0,
+  yesterday_sale_amount: 0,
   this_year_sale_qty: 0,
   this_year_sale_amount: 0,
   this_month_sale_qty: 0,
@@ -118,12 +120,12 @@ getSaleAnalysisPannel()
                       :size="14"
                     />
                     <span
-                      class="ml-4px text-10px"
+                      class="ml-4px text-14px"
                       :class="
                         totalState.month_on_month_amount >= 0 ? 'text-red-500' : 'text-green-500'
                       "
                     >
-                      环比 {{ formatPercentage(totalState.month_on_month_amount) }}
+                      环比 {{ formatPercentage(totalState.month_on_month_amount) }}%
                     </span>
                   </div>
                   <div class="flex items-center">
@@ -140,12 +142,12 @@ getSaleAnalysisPannel()
                       :size="14"
                     />
                     <span
-                      class="ml-4px text-10px"
+                      class="ml-4px text-14px"
                       :class="
                         totalState.year_on_year_amount >= 0 ? 'text-red-500' : 'text-green-500'
                       "
                     >
-                      同比 {{ formatPercentage(totalState.year_on_year_amount) }}
+                      同比 {{ formatPercentage(totalState.year_on_year_amount) }}%
                     </span>
                   </div>
                 </div>
@@ -164,19 +166,37 @@ getSaleAnalysisPannel()
                 <div
                   :class="`${prefixCls}__item--icon ${prefixCls}__item--peoples p-16px inline-block rounded-6px`"
                 >
-                  <Icon icon="vi-mdi:sale-outline" :size="40" class="primary-icon" />
+                  <Icon icon="vi-grommet-icons:money" :size="40" class="primary-icon" />
                 </div>
               </div>
               <div class="flex flex-col justify-between">
                 <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-right`">{{
-                  '上年销售额' + '(万元)'
+                  '今日累计销售额' + '(万元)'
                 }}</div>
                 <CountTo
                   class="text-20px font-700 text-right"
                   :start-val="0"
-                  :end-val="totalState.last_year_sale_amount / 10000"
+                  :end-val="Number((totalState.today_sale_amount / 10000).toFixed(2))"
                   :duration="2500"
                 />
+                <div class="growth-indicator flex justify-end mt-2px space-x-8px">
+                  <div class="flex items-center">
+                    <span
+                      class="ml-4px text-14px"
+                      :class="
+                        totalState.yesterday_sale_amount >= totalState.today_sale_amount
+                          ? 'text-red-500'
+                          : 'text-green-500'
+                      "
+                    >
+                      昨日销售额：{{
+                        Number(
+                          (totalState.yesterday_sale_amount / 10000).toFixed(2)
+                        ).toLocaleString()
+                      }}万元
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </template>
@@ -193,12 +213,12 @@ getSaleAnalysisPannel()
                 <div
                   :class="`${prefixCls}__item--icon ${prefixCls}__item--message p-16px inline-block rounded-6px`"
                 >
-                  <Icon icon="vi-grommet-icons:money" :size="40" class="primary-icon" />
+                  <Icon icon="vi-f7:money-yen-circle" :size="40" class="primary-icon" />
                 </div>
               </div>
               <div class="flex flex-col justify-between">
                 <div :class="`${prefixCls}__item--text text-16px text-gray-500 text-right`">{{
-                  '今年销售额' + '(万元)'
+                  '今年累计销售额' + '(万元)'
                 }}</div>
                 <CountTo
                   class="text-20px font-700 text-right"
@@ -206,6 +226,24 @@ getSaleAnalysisPannel()
                   :end-val="totalState.this_year_sale_amount / 10000"
                   :duration="2500"
                 />
+                <div class="growth-indicator flex justify-end mt-2px space-x-8px">
+                  <div class="flex items-center">
+                    <span
+                      class="ml-4px text-14px"
+                      :class="
+                        totalState.last_year_sale_amount >= totalState.this_year_sale_amount
+                          ? 'text-red-500'
+                          : 'text-green-500'
+                      "
+                    >
+                      去年销售额：{{
+                        Number(
+                          (totalState.last_year_sale_amount / 10000).toFixed(2)
+                        ).toLocaleString()
+                      }}万元
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </template>

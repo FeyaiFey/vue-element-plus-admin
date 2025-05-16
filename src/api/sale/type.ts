@@ -119,6 +119,8 @@ export interface SaleAmountAnalyzeResponse {
 }
 
 export interface SaleAnalysisPannel {
+  today_sale_amount: number
+  yesterday_sale_amount: number
   this_year_sale_qty: number
   this_year_sale_amount: number
   this_month_sale_qty: number

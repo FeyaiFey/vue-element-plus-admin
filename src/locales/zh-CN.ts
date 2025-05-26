@@ -218,7 +218,9 @@ export default {
     sale: '销售管理',
     saleAnalyze: '销售分析',
     saleTarget: '备货计划',
-    maintainForecast: '维护销售目标'
+    maintainForecast: '维护销售目标',
+    file: '文件管理',
+    fileManagement: '文件管理'
   },
   permission: {
     hasPermission: '请设置操作权限值'

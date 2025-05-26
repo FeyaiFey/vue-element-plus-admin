@@ -22,6 +22,10 @@ import type { Column } from 'element-plus'
 import { AxiosResponse } from 'axios'
 import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
 
+defineOptions({
+  name: 'GlobalReport'
+})
+
 // 报表数据
 const reportData = ref<GlobalReport[]>([])
 const loading = ref(false)

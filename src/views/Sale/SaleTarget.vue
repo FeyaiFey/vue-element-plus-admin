@@ -8,6 +8,10 @@ import SaleTargetChart from './target/SaleTargetChart.vue'
 import type { SaleTargetSummaryQuery, SaleTargetDetailQuery } from '@/api/sale/type'
 import type { FormItemRule } from 'element-plus'
 
+defineOptions({
+  name: 'SaleTarget'
+})
+
 // 表单引用
 const formRef = ref()
 

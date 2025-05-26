@@ -156,7 +156,6 @@ onMounted(async () => {
   height: 20px;
 
   .header-title {
-    font-size: 22px;
     font-weight: bold;
     color: var(--el-text-color-primary);
     text-align: center;

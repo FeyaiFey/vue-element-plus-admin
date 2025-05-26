@@ -133,6 +133,13 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             'vue-chunks': ['vue', 'vue-router', 'pinia', 'vue-i18n'],
             'element-plus': ['element-plus'],
             'wang-editor': ['@wangeditor/editor', '@wangeditor/editor-for-vue'],
+            'file-preview': [
+              'vue-pdf-embed',
+              '@vue-office/docx',
+              '@vue-office/excel',
+              '@vue-office/pdf'
+            ],
+            'monaco-editor': ['monaco-editor'],
             echarts: ['echarts', 'echarts-wordcloud']
           }
         }
@@ -174,7 +181,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         'vue-json-pretty',
         '@zxcvbn-ts/core',
         'dayjs',
-        'cropperjs'
+        'cropperjs',
+        'vue-pdf-embed',
+        '@vue-office/docx',
+        '@vue-office/excel',
+        '@vue-office/pdf'
       ]
     }
   }

@@ -28,6 +28,10 @@ import { getSaleUnitApi, getSalesApi } from '@/api/params'
 import type { SaleUnit, Sales } from '@/api/params/type'
 import type { SaleTable, SaleTableQuery, SaleTargetUpdate, SaleTargetCreate } from '@/api/sale/type'
 
+defineOptions({
+  name: 'MaintainForecast'
+})
+
 // 查询参数
 const queryForm = reactive<SaleTableQuery>({
   year: undefined,

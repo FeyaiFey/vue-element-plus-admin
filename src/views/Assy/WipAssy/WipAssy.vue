@@ -23,6 +23,10 @@ import { getAssyWipApi } from '@/api/assy'
 import type { AssyWip, AssyWipQuery } from '@/api/assy/type'
 import { Icon } from '@/components/Icon'
 
+defineOptions({
+  name: 'WipAssy'
+})
+
 // 折叠状态
 const isCollapse = ref(true)
 

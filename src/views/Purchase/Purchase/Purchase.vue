@@ -35,6 +35,10 @@ import { Dialog } from '@/components/Dialog'
 import type { FormInstance } from 'element-plus'
 import { Icon } from '@/components/Icon'
 
+defineOptions({
+  name: 'PurchaseTable'
+})
+
 // 供应商列表
 const supplierList = ref<PurchaseSupplierResponse[]>([])
 const supplierLoading = ref(false)

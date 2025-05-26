@@ -22,6 +22,10 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import type { CpTestOrdersQuery, CpTestOrders } from '@/api/assy/type'
 import { AxiosResponse } from 'axios'
 
+defineOptions({
+  name: 'CpTest'
+})
+
 // 定义表格列类型
 interface TableColumn {
   type?: string

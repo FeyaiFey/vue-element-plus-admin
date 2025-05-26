@@ -32,6 +32,10 @@ import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
 import Email from '@/views/Email/Email.vue'
 import { useUserStore } from '@/store/modules/user'
 
+defineOptions({
+  name: 'SopReport'
+})
+
 const sopAnalyzeData = ref<SopAnalyzeResponse[]>([])
 const loading = ref(false)
 

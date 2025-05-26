@@ -24,6 +24,10 @@ import type { Stock, StockQuery, WaferIdQtyDetail } from '@/api/stock/types'
 import { getTestingProgramApi, getBurningProgramApi } from '@/api/params'
 import type { AxiosResponse } from 'axios'
 
+defineOptions({
+  name: 'StockTable'
+})
+
 // 测试程序选项
 const testingProgramOptions = ref<Array<{ label: string; value: string }>>([])
 const testingProgramLoading = ref(false)

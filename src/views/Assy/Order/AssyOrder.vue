@@ -13,6 +13,10 @@ import AssyOrderForm from './components/AssyOrderForm.vue'
 import AssyOrderTable from './components/AssyOrderTable.vue'
 import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
 
+defineOptions({
+  name: 'AssyOrder'
+})
+
 // 查询表单
 const queryForm = reactive<AssyRequireOrdersQuery>({
   itemName: '',

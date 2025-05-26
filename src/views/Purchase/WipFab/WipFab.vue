@@ -25,6 +25,10 @@ import type {
 } from '@/api/purchase/type'
 import { Icon } from '@/components/Icon'
 
+defineOptions({
+  name: 'WipFab'
+})
+
 // 折叠状态
 const isCollapse = ref(true)
 

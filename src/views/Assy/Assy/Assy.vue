@@ -27,6 +27,11 @@ import { Table } from '@/components/Table'
 import { Dialog } from '@/components/Dialog'
 import { Icon } from '@/components/Icon'
 
+// 定义组件名称（用于keep-alive缓存）
+defineOptions({
+  name: 'AssyTable'
+})
+
 // 表格列配置类型
 interface TableColumn {
   type?: 'selection' | 'expand'
@@ -589,6 +594,7 @@ onBeforeUnmount(() => {
                 type="date"
                 placeholder="起始于"
                 value-format="YYYY-MM-DD"
+                style="width: 100%"
                 @keyup.enter="handleSearch"
               />
             </ElFormItem>
@@ -600,6 +606,7 @@ onBeforeUnmount(() => {
                 type="date"
                 placeholder="结束于"
                 value-format="YYYY-MM-DD"
+                style="width: 100%"
                 @keyup.enter="handleSearch"
               />
             </ElFormItem>

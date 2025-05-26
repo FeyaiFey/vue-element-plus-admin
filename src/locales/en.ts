@@ -223,7 +223,9 @@ export default {
     sale: 'Sale',
     saleAnalyze: 'Sale Analyze',
     saleTarget: 'Sale Target',
-    maintainForecast: 'Maintain Forecast'
+    maintainForecast: 'Maintain Forecast',
+    file: 'File',
+    fileManagement: 'File Management'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

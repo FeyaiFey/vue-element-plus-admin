@@ -19,6 +19,10 @@ import type { ChipInfoTraceQuery, ChipInfoTrace } from '@/api/report/type'
 import type { AxiosResponse } from '@/axios/types'
 import { Icon } from '@/components/Icon'
 
+defineOptions({
+  name: 'ChipTrace'
+})
+
 // 折叠状态
 const isCollapse = ref(true)
 

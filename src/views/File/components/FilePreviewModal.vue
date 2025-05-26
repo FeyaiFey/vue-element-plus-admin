@@ -135,8 +135,6 @@ const minHeight = computed(() => Math.floor(window.innerHeight * 0.4))
 </template>
 
 <style lang="less" scoped>
-
-
 // 暗色模式适配
 @media (prefers-color-scheme: dark) {
   .preview-container {

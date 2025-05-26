@@ -137,8 +137,6 @@ const handleSearchEnter = () => {
 </template>
 
 <style lang="less" scoped>
-
-
 // 响应式适配
 @media screen and (width <= 768px) {
   .file-toolbar {

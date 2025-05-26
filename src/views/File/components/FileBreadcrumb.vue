@@ -47,8 +47,6 @@ const handlePathClick = (index: number) => emit('pathClick', index)
 </template>
 
 <style lang="less" scoped>
-
-
 // 暗色模式适配
 @media (prefers-color-scheme: dark) {
   .file-breadcrumb {

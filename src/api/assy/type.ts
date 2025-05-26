@@ -8,6 +8,8 @@ export interface AssyOrderQuery {
   is_closed?: number // 是否关闭
   order_date_start?: Date // 工单日期开始
   order_date_end?: Date // 工单日期结束
+  wafer_code?: string // 晶圆品号
+  wafer_lot_code?: string // 晶圆批号
   pageIndex?: number // 页码,默认1,最小1
   pageSize?: number // 每页数量,默认50,1-100
 }
@@ -30,6 +32,13 @@ export interface AssyOrder {
   FIRST_ARRIVAL_DATE?: Date
   SUPPLIER_FULL_NAME?: string
   RECEIPT_CLOSE?: number
+  MAIN_CHIP?: string
+  WAFER_CODE?: string
+  WAFER_NAME?: string
+  LOT_CODE_NAME?: string
+  WAFER_BUSINESS_QTY?: number
+  WAFER_SECOND_QTY?: number
+  WAFER_ID?: string
 }
 
 export interface AssyOrderResponse {

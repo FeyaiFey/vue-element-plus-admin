@@ -7,6 +7,13 @@ const router = useRouter()
 // 快捷方式配置
 const shortcuts = [
   {
+    title: '封装历史记录',
+    icon: 'vi-ic:baseline-history',
+    path: '/assy/table',
+    color: '#4CAE4F',
+    description: '封装历史记录查询'
+  },
+  {
     title: '封装进度',
     icon: 'vi-icon-park-solid:chip',
     path: '/assy/wip',
@@ -264,13 +271,11 @@ const handleCardClick = (path: string) => {
     color: var(--el-text-color-primary);
     background: linear-gradient(120deg, var(--el-color-primary) 0%, var(--el-color-success) 100%);
     background-clip: text;
-    background-clip: text;
     -webkit-text-fill-color: transparent;
 
     // 暗色模式下的渐变调整
     .dark & {
       background: linear-gradient(120deg, #409eff 0%, #67c23a 100%);
-      background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }

@@ -8,6 +8,7 @@ import FileBreadcrumb from './components/FileBreadcrumb.vue'
 import FileUploadModal from './components/FileUploadModal.vue'
 import FileContextMenu from './components/FileContextMenu.vue'
 import FilePreviewModal from './components/FilePreviewModal.vue'
+import FileMoveModal from './components/FileMoveModal.vue'
 import type { FileResponse, FolderResponse } from '@/api/file/types'
 import {
   listFilesApi,
@@ -45,6 +46,8 @@ const searchResults = ref<FileResponse[]>([])
 const uploadModalVisible = ref(false)
 const previewModalVisible = ref(false)
 const currentPreviewFile = ref<FileResponse | null>(null)
+const moveModalVisible = ref(false)
+const currentMoveItem = ref<FileResponse | FolderResponse | null>(null)
 
 // 右键菜单
 const contextMenuVisible = ref(false)
@@ -76,18 +79,19 @@ const loadFileList = async (folderId?: number) => {
 
 // 处理搜索结果
 const handleSearchResult = (results: FileResponse[]) => {
-  if (results.length > 0) {
-    // 进入搜索模式
-    isSearchMode.value = true
-    searchResults.value = results
-    files.value = results
-    folders.value = [] // 搜索模式下不显示文件夹
-  } else {
-    // 退出搜索模式，恢复正常列表
-    isSearchMode.value = false
-    searchResults.value = []
-    loadFileList(currentFolder.value?.id || undefined)
-  }
+  // 进入搜索模式
+  isSearchMode.value = true
+  searchResults.value = results
+  files.value = results
+  folders.value = [] // 搜索模式下不显示文件夹
+}
+
+// 处理清空搜索
+const handleClearSearch = () => {
+  // 退出搜索模式，恢复正常列表
+  isSearchMode.value = false
+  searchResults.value = []
+  loadFileList(currentFolder.value?.id || undefined)
 }
 
 // 进入文件夹（从文件列表双击进入）
@@ -378,7 +382,7 @@ const handleCreateFolder = async () => {
     await createFolderApi({
       name: folderName.trim(),
       parent_id: currentFolder.value?.id,
-      is_public: false
+      is_public: true
     })
 
     ElMessage.success('文件夹创建成功')
@@ -405,38 +409,100 @@ const handleContextMenu = (event: MouseEvent, item: FileResponse | FolderRespons
 }
 
 // 右键菜单操作
-const handleContextMenuAction = (action: string) => {
+const handleContextMenuAction = (action: string, item?: FileResponse | FolderResponse) => {
   contextMenuVisible.value = false
 
   switch (action) {
     case 'preview':
-      if (contextMenuItem.value && 'mime_type' in contextMenuItem.value) {
-        handleFilePreview(contextMenuItem.value as FileResponse)
+      if (item && 'mime_type' in item) {
+        handleFilePreview(item as FileResponse)
       }
       break
     case 'download':
-      if (contextMenuItem.value && 'mime_type' in contextMenuItem.value) {
-        handleFileDownload(contextMenuItem.value as FileResponse)
+      if (item && 'mime_type' in item) {
+        handleFileDownload(item as FileResponse)
+      }
+      break
+    case 'setStatus':
+      if (item) {
+        handleSetStatus(item)
+      }
+      break
+    case 'move':
+      if (item) {
+        handleMove(item)
       }
       break
     case 'rename':
-      if (contextMenuItem.value) {
-        selectedFiles.value = [contextMenuItem.value]
+      if (item) {
+        selectedFiles.value = [item]
         handleRename()
       }
       break
     case 'delete':
-      if (contextMenuItem.value) {
-        selectedFiles.value = [contextMenuItem.value]
+      if (item) {
+        selectedFiles.value = [item]
         handleDelete()
       }
       break
     case 'enter':
-      if (contextMenuItem.value && 'is_public' in contextMenuItem.value) {
-        enterFolder(contextMenuItem.value as FolderResponse)
+      if (item && 'is_public' in item) {
+        enterFolder(item as FolderResponse)
       }
       break
   }
+}
+
+// 设置状态（公开/私有）
+const handleSetStatus = async (item: FileResponse | FolderResponse) => {
+  try {
+    const newStatus = !item.is_public
+    const statusText = newStatus ? '公开' : '私有'
+
+    await ElMessageBox.confirm(
+      `确定要将此${'mime_type' in item ? '文件' : '文件夹'}设为${statusText}吗？`,
+      '设置状态',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    )
+
+    if ('mime_type' in item) {
+      // 是文件
+      await updateFileApi(item.id, { is_public: newStatus })
+    } else {
+      // 是文件夹
+      await updateFolderApi(item.id, { is_public: newStatus })
+    }
+
+    ElMessage.success(`已设为${statusText}`)
+    // 刷新列表
+    loadFileList(currentFolder.value?.id || undefined)
+    // 刷新文件夹树（如果是文件夹）
+    if (!('mime_type' in item)) {
+      folderTreeRef.value?.loadFolderTree()
+    }
+  } catch (error: any) {
+    if (error === 'cancel') {
+      return // 用户取消操作
+    }
+    console.error('设置状态失败:', error)
+    ElMessage.error('设置状态失败')
+  }
+}
+
+// 移动文件/文件夹
+const handleMove = (item: FileResponse | FolderResponse) => {
+  currentMoveItem.value = item
+  moveModalVisible.value = true
+}
+
+// 移动成功后刷新
+const handleMoveSuccess = () => {
+  loadFileList(currentFolder.value?.id || undefined)
+  folderTreeRef.value?.loadFolderTree()
 }
 
 // 初始化
@@ -457,6 +523,7 @@ onMounted(() => {
     @download="handleDownload"
     @delete="handleDelete"
     @search-result="handleSearchResult"
+    @clear-search="handleClearSearch"
   />
   <div class="file-manager">
     <ElContainer class="file-container">
@@ -514,6 +581,13 @@ onMounted(() => {
 
     <!-- 预览弹窗 -->
     <FilePreviewModal v-model="previewModalVisible" :file="currentPreviewFile" />
+
+    <!-- 移动弹窗 -->
+    <FileMoveModal
+      v-model:visible="moveModalVisible"
+      :item="currentMoveItem"
+      @success="handleMoveSuccess"
+    />
   </div>
 </template>
 

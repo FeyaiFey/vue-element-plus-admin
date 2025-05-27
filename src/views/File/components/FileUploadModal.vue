@@ -70,7 +70,7 @@ const handleUpload = async () => {
     if (props.currentFolderId) {
       formData.append('folder_id', props.currentFolderId.toString())
     }
-    formData.append('is_public', 'false')
+    formData.append('is_public', 'true')
 
     // 调用上传API
     if (fileList.value.length === 1) {
@@ -82,7 +82,7 @@ const handleUpload = async () => {
       if (props.currentFolderId) {
         singleFormData.append('folder_id', props.currentFolderId.toString())
       }
-      singleFormData.append('is_public', 'false')
+      singleFormData.append('is_public', 'true')
 
       await uploadFileApi(singleFormData)
     } else {

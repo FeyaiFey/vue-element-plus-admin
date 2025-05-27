@@ -31,7 +31,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     env = loadEnv(mode, root)
   }
   return {
-    base: env.VITE_BASE_PATH,
+    base: env.VITE_BASE_PATH || '/',
     plugins: [
       Vue({
         script: {
@@ -124,15 +124,21 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       target: 'es2015',
       outDir: env.VITE_OUT_DIR || 'dist',
       sourcemap: env.VITE_SOURCEMAP === 'true',
-      // brotliSize: false,
+      // 确保worker文件正确处理
+      assetsDir: 'assets',
       rollupOptions: {
         plugins: env.VITE_USE_BUNDLE_ANALYZER === 'true' ? [visualizer()] : undefined,
-        // 拆包
+        // 拆包配置 - 优化文件预览相关的包
         output: {
+          // 确保文件名稳定，避免hash变化导致的缓存问题
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
           manualChunks: {
             'vue-chunks': ['vue', 'vue-router', 'pinia', 'vue-i18n'],
             'element-plus': ['element-plus'],
             'wang-editor': ['@wangeditor/editor', '@wangeditor/editor-for-vue'],
+            // 文件预览相关的包单独分组
             'file-preview': [
               'vue-pdf-embed',
               '@vue-office/docx',
@@ -162,6 +168,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       },
       host: '0.0.0.0'
     },
+    // 优化依赖预构建
     optimizeDeps: {
       include: [
         'vue',
@@ -182,11 +189,18 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         '@zxcvbn-ts/core',
         'dayjs',
         'cropperjs',
+        // 文件预览相关的依赖
         'vue-pdf-embed',
         '@vue-office/docx',
         '@vue-office/excel',
         '@vue-office/pdf'
-      ]
+      ],
+      // 排除可能有问题的依赖
+      exclude: []
+    },
+    // 确保worker文件正确处理
+    worker: {
+      format: 'es'
     }
   }
 }

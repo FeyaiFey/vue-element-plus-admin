@@ -26,6 +26,7 @@ const emit = defineEmits<{
   download: []
   delete: []
   searchResult: [files: FileResponse[]]
+  clearSearch: []
 }>()
 
 // 操作方法
@@ -53,7 +54,11 @@ const handleSearch = async () => {
 
     const response = await searchFilesApi(searchData, { skip: 0, limit: 100 })
     emit('searchResult', response.data)
-    ElMessage.success(`找到 ${response.data.length} 个文件`)
+    if (response.data.length > 0) {
+      ElMessage.success(`找到 ${response.data.length} 个文件`)
+    } else {
+      ElMessage.info('未找到匹配的文件')
+    }
   } catch (error) {
     console.error('搜索失败:', error)
     ElMessage.error('搜索失败，请重试')
@@ -66,7 +71,7 @@ const handleSearch = async () => {
 const handleClearSearch = () => {
   searchKeyword.value = ''
   isSearching.value = false
-  emit('searchResult', [])
+  emit('clearSearch')
 }
 
 // 回车搜索

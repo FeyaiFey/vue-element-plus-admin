@@ -11,7 +11,7 @@ export type FolderCreate = FolderBase
 // 更新文件夹请求
 export interface FolderUpdate {
   name?: string // 文件夹名称
-  parent_id?: number // 父文件夹ID
+  parent_id?: number | null // 父文件夹ID，null表示移动到根目录
   is_public?: boolean // 是否公开
 }
 
@@ -41,7 +41,7 @@ export interface FileUpload {
 // 更新文件请求
 export interface FileUpdate {
   name?: string // 文件名
-  folder_id?: number // 所属文件夹ID
+  folder_id?: number | null // 所属文件夹ID，null表示移动到根目录
   is_public?: boolean // 是否公开
   tags?: string // 标签，以逗号分隔
 }

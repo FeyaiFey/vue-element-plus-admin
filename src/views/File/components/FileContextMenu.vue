@@ -13,7 +13,7 @@ const props = defineProps<Props>()
 
 // 事件
 const emit = defineEmits<{
-  action: [action: string]
+  action: [action: string, item?: FileResponse | FolderResponse]
   close: []
 }>()
 
@@ -43,8 +43,16 @@ const menuItems = computed((): MenuItem[] => {
   const items: MenuItem[] = []
 
   if (isFolder.value) {
+    const folder = props.item as FolderResponse
     items.push(
       { action: 'enter', label: '打开', icon: '📁' },
+      { type: 'divider' },
+      {
+        action: 'setStatus',
+        label: folder.is_public ? '设为私有' : '设为公开',
+        icon: folder.is_public ? '🔒' : '🌐'
+      },
+      { action: 'move', label: '移动', icon: '📋' },
       { type: 'divider' },
       { action: 'rename', label: '重命名', icon: '✏️' },
       { action: 'delete', label: '删除', icon: '🗑️', danger: true }
@@ -66,6 +74,13 @@ const menuItems = computed((): MenuItem[] => {
     items.push(
       { action: 'download', label: '下载', icon: '⬇️' },
       { type: 'divider' },
+      {
+        action: 'setStatus',
+        label: file.is_public ? '设为私有' : '设为公开',
+        icon: file.is_public ? '🔒' : '🌐'
+      },
+      { action: 'move', label: '移动', icon: '📋' },
+      { type: 'divider' },
       { action: 'rename', label: '重命名', icon: '✏️' },
       { action: 'delete', label: '删除', icon: '🗑️', danger: true }
     )
@@ -76,7 +91,7 @@ const menuItems = computed((): MenuItem[] => {
 
 // 处理菜单项点击
 const handleMenuClick = (action: string) => {
-  emit('action', action)
+  emit('action', action, props.item || undefined)
 }
 
 // 处理点击外部关闭

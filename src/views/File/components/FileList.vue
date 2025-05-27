@@ -208,6 +208,15 @@ const handleDownload = (row: any) => {
         </template>
       </ElTableColumn>
 
+      <!-- 状态列 -->
+      <ElTableColumn prop="is_public" label="状态" width="100" header-align="center" align="center">
+        <template #default="{ row }">
+          <ElTag :type="row.is_public ? 'success' : 'warning'" size="small">
+            {{ row.is_public ? '公开' : '私有' }}
+          </ElTag>
+        </template>
+      </ElTableColumn>
+
       <!-- 大小列 -->
       <ElTableColumn prop="size" label="大小" width="120" header-align="center" align="center">
         <template #default="{ row }">

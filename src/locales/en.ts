@@ -225,7 +225,8 @@ export default {
     saleTarget: 'Sale Target',
     maintainForecast: 'Maintain Forecast',
     file: 'File',
-    fileManagement: 'File Management'
+    fileManagement: 'File Management',
+    invoice: 'Invoice'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

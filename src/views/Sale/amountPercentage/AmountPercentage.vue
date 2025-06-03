@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
-import { ElRow, ElCol, ElInput, ElCard } from 'element-plus'
+import { ElRow, ElCol, ElInput, ElCard, ElButton } from 'element-plus'
 import AmountPercentageTable from './AmountPercentageTable.vue'
 import AmountPercentageChart from './AmountPercentageChart.vue'
+import AmountPercentageDetail from './AmountPercentageDetail.vue'
+import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
 
 import { getSalesApi, getSaleUnitApi } from '@/api/params'
 import type { SaleAmountQuery } from '@/api/sale/type'
+import { Icon } from '@/components/Icon'
 
 // 加载状态
 const queryLoading = ref(false)
 
 // 表单引用
 const formRef = ref()
+
+// 详情对话框
+const detailDialogVisible = ref(false)
 
 // 查询参数
 const queryParams = reactive<SaleAmountQuery>({
@@ -96,6 +102,11 @@ const handleSearch = async () => {
   }
 }
 
+// 打开详情对话框
+const openDetailDialog = () => {
+  detailDialogVisible.value = true
+}
+
 // 页面加载时执行查询
 onMounted(async () => {
   await handleSearch()
@@ -115,6 +126,9 @@ onMounted(async () => {
               <span>销售额完成率 预测VS实际</span>
             </div>
             <div class="header-search">
+              <ElButton type="warning" size="small" @click="openDetailDialog">
+                <Icon icon="vi-fluent:apps-list-detail-20-regular" />
+              </ElButton>
               <span>查询参数：</span>
               <span>年份：</span>
               <ElInput
@@ -140,6 +154,20 @@ onMounted(async () => {
       <AmountPercentageChart ref="chartRef" :query-params="queryParams" />
     </ElCol>
   </ElRow>
+
+  <!-- 详情对话框 -->
+  <ResizeDialog
+    v-model="detailDialogVisible"
+    title="销售额完成率详情分析"
+    :fullscreen="true"
+    :initWidth="1500"
+    :initHeight="700"
+    :minResizeWidth="1200"
+    :minResizeHeight="600"
+    @close="detailDialogVisible = false"
+  >
+    <AmountPercentageDetail v-if="detailDialogVisible" :query-params="queryParams" />
+  </ResizeDialog>
 </template>
 
 <style lang="less" scoped>
@@ -149,11 +177,15 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
+.mr-1 {
+  margin-right: 4px;
+}
+
 .header-container {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  height: 20px;
+  height: 16px;
 
   .header-title {
     font-weight: bold;
@@ -164,9 +196,9 @@ onMounted(async () => {
 
   .header-search {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     align-items: center;
-    height: 20px;
+    height: 16px;
 
     span {
       font-size: 14px;
@@ -183,8 +215,8 @@ onMounted(async () => {
 
 .table-container {
   display: flex;
-  padding: 5px;
-  margin-top: 5px;
+  padding: 2px;
+  margin-top: 2px;
   border-radius: 4px;
   flex-direction: column;
 
@@ -192,11 +224,11 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 
   .table-title {
-    padding: 8px 0;
+    padding: 4px 0;
     margin: 0;
     font-size: 22px;
     font-weight: bold;
@@ -211,12 +243,26 @@ onMounted(async () => {
   }
 }
 
+.chart-card {
+  :deep(.el-card__body) {
+    padding: 8px;
+  }
+}
+
 :deep(.filter-popover) {
   max-width: 90vw;
 
   .el-popover__title {
     font-size: 16px;
     font-weight: bold;
+  }
+}
+
+:deep(.detail-dialog) {
+  .el-dialog__body {
+    height: 70vh;
+    padding: 0;
+    overflow: hidden;
   }
 }
 </style>

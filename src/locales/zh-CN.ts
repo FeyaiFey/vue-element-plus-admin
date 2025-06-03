@@ -220,7 +220,8 @@ export default {
     saleTarget: '备货计划',
     maintainForecast: '维护销售目标',
     file: '文件管理',
-    fileManagement: '文件管理'
+    fileManagement: '文件管理',
+    invoice: '发票管理'
   },
   permission: {
     hasPermission: '请设置操作权限值'

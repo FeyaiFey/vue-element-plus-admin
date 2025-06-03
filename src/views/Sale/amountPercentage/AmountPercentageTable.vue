@@ -11,17 +11,32 @@ const props = defineProps<{
 // 原始表格数据
 const originalData = ref<SaleAmount[]>([])
 // 表格数据（包含汇总行）
-const tableData = ref<(SaleAmount & { isSummary?: boolean })[]>([])
+const tableData = ref<(SaleAmount & { isSummary?: boolean; isTotalSummary?: boolean })[]>([])
 const loading = ref(false)
 
-// 处理数据，添加行政单位合计行
+// 处理数据，添加行政单位合计行和总计行
 const processDataWithSummary = (data: SaleAmount[]) => {
   if (!data || !data.length) return []
+
+  // 定义ADMIN_UNIT_NAME的排序优先级
+  const adminUnitOrder = {
+    '销售部-苏州一组': 1,
+    '销售部-苏州二组': 2,
+    '销售部-宁波组': 3,
+    '销售部-深圳组': 4,
+    '销售部-佛山组': 5,
+    '销售部-公司自营': 6
+  }
+
+  // 获取ADMIN_UNIT_NAME的排序权重
+  const getAdminUnitWeight = (unitName: string): number => {
+    return adminUnitOrder[unitName as keyof typeof adminUnitOrder] || 999
+  }
 
   // 克隆原始数据
   const clonedData = [...data]
 
-  // 排序数据：YEAR、MONTH升序，ADMIN_UNIT_NAME和PERCENTAGE降序
+  // 排序数据：YEAR、MONTH升序，ADMIN_UNIT_NAME按自定义顺序，PERCENTAGE降序
   clonedData.sort((a, b) => {
     // 首先按年份升序排序
     if (a.YEAR !== b.YEAR) {
@@ -33,9 +48,11 @@ const processDataWithSummary = (data: SaleAmount[]) => {
       return (a.MONTH || 0) - (b.MONTH || 0)
     }
 
-    // 然后按行政单位降序排序
+    // 然后按行政单位自定义顺序排序
     if (a.ADMIN_UNIT_NAME !== b.ADMIN_UNIT_NAME) {
-      return (b.ADMIN_UNIT_NAME || '').localeCompare(a.ADMIN_UNIT_NAME || '')
+      const weightA = getAdminUnitWeight(a.ADMIN_UNIT_NAME || '')
+      const weightB = getAdminUnitWeight(b.ADMIN_UNIT_NAME || '')
+      return weightA - weightB
     }
 
     // 最后按完成率降序排序
@@ -55,10 +72,17 @@ const processDataWithSummary = (data: SaleAmount[]) => {
   })
 
   // 合并数据，添加合计行
-  const result: (SaleAmount & { isSummary?: boolean })[] = []
+  const result: (SaleAmount & { isSummary?: boolean; isTotalSummary?: boolean })[] = []
 
-  // 遍历分组，为每个组创建汇总行
-  Object.entries(groupedByUnit).forEach(([unitName, items]) => {
+  // 按照自定义顺序获取排序后的行政单位列表
+  const sortedUnitNames = Object.keys(groupedByUnit).sort((a, b) => {
+    return getAdminUnitWeight(a) - getAdminUnitWeight(b)
+  })
+
+  // 遍历排序后的分组，为每个组创建汇总行
+  sortedUnitNames.forEach((unitName) => {
+    const items = groupedByUnit[unitName]
+
     // 将当前行政单位的所有明细行添加到结果中
     result.push(...items)
 
@@ -69,7 +93,7 @@ const processDataWithSummary = (data: SaleAmount[]) => {
     const totalPercentage = totalForecastAmount ? (totalPriceAmount / totalForecastAmount) * 100 : 0
 
     // 创建合计行
-    const summaryRow: SaleAmount & { isSummary?: boolean } = {
+    const summaryRow: SaleAmount & { isSummary?: boolean; isTotalSummary?: boolean } = {
       YEAR: '合计',
       MONTH: undefined,
       ADMIN_UNIT_NAME: unitName,
@@ -84,6 +108,34 @@ const processDataWithSummary = (data: SaleAmount[]) => {
     // 添加合计行到结果中
     result.push(summaryRow)
   })
+
+  // 计算总计数据（基于原始数据）
+  const grandTotalPriceQty = clonedData.reduce((sum, item) => sum + (item.PRICE_QTY || 0), 0)
+  const grandTotalForecastAmount = clonedData.reduce(
+    (sum, item) => sum + (item.FORECAST_AMOUNT || 0),
+    0
+  )
+  const grandTotalPriceAmount = clonedData.reduce((sum, item) => sum + (item.PRICE_AMOUNT || 0), 0)
+  const grandTotalPercentage = grandTotalForecastAmount
+    ? (grandTotalPriceAmount / grandTotalForecastAmount) * 100
+    : 0
+
+  // 创建总计行
+  const totalSummaryRow: SaleAmount & { isSummary?: boolean; isTotalSummary?: boolean } = {
+    YEAR: '总计',
+    MONTH: undefined,
+    ADMIN_UNIT_NAME: '全部',
+    EMPLOYEE_NAME: undefined,
+    PRICE_QTY: grandTotalPriceQty,
+    FORECAST_AMOUNT: grandTotalForecastAmount,
+    PRICE_AMOUNT: grandTotalPriceAmount,
+    PERCENTAGE: grandTotalPercentage,
+    isSummary: true,
+    isTotalSummary: true // 标记为总计行
+  }
+
+  // 添加总计行到最后
+  result.push(totalSummaryRow)
 
   return result
 }
@@ -107,6 +159,7 @@ const getData = async () => {
 
 // 获取行样式
 const getRowClass = ({ row }: { row: any }) => {
+  if (row.isTotalSummary) return 'total-summary-row'
   return row.isSummary ? 'summary-row' : ''
 }
 
@@ -310,6 +363,25 @@ defineExpose({
     // 鼠标悬停样式
     &:hover > td {
       background-color: #e6f3d7 !important;
+    }
+  }
+
+  &.total-summary-row {
+    font-size: 14px;
+    font-weight: 900;
+    background-color: #e1f3d8;
+    border-top: 2px solid #67c23a;
+
+    td {
+      font-weight: 900;
+      color: #409eff;
+      background-color: #e1f3d8 !important;
+      border-top: 2px solid #67c23a !important;
+    }
+
+    // 鼠标悬停样式
+    &:hover > td {
+      background-color: #d3edc9 !important;
     }
   }
 }

@@ -20,7 +20,7 @@ VITE_SOURCEMAP=false
 VITE_OUT_DIR=dist-pro
 
 # 标题
-VITE_APP_TITLE=Hsun-Admin
+VITE_APP_TITLE=华芯微
 
 # 是否包分析
 VITE_USE_BUNDLE_ANALYZER=true

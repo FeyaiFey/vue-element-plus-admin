@@ -35,7 +35,7 @@ const lockScreen = () => {
 }
 
 const toDocument = () => {
-  window.open('https://element-plus-admin-doc.cn/')
+  window.open('https://github.com/FeyaiFey/vue-element-plus-admin/tree/hsun')
 }
 
 const toPage = (path: string) => {
@@ -47,12 +47,12 @@ const toPage = (path: string) => {
   <ElDropdown class="custom-hover" :class="prefixCls" trigger="click">
     <div class="flex items-center">
       <img
-        src="@/assets/imgs/avatar.jpg"
+        :src="userStore.getUserInfo?.AvatarUrl"
         alt=""
         class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
       />
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">{{
-        userStore.getUserInfo?.username
+        userStore.getUserInfo?.UserName
       }}</span>
     </div>
     <template #dropdown>

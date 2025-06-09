@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ref, unref } from 'vue'
+import { ref, unref, onMounted } from 'vue'
+import { getCurrentUserApi, uploadUserAvatarApi } from '@/api/user'
+import type { UserInfo } from '@/api/user/types'
 import { ElDivider, ElImage, ElTag, ElTabPane, ElTabs, ElButton, ElMessage } from 'element-plus'
 import defaultAvatar from '@/assets/imgs/avatar.jpg'
 import UploadAvatar from './components/UploadAvatar.vue'
@@ -8,21 +10,12 @@ import { Dialog } from '@/components/Dialog'
 import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
 
-const userInfo = ref()
-const fetchDetailUserApi = async () => {
-  // 这里可以调用接口获取用户信息
-  const data = {
-    id: 1,
-    username: 'admin',
-    realName: 'admin',
-    phoneNumber: '18888888888',
-    email: '502431556@qq.com',
-    avatarUrl: '',
-    roleList: ['超级管理员']
-  }
-  userInfo.value = data
+const userInfo = ref<UserInfo>()
+
+const fetchCurrentUserApi = async () => {
+  const res = await getCurrentUserApi()
+  userInfo.value = res.data
 }
-fetchDetailUserApi()
 
 const activeName = ref('first')
 
@@ -34,17 +27,32 @@ const saveAvatar = async () => {
   try {
     avatarLoading.value = true
     const base64 = unref(uploadAvatarRef)?.getBase64()
-    console.log(base64)
-    // 这里可以调用修改头像接口
-    fetchDetailUserApi()
-    ElMessage.success('修改成功')
-    dialogVisible.value = false
+    if (!base64) {
+      ElMessage.error('获取图片数据失败')
+      return
+    }
+
+    // 调用上传头像 API
+    const res = await uploadUserAvatarApi({ avatar: base64 })
+    if (res.code === 0) {
+      ElMessage.success('头像修改成功')
+      // 重新获取用户信息
+      await fetchCurrentUserApi()
+      dialogVisible.value = false
+    } else {
+      ElMessage.error('头像修改失败')
+    }
   } catch (error) {
-    console.log(error)
+    console.error('更新头像失败:', error)
+    ElMessage.error('头像修改失败')
   } finally {
     avatarLoading.value = false
   }
 }
+
+onMounted(() => {
+  fetchCurrentUserApi()
+})
 </script>
 
 <template>
@@ -57,7 +65,7 @@ const saveAvatar = async () => {
         >
           <ElImage
             class="w-[150px] h-[150px] rounded-full"
-            :src="userInfo?.avatarUrl || defaultAvatar"
+            :src="userInfo?.AvatarUrl || defaultAvatar"
             fit="fill"
           />
         </div>
@@ -65,33 +73,23 @@ const saveAvatar = async () => {
       <ElDivider />
       <div class="flex justify-between items-center">
         <div>账号：</div>
-        <div>{{ userInfo?.username }}</div>
+        <div>{{ userInfo?.Email }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
         <div>昵称：</div>
-        <div>{{ userInfo?.realName }}</div>
+        <div>{{ userInfo?.UserName }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>手机号码：</div>
-        <div>{{ userInfo?.phoneNumber ?? '-' }}</div>
-      </div>
-      <ElDivider />
-      <div class="flex justify-between items-center">
-        <div>用户邮箱：</div>
-        <div>{{ userInfo?.email ?? '-' }}</div>
+        <div>部门：</div>
+        <div>{{ userInfo?.DepartmentName ?? '-' }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
         <div>所属角色：</div>
         <div>
-          <template v-if="userInfo?.roleList?.length">
-            <ElTag v-for="item in userInfo?.roleList || []" :key="item" class="ml-2 mb-w"
-              >{{ item }}
-            </ElTag>
-          </template>
-          <template v-else>-</template>
+          <ElTag class="ml-2 mb-w">{{ userInfo?.RoleName }}</ElTag>
         </div>
       </div>
       <ElDivider />
@@ -109,7 +107,7 @@ const saveAvatar = async () => {
   </div>
 
   <Dialog v-model="dialogVisible" title="修改头像" width="800px">
-    <UploadAvatar ref="uploadAvatarRef" :url="userInfo?.avatarUrl || defaultAvatar" />
+    <UploadAvatar ref="uploadAvatarRef" :url="userInfo?.AvatarUrl || defaultAvatar" />
 
     <template #footer>
       <ElButton type="primary" :loading="avatarLoading" @click="saveAvatar"> 保存 </ElButton>

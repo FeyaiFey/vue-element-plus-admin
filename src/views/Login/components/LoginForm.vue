@@ -4,14 +4,14 @@ import { Form, FormSchema } from '@/components/Form'
 import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox, ElLink } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
-import { loginApi, getTestRoleApi, getAdminRoleApi } from '@/api/login'
+import { loginApi } from '@/api/auth'
+import { getRoleMenusApi } from '@/api/role'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
-import { UserType } from '@/api/login/types'
+import { UserLogin } from '@/api/user/types'
 import { useValidator } from '@/hooks/web/useValidator'
-import { Icon } from '@/components/Icon'
 import { useUserStore } from '@/store/modules/user'
 import { BaseButton } from '@/components/Button'
 
@@ -49,19 +49,16 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'username',
-    label: t('login.username'),
+    field: 'Email',
+    label: t('login.email'),
     // value: 'admin',
     component: 'Input',
     colProps: {
       span: 24
-    },
-    componentProps: {
-      placeholder: 'admin or test'
     }
   },
   {
-    field: 'password',
+    field: 'Password',
     label: t('login.password'),
     // value: 'admin',
     component: 'InputPassword',
@@ -71,8 +68,7 @@ const schema = reactive<FormSchema[]>([
     componentProps: {
       style: {
         width: '100%'
-      },
-      placeholder: 'admin or test'
+      }
     }
   },
   {
@@ -127,72 +123,16 @@ const schema = reactive<FormSchema[]>([
         }
       }
     }
-  },
-  {
-    field: 'other',
-    component: 'Divider',
-    label: t('login.otherLogin'),
-    componentProps: {
-      contentPosition: 'center'
-    }
-  },
-  {
-    field: 'otherIcon',
-    colProps: {
-      span: 24
-    },
-    formItemProps: {
-      slots: {
-        default: () => {
-          return (
-            <>
-              <div class="flex justify-between w-[100%]">
-                <Icon
-                  icon="vi-ant-design:github-filled"
-                  size={iconSize}
-                  class="cursor-pointer ant-icon"
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                />
-                <Icon
-                  icon="vi-ant-design:wechat-filled"
-                  size={iconSize}
-                  class="cursor-pointer ant-icon"
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                />
-                <Icon
-                  icon="vi-ant-design:alipay-circle-filled"
-                  size={iconSize}
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                  class="cursor-pointer ant-icon"
-                />
-                <Icon
-                  icon="vi-ant-design:weibo-circle-filled"
-                  size={iconSize}
-                  color={iconColor}
-                  hoverColor={hoverColor}
-                  class="cursor-pointer ant-icon"
-                />
-              </div>
-            </>
-          )
-        }
-      }
-    }
   }
 ])
-
-const iconSize = 30
 
 const remember = ref(userStore.getRememberMe)
 
 const initLoginInfo = () => {
   const loginInfo = userStore.getLoginInfo
   if (loginInfo) {
-    const { username, password } = loginInfo
-    setValues({ username, password })
+    const { Email, Password } = loginInfo
+    setValues({ Email, Password })
   }
 }
 onMounted(() => {
@@ -203,10 +143,6 @@ const { formRegister, formMethods } = useForm()
 const { getFormData, getElFormExpose, setValues } = formMethods
 
 const loading = ref(false)
-
-const iconColor = '#999'
-
-const hoverColor = 'var(--el-color-primary)'
 
 const redirect = ref<string>('')
 
@@ -226,23 +162,29 @@ const signIn = async () => {
   await formRef?.validate(async (isValid) => {
     if (isValid) {
       loading.value = true
-      const formData = await getFormData<UserType>()
+      const formData = await getFormData<UserLogin>()
 
       try {
         const res = await loginApi(formData)
 
-        if (res) {
+        if (res.data) {
+          // 解构登录响应数据
+          const { userInfo, token } = res.data
+
           // 是否记住我
           if (unref(remember)) {
             userStore.setLoginInfo({
-              username: formData.username,
-              password: formData.password
+              Email: formData.Email,
+              Password: formData.Password
             })
           } else {
             userStore.setLoginInfo(undefined)
           }
           userStore.setRememberMe(unref(remember))
-          userStore.setUserInfo(res.data)
+          // 保存用户信息和token
+          userStore.setUserInfo(userInfo)
+          userStore.setToken(token)
+
           // 是否使用动态路由
           if (appStore.getDynamicRouter) {
             getRole()
@@ -264,26 +206,29 @@ const signIn = async () => {
 
 // 获取角色信息
 const getRole = async () => {
-  const formData = await getFormData<UserType>()
-  const params = {
-    roleName: formData.username
+  const userInfo = userStore.getUserInfo
+  if (!userInfo?.RoleId) {
+    console.error('用户角色ID不存在')
+    return
   }
-  const res =
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await getAdminRoleApi(params)
-      : await getTestRoleApi(params)
-  if (res) {
-    const routers = res.data || []
-    userStore.setRoleRouters(routers)
-    appStore.getDynamicRouter && appStore.getServerDynamicRouter
-      ? await permissionStore.generateRoutes('server', routers).catch(() => {})
-      : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
 
-    permissionStore.getAddRouters.forEach((route) => {
-      addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
-    })
-    permissionStore.setIsAddRouters(true)
-    push({ path: redirect.value || permissionStore.addRouters[0].path })
+  try {
+    const res = await getRoleMenusApi(userInfo.RoleId)
+    if (res && res.data) {
+      const routers = res.data
+      userStore.setRoleRouters(routers)
+      appStore.getDynamicRouter && appStore.getServerDynamicRouter
+        ? await permissionStore.generateRoutes('server', routers).catch(() => {})
+        : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
+
+      permissionStore.getAddRouters.forEach((route) => {
+        addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
+      })
+      permissionStore.setIsAddRouters(true)
+      push({ path: redirect.value || permissionStore.addRouters[0].path })
+    }
+  } catch (error) {
+    console.error('获取角色菜单失败:', error)
   }
 }
 

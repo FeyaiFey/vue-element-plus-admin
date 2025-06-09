@@ -12,11 +12,22 @@ const props = defineProps({
   }
 })
 
-const { required, phone, maxlength, email } = useValidator()
+const { required, maxlength, email } = useValidator()
 
 const formSchema = reactive<FormSchema[]>([
   {
-    field: 'realName',
+    field: 'Id',
+    label: 'ID',
+    component: 'Input',
+    colProps: {
+      span: 24
+    },
+    componentProps: {
+      disabled: true
+    }
+  },
+  {
+    field: 'UserName',
     label: '昵称',
     component: 'Input',
     colProps: {
@@ -24,15 +35,7 @@ const formSchema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'phoneNumber',
-    label: '手机号码',
-    component: 'Input',
-    colProps: {
-      span: 24
-    }
-  },
-  {
-    field: 'email',
+    field: 'Email',
     label: '邮箱',
     component: 'Input',
     colProps: {
@@ -42,9 +45,8 @@ const formSchema = reactive<FormSchema[]>([
 ])
 
 const rules = reactive({
-  realName: [required(), maxlength(50)],
-  phoneNumber: [phone()],
-  email: [email()]
+  UserName: [required(), maxlength(50)],
+  Email: [email()]
 })
 
 const { formRegister, formMethods } = useForm()

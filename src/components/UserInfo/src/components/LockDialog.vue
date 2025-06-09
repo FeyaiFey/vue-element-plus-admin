@@ -9,7 +9,9 @@ import { useValidator } from '@/hooks/web/useValidator'
 import { FormSchema } from '@/components/Form'
 import { useDesign } from '@/hooks/web/useDesign'
 import { useLockStore } from '@/store/modules/lock'
+import { useUserStore } from '@/store/modules/user'
 
+const userStore = useUserStore()
 const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('lock-dialog')
 
@@ -81,7 +83,7 @@ const handleLock = async () => {
     :title="dialogTitle"
   >
     <div class="flex flex-col items-center">
-      <img src="@/assets/imgs/avatar.jpg" alt="" class="w-70px h-70px rounded-[50%]" />
+      <img :src="userStore.getUserInfo?.AvatarUrl" alt="" class="w-70px h-70px rounded-[50%]" />
       <span class="text-14px my-10px text-[var(--top-header-text-color)]">Archer</span>
     </div>
     <Form :is-col="false" :schema="schema" :rules="rules" @register="formRegister" />

@@ -1,30 +1,84 @@
 import request from '@/axios'
-import { DepartmentListResponse, DepartmentUserParams, DepartmentUserResponse } from './types'
+import type {
+  Department,
+  DepartmentTree,
+  DepartmentCreate,
+  DepartmentQuery,
+  DepartmentListResponse,
+  DepartmentUpdate
+} from './types'
 
-export const getDepartmentApi = () => {
-  return request.get<DepartmentListResponse>({ url: '/mock/department/list' })
+/**
+ * 获取部门树结构
+ */
+export const getDepartmentTreeApi = () => {
+  return request.get<DepartmentTree[]>({
+    url: '/departments/tree'
+  })
 }
 
-export const getUserByIdApi = (params: DepartmentUserParams) => {
-  return request.get<DepartmentUserResponse>({ url: '/mock/department/users', params })
+/**
+ * 创建部门
+ */
+export const createDepartmentApi = (data: DepartmentCreate) => {
+  return request.post<Department>({
+    url: '/departments',
+    data
+  })
 }
 
-export const deleteUserByIdApi = (ids: string[] | number[]) => {
-  return request.post({ url: '/mock/department/user/delete', data: { ids } })
+/**
+ * 更新部门状态
+ * @param departmentId 部门ID
+ * @param status 状态：0-禁用，1-启用
+ */
+export const updateDepartmentStatusApi = (departmentId: string, status: string) => {
+  return request.put<Department>({
+    url: `/departments/${departmentId}/status`,
+    params: {
+      status_update: status
+    }
+  })
 }
 
-export const saveUserApi = (data: any) => {
-  return request.post({ url: '/mock/department/user/save', data })
+/**
+ * 删除部门
+ * @param departmentId 部门ID
+ */
+export const deleteDepartmentApi = (departmentId: string) => {
+  return request.delete<null>({
+    url: `/departments/${departmentId}`
+  })
 }
 
-export const saveDepartmentApi = (data: any) => {
-  return request.post({ url: '/mock/department/save', data })
+/**
+ * 获取部门列表（分页查询）
+ * @param params 查询参数
+ */
+export const getDepartmentListApi = (params?: DepartmentQuery) => {
+  return request.get<DepartmentListResponse>({
+    url: '/departments',
+    params
+  })
 }
 
-export const deleteDepartmentApi = (ids: string[] | number[]) => {
-  return request.post({ url: '/mock/department/delete', data: { ids } })
+/**
+ * 根据ID获取部门详情
+ * @param departmentId 部门ID
+ */
+export const getDepartmentDetailApi = (departmentId: string) => {
+  return request.get<Department>({
+    url: `/departments/${departmentId}`
+  })
 }
 
-export const getDepartmentTableApi = (params: any) => {
-  return request.get({ url: '/mock/department/table/list', params })
+/**
+ * 更新部门信息
+ * @param data 更新数据
+ */
+export const updateDepartmentApi = (data: DepartmentUpdate) => {
+  return request.put<Department>({
+    url: `/departments/${data.id}`,
+    data
+  })
 }

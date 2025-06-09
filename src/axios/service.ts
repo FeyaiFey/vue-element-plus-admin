@@ -4,6 +4,7 @@ import { defaultRequestInterceptors, defaultResponseInterceptors } from './confi
 import { AxiosInstance, InternalAxiosRequestConfig, RequestConfig, AxiosResponse } from './types'
 import { ElMessage } from 'element-plus'
 import { REQUEST_TIMEOUT } from '@/constants'
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 export const PATH_URL = import.meta.env.VITE_API_BASE_PATH
 
@@ -18,10 +19,15 @@ axiosInstance.interceptors.request.use((res: InternalAxiosRequestConfig) => {
   const controller = new AbortController()
   const url = res.url || ''
   res.signal = controller.signal
-  abortControllerMap.set(
-    import.meta.env.VITE_USE_MOCK === 'true' ? url.replace('/mock', '') : url,
-    controller
-  )
+
+  // 只有在VITE_USE_MOCK为false时才移除/mock前缀
+  const shouldRemoveMock = import.meta.env.VITE_USE_MOCK === 'false' && url.startsWith('/mock')
+  const finalUrl = shouldRemoveMock ? url.replace('/mock', '') : url
+  abortControllerMap.set(finalUrl, controller)
+
+  if (shouldRemoveMock) {
+    res.url = finalUrl
+  }
   return res
 })
 
@@ -32,9 +38,34 @@ axiosInstance.interceptors.response.use(
     // 这里不能做任何处理，否则后面的 interceptors 拿不到完整的上下文了
     return res
   },
-  (error: AxiosError) => {
-    console.log('err： ' + error) // for debug
-    ElMessage.error(error.message)
+  (error: AxiosError<{ message: string; code: number; name: string }>) => {
+    const url = error.config?.url || ''
+    abortControllerMap.delete(url)
+
+    // 处理401错误
+    if (error.response?.data?.code === 401) {
+      const userStore = useUserStoreWithOut()
+      // 先显示错误消息
+      ElMessage({
+        type: 'error',
+        message: '登录状态已过期，请重新登录',
+        duration: 2000
+      })
+      // 延迟执行登出和跳转，确保消息能显示
+      setTimeout(() => {
+        userStore.logout()
+        window.location.href = '/login'
+      }, 1000)
+      return Promise.reject(error)
+    }
+
+    // 处理其他错误
+    const errorMessage = error.response?.data?.message || error.message || '请求失败'
+    ElMessage({
+      type: 'error',
+      message: errorMessage,
+      duration: 2000
+    })
     return Promise.reject(error)
   }
 )

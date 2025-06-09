@@ -9,10 +9,12 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { useNow } from '@/hooks/web/useNow'
 import { useDesign } from '@/hooks/web/useDesign'
 import { Icon } from '@/components/Icon'
-import { loginOutApi } from '@/api/login'
+import { logoutApi } from '@/api/auth'
 import { useTagsViewStore } from '@/store/modules/tagsView'
+import { useUserStore } from '@/store/modules/user'
 
 const tagsViewStore = useTagsViewStore()
+const userStore = useUserStore()
 
 const { clear } = useStorage()
 
@@ -49,7 +51,7 @@ async function unLock() {
 
 // 返回登录
 async function goLogin() {
-  const res = await loginOutApi().catch(() => {})
+  const res = await logoutApi().catch(() => {})
   if (res) {
     clear()
     tagsViewStore.delAllViews()
@@ -94,7 +96,11 @@ function handleShowForm(show = false) {
       <div :class="`${prefixCls}-entry`" v-show="!showDate">
         <div :class="`${prefixCls}-entry-content`">
           <div class="flex flex-col items-center">
-            <img src="@/assets/imgs/avatar.jpg" alt="" class="w-70px h-70px rounded-[50%]" />
+            <img
+              :src="userStore.getUserInfo?.AvatarUrl"
+              alt=""
+              class="w-70px h-70px rounded-[50%]"
+            />
             <span class="text-14px my-10px text-[var(--logo-title-text-color)]">Archer</span>
           </div>
           <ElInput

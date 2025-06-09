@@ -2,7 +2,7 @@
 VITE_NODE_ENV=production
 
 # 接口前缀
-VITE_API_BASE_PATH=
+VITE_API_BASE_PATH=/api/v1/
 
 # 打包路径
 VITE_BASE_PATH=/
@@ -20,7 +20,7 @@ VITE_SOURCEMAP=false
 VITE_OUT_DIR=dist-pro
 
 # 标题
-VITE_APP_TITLE=ElementAdmin
+VITE_APP_TITLE=华芯微
 
 # 是否包分析
 VITE_USE_BUNDLE_ANALYZER=true
@@ -29,7 +29,7 @@ VITE_USE_BUNDLE_ANALYZER=true
 VITE_USE_ALL_ELEMENT_PLUS_STYLE=false
 
 # 是否开启mock
-VITE_USE_MOCK=true
+VITE_USE_MOCK=false
 
 # 是否切割css
 VITE_USE_CSS_SPLIT=true
@@ -38,4 +38,4 @@ VITE_USE_CSS_SPLIT=true
 VITE_USE_ONLINE_ICON=false
 
 # 是否隐藏全局设置按钮
-VITE_HIDE_GLOBAL_SETTING=false
+VITE_HIDE_GLOBAL_SETTING=true

@@ -11,6 +11,7 @@ import { getDepartmentTreeApi } from '@/api/department'
 import type { UserRegister } from '@/api/user/types'
 import { ElMessage } from 'element-plus'
 import { registerApi } from '@/api/auth'
+import { SUCCESS_CODE } from '@/constants'
 
 const emit = defineEmits(['to-login'])
 
@@ -134,7 +135,7 @@ const schema = reactive<FormSchema[]>([
                 link={[
                   {
                     text: '《用户协议》',
-                    url: 'https://element-plus.org/'
+                    url: 'https://www.china-chip.com/'
                   }
                 ]}
               />
@@ -208,7 +209,7 @@ const loginRegister = async () => {
         }
 
         const res = await registerApi(registerData)
-        if (res.code === 0) {
+        if (res.code === SUCCESS_CODE) {
           ElMessage.success('注册成功')
           toLogin()
         }

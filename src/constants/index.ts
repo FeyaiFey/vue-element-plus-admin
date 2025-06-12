@@ -1,7 +1,12 @@
 /**
  * 请求成功状态码
  */
-export const SUCCESS_CODE = 0
+export const SUCCESS_CODE = 200
+
+/**
+ * 请求未授权状态码
+ */
+export const UNAUTHORIZED_CODE = 401
 
 /**
  * 请求contentType

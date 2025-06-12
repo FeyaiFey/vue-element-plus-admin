@@ -189,3 +189,14 @@ export interface UserPasswordUpdate {
   /** 确认新密码 */
   confirmPassword: string
 }
+
+export interface UserPasswordUpdateRequest {
+  OldPassword: string
+  NewPassword: string
+  ConfirmPassword: string
+}
+
+export interface UserInfoUpdateRequest {
+  UserName: string
+  Email: string
+}

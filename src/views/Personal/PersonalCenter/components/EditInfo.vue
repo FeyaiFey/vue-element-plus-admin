@@ -2,8 +2,13 @@
 import { FormSchema, Form } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { useValidator } from '@/hooks/web/useValidator'
+import { updateUserInfoApi } from '@/api/user'
+import { useUserStore } from '@/store/modules/user'
 import { reactive, ref, watch } from 'vue'
 import { ElDivider, ElMessage, ElMessageBox } from 'element-plus'
+import { SUCCESS_CODE } from '@/constants'
+
+const userStore = useUserStore()
 
 const props = defineProps({
   userInfo: {
@@ -50,7 +55,7 @@ const rules = reactive({
 })
 
 const { formRegister, formMethods } = useForm()
-const { setValues, getElFormExpose } = formMethods
+const { setValues, getElFormExpose, getFormData } = formMethods
 
 watch(
   () => props.userInfo,
@@ -78,8 +83,16 @@ const save = async () => {
       .then(async () => {
         try {
           saveLoading.value = true
-          // 这里可以调用修改用户信息接口
-          ElMessage.success('修改成功')
+          const formValues = await getFormData()
+          const res = await updateUserInfoApi(userStore.getUserInfo?.Id || '', {
+            UserName: formValues.UserName,
+            Email: formValues.Email
+          })
+          if (res.code === SUCCESS_CODE) {
+            ElMessage.success('修改成功')
+            setValues(res.data)
+            userStore.setUserInfo(res.data)
+          }
         } catch (error) {
           console.log(error)
         } finally {

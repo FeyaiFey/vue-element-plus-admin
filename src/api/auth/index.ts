@@ -17,9 +17,18 @@ export const registerApi = (data: UserRegister) => {
  * @param data 登录数据
  */
 export const loginApi = (data: UserLogin) => {
+  // 将数据转换为 FormData 格式
+  const formData = new FormData()
+  Object.keys(data).forEach((key) => {
+    formData.append(key, data[key])
+  })
+
   return request.post<UserLoginResponse>({
     url: '/auth/login',
-    data
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
 

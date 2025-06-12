@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
+import { useUserStore } from '@/store/modules/user'
+import { updateUserPasswordApi } from '@/api/user'
 import { reactive, ref } from 'vue'
 import { useValidator } from '@/hooks/web/useValidator'
 import { ElMessage, ElMessageBox, ElDivider } from 'element-plus'
+import { SUCCESS_CODE } from '@/constants'
+
+const userStore = useUserStore()
 
 const { required } = useValidator()
 
 const formSchema = reactive<FormSchema[]>([
   {
-    field: 'password',
+    field: 'OldPassword',
     label: '旧密码',
     component: 'InputPassword',
     colProps: {
@@ -17,7 +22,7 @@ const formSchema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'newPassword',
+    field: 'NewPassword',
     label: '新密码',
     component: 'InputPassword',
     colProps: {
@@ -28,7 +33,7 @@ const formSchema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'newPassword2',
+    field: 'ConfirmPassword',
     label: '确认新密码',
     component: 'InputPassword',
     colProps: {
@@ -41,14 +46,14 @@ const formSchema = reactive<FormSchema[]>([
 ])
 
 const rules = reactive({
-  password: [required()],
-  newPassword: [
+  OldPassword: [required()],
+  NewPassword: [
     required(),
     {
       asyncValidator: async (_, val, callback) => {
         const formData = await getFormData()
-        const { newPassword2 } = formData
-        if (val !== newPassword2) {
+        const { ConfirmPassword } = formData
+        if (val !== ConfirmPassword) {
           callback(new Error('新密码与确认新密码不一致'))
         } else {
           callback()
@@ -56,13 +61,13 @@ const rules = reactive({
       }
     }
   ],
-  newPassword2: [
+  ConfirmPassword: [
     required(),
     {
       asyncValidator: async (_, val, callback) => {
         const formData = await getFormData()
-        const { newPassword } = formData
-        if (val !== newPassword) {
+        const { NewPassword } = formData
+        if (val !== NewPassword) {
           callback(new Error('确认新密码与新密码不一致'))
         } else {
           callback()
@@ -90,8 +95,16 @@ const save = async () => {
       .then(async () => {
         try {
           saveLoading.value = true
-          // 这里可以调用修改密码的接口
-          ElMessage.success('修改成功')
+          const formValues = await getFormData()
+          const res = await updateUserPasswordApi(userStore.getUserInfo?.Id || '', {
+            OldPassword: formValues.OldPassword,
+            NewPassword: formValues.NewPassword,
+            ConfirmPassword: formValues.ConfirmPassword
+          })
+          if (res.code === SUCCESS_CODE) {
+            ElMessage.success('修改成功,请重新登录')
+            userStore.reset()
+          }
         } catch (error) {
           console.log(error)
         } finally {

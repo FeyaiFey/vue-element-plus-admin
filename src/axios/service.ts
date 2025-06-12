@@ -3,7 +3,7 @@ import { defaultRequestInterceptors, defaultResponseInterceptors } from './confi
 
 import { AxiosInstance, InternalAxiosRequestConfig, RequestConfig, AxiosResponse } from './types'
 import { ElMessage } from 'element-plus'
-import { REQUEST_TIMEOUT } from '@/constants'
+import { REQUEST_TIMEOUT, UNAUTHORIZED_CODE } from '@/constants'
 import { useUserStoreWithOut } from '@/store/modules/user'
 
 export const PATH_URL = import.meta.env.VITE_API_BASE_PATH
@@ -39,11 +39,12 @@ axiosInstance.interceptors.response.use(
     return res
   },
   (error: AxiosError<{ message: string; code: number; name: string }>) => {
+    console.log(error)
     const url = error.config?.url || ''
     abortControllerMap.delete(url)
 
     // 处理401错误
-    if (error.response?.data?.code === 401) {
+    if (error.response?.status === UNAUTHORIZED_CODE) {
       const userStore = useUserStoreWithOut()
       // 先显示错误消息
       ElMessage({

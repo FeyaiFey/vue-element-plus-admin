@@ -107,11 +107,14 @@ export default {
     small: 'Small'
   },
   login: {
-    welcome: 'Welcome to the system',
-    message: 'Backstage management system',
+    welcome: 'Production Department Data Center System',
+    message:
+      'Integrated E10 database, external data, to achieve data query, analysis, delivery date reply, file management and data visualization functions',
+    email: 'Email',
     username: 'Username',
     password: 'Password',
     register: 'Register',
+    department: 'Department',
     checkPassword: 'Confirm password',
     login: 'Sign in',
     otherLogin: 'Sign in with',

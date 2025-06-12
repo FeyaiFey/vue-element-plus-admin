@@ -105,11 +105,13 @@ export default {
     small: '小'
   },
   login: {
-    welcome: '欢迎使用本系统',
-    message: '开箱即用的中后台管理系统',
+    welcome: '生产部数据中台系统',
+    message: '集成E10数据库，外部数据，实现数据查询、分析、交期回复、文件管理和数据可视化等功能',
+    email: '邮箱',
     username: '用户名',
     password: '密码',
     register: '注册',
+    department: '部门',
     checkPassword: '确认密码',
     login: '登录',
     otherLogin: '其它登录方式',
@@ -123,6 +125,7 @@ export default {
     getCode: '获取验证码'
   },
   router: {
+    home: '首页',
     login: '登录',
     level: '多级菜单',
     menu: '菜单',

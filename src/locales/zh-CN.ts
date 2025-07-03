@@ -125,6 +125,10 @@ export default {
     getCode: '获取验证码'
   },
   router: {
+    userAuthorization: '用户管理',
+    roleAuthorization: '角色管理',
+    menuAuthorization: '菜单管理',
+    departmentAuthorization: '部门管理',
     home: '首页',
     login: '登录',
     level: '多级菜单',
@@ -190,7 +194,20 @@ export default {
     personal: '个人',
     avatars: '头像列表',
     iAgree: '我同意',
-    tree: 'Tree 树形控件'
+    tree: 'Tree 树形控件',
+    chipPackaging: '芯片封装',
+    waferPurchase: '晶圆采购',
+    waferPurchaseAnalysis: '采购分析',
+    chipPackagingAnalysis: '封装分析',
+    waferPurchaseList: '采购列表',
+    waferPurchaseWip: '采购进度',
+    chipPackagingList: '封装列表',
+    chipPackagingWip: '封装进度',
+    chipPackagingReceipt: '到货记录',
+    chipPackagingRequirements: '封装需求',
+    cp: '晶圆中测',
+    cpList: '中测记录',
+    cpReceipt: '中测到货'
   },
   permission: {
     hasPermission: '请设置操作权限值'

@@ -9,6 +9,8 @@ export type CrudSchema = Omit<TableColumn, 'children'> & {
   table?: CrudTableParams
   form?: CrudFormParams
   detail?: CrudDescriptionsParams
+  align?: 'left' | 'center' | 'right'
+  headerAlign?: 'left' | 'center' | 'right'
   children?: CrudSchema[]
 }
 

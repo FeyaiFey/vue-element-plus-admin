@@ -128,6 +128,10 @@ export default {
     getCode: 'Get code'
   },
   router: {
+    userAuthorization: 'User authorization',
+    roleAuthorization: 'Role authorization',
+    menuAuthorization: 'Menu authorization',
+    departmentAuthorization: 'Department authorization',
     login: 'Login',
     level: 'Multi level menu',
     menu: 'Menu',
@@ -194,7 +198,20 @@ export default {
     personal: 'Personal',
     avatars: 'Avatars',
     iAgree: 'I agree',
-    tree: 'Tree'
+    tree: 'Tree',
+    chipPackaging: 'Chip packaging',
+    waferPurchase: 'Wafer purchase',
+    waferPurchaseAnalysis: 'Purchase analysis',
+    chipPackagingAnalysis: 'packaging analysis',
+    waferPurchaseList: 'Purchase list',
+    waferPurchaseWip: 'Purchase progress',
+    chipPackagingList: 'Chip packaging list',
+    chipPackagingWip: 'Chip packaging progress',
+    chipPackagingReceipt: 'Receipt record',
+    chipPackagingRequirements: 'Chip packaging requirements',
+    cp: 'CP',
+    cpList: 'CP list',
+    cpReceipt: 'Receipt record'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

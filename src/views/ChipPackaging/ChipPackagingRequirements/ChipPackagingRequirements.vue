@@ -66,6 +66,7 @@ const searchParams = ref<ChipPackagingRequirementQuery>({
   abtr: undefined,
   requirementType: undefined,
   emergency: undefined,
+  isEmailNoticed: undefined,
   sales: undefined,
   createBy: undefined,
   dateStart: undefined,
@@ -80,6 +81,7 @@ const advancedSearchParams = ref<{
   abtr: string | undefined
   requirementType: string | undefined
   emergency: string | undefined
+  isEmailNoticed: string | undefined
   sales: string | undefined
   createBy: string | undefined
   dateStart: string | undefined
@@ -90,6 +92,7 @@ const advancedSearchParams = ref<{
   abtr: undefined,
   requirementType: undefined,
   emergency: undefined,
+  isEmailNoticed: undefined,
   sales: undefined,
   createBy: undefined,
   dateStart: undefined,
@@ -135,6 +138,7 @@ const handleResetAdvanced = () => {
     abtr: undefined,
     requirementType: undefined,
     emergency: undefined,
+    isEmailNoticed: undefined,
     sales: undefined,
     createBy: undefined,
     dateStart: undefined,
@@ -148,6 +152,7 @@ const handleResetAdvanced = () => {
   searchParams.value.abtr = undefined
   searchParams.value.requirementType = undefined
   searchParams.value.emergency = undefined
+  searchParams.value.isEmailNoticed = undefined
   searchParams.value.sales = undefined
   searchParams.value.createBy = undefined
   searchParams.value.dateStart = undefined
@@ -447,7 +452,8 @@ const handleCreateRequirement = () => {
     chipA: '',
     chipAQty: 0,
     chipB: '',
-    chipBQty: 0
+    chipBQty: 0,
+    isEmailNoticed: ''
   }
 
   // 先设置数据，再打开对话框
@@ -519,7 +525,8 @@ watch(createDialogVisible, (newValue) => {
         chipA: '',
         chipAQty: 0,
         chipB: '',
-        chipBQty: 0
+        chipBQty: 0,
+        isEmailNoticed: ''
       }
       Object.assign(createFormData.value, resetData)
     })
@@ -570,7 +577,8 @@ const handleAddClick = (row: ChipPackagingRequirement) => {
     chipA: '',
     chipAQty: 0,
     chipB: '',
-    chipBQty: 0
+    chipBQty: 0,
+    isEmailNoticed: ''
   }
 
   // 先设置数据，再打开对话框
@@ -837,6 +845,17 @@ onMounted(() => {
 
           <ElFormItem label="销售员">
             <ElInput v-model="advancedSearchParams.sales" placeholder="请输入销售员" clearable />
+          </ElFormItem>
+
+          <ElFormItem label="邮件通知">
+            <ElSelect
+              v-model="advancedSearchParams.isEmailNoticed"
+              placeholder="请选择邮件通知"
+              clearable
+            >
+              <ElOption label="未通知" value="0" />
+              <ElOption label="已通知" value="1" />
+            </ElSelect>
           </ElFormItem>
 
           <ElFormItem label="创建人">

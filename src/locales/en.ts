@@ -211,7 +211,13 @@ export default {
     chipPackagingRequirements: 'Chip packaging requirements',
     cp: 'CP',
     cpList: 'CP list',
-    cpReceipt: 'Receipt record'
+    cpReceipt: 'Receipt record',
+    sale: 'Sale management',
+    saleAnalysis: 'Sale analysis',
+    report: 'Report management',
+    stock: 'Stock report',
+    global: 'Comprehensive report (original weekly report)',
+    sop: 'S&OP production and sales coordination report'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

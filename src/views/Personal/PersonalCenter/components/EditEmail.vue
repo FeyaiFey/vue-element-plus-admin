@@ -5,6 +5,7 @@ import { reactive, ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, ElRow, ElCol } from 'element-plus'
 import { getUserEmailInfoApi, updateUserEmailPasswordApi } from '@/api/email'
 import { useUserStore } from '@/store/modules/user'
+import { SUCCESS_CODE } from '@/constants'
 
 const userStore = useUserStore()
 
@@ -157,7 +158,7 @@ const help = async () => {
 const getEmailInfo = async () => {
   try {
     const res = await getUserEmailInfoApi(userStore.getUserInfo?.Id || '')
-    if (res.code === 200) {
+    if (res.code === SUCCESS_CODE && res.data?.SpecialPassword) {
       // 设置表单数据
       await setValues({
         email: userStore.getUserInfo?.Email,
@@ -170,7 +171,16 @@ const getEmailInfo = async () => {
         SmtpUseSsl: res.data.SmtpUseSsl
       })
     } else {
-      ElMessage.error('获取邮箱信息失败')
+      await setValues({
+        email: userStore.getUserInfo?.Email,
+        newPassword: '',
+        ImapServer: '',
+        ImapPort: '',
+        ImapUseSsl: false,
+        SmtpServer: '',
+        SmtpPort: '',
+        SmtpUseSsl: false
+      })
     }
   } catch (error) {
     console.error('获取邮箱信息失败:', error)

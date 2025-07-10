@@ -146,6 +146,7 @@ export interface ChipPackagingRequirementQuery {
   createBy?: string
   dateStart?: string
   dateEnd?: string
+  isEmailNoticed?: string
 }
 
 export interface ChipPackagingRequirement {
@@ -168,6 +169,7 @@ export interface ChipPackagingRequirement {
   createdAt?: string
   updatedAt?: string
   remarkB?: string
+  isEmailNoticed?: string
 }
 
 export interface ChipPackagingRequirementResponse {
@@ -188,6 +190,7 @@ export interface ChipPackagingRequirementCreate {
   chipAQty?: number
   chipB?: string
   chipBQty?: number
+  isEmailNoticed?: string
 }
 
 export interface ChipPackagingRequirementCancel {

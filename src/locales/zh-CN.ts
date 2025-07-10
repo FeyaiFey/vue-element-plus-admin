@@ -207,7 +207,13 @@ export default {
     chipPackagingRequirements: '封装需求',
     cp: '晶圆中测',
     cpList: '中测记录',
-    cpReceipt: '中测到货'
+    cpReceipt: '中测到货',
+    sale: '销售管理',
+    saleAnalysis: '销售分析',
+    report: '报表管理',
+    stock: '库存报表',
+    global: '外协报表',
+    sop: 'S&OP产销协同报表'
   },
   permission: {
     hasPermission: '请设置操作权限值'

@@ -16,17 +16,11 @@ export const getEmptyChartOptions = (): EChartsOption => {
     },
     xAxis: {
       type: 'category',
-      data: [],
-      axisLabel: {
-        formatter: '{value}月'
-      }
+      data: []
     },
     yAxis: {
       type: 'value',
-      name: '金额（万元）',
-      axisLabel: {
-        formatter: '{value}'
-      }
+      name: '金额（万元）'
     },
     series: [
       {
@@ -109,7 +103,6 @@ export const generateInvoiceVsCollectionChartOptions = (
         type: 'shadow'
       },
       axisLabel: {
-        formatter: '{value}月',
         fontSize: 12
       },
       name: '月份',
@@ -120,7 +113,6 @@ export const generateInvoiceVsCollectionChartOptions = (
       type: 'value',
       name: '金额（万元）',
       axisLabel: {
-        formatter: '{value}',
         fontSize: 12
       },
       nameLocation: 'middle',
@@ -229,14 +221,12 @@ export const generateResponsiveChartOptions = (
       xAxis: {
         ...baseOptions.xAxis,
         axisLabel: {
-          formatter: '{value}月',
           fontSize: 10
         }
       },
       yAxis: {
         ...baseOptions.yAxis,
         axisLabel: {
-          formatter: '{value}',
           fontSize: 10
         }
       },

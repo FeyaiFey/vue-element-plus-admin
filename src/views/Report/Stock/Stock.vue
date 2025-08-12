@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, PropType } from 'vue'
+import { ref, PropType } from 'vue'
 import { useTable } from '@/hooks/web/useTable'
 import {
   ElInput,
@@ -10,13 +10,15 @@ import {
   ElDivider,
   ElMessage,
   ElRow,
-  ElCol
+  ElCol,
+  ElSkeleton,
+  ElSkeletonItem
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { useDesign } from '@/hooks/web/useDesign'
 import StockTable from './components/StockTable.vue'
 import StockSummaryTable from './components/StockSummaryTable.vue'
-import StockSummaryBarChart from './components/StockSummaryBarChart.vue'
+import StockSummaryPieChart from './components/StockSummaryPieChart.vue'
 import { StockReportQuery, StockSummary } from '@/api/report/types'
 import {
   getStockReportListApi,
@@ -355,10 +357,6 @@ const handleDownload = async () => {
     downloadProgress.value = 0
   }
 }
-
-onMounted(() => {
-  // 通过 useTable 的 immediate: false 配置已关闭自动查询
-})
 </script>
 
 <template>
@@ -417,14 +415,46 @@ onMounted(() => {
 
     <!-- 表格区域 -->
     <div :class="`${prefixCls}__table`" class="flex-1 mb-4">
-      <StockTable
-        :table-data="dataList"
-        :loading="loading"
-        :table-type="props.tableType"
-        :enable-selection="true"
-        table-height="calc(100vh - 240px)"
-        @selection-change="handleSelectionChange"
-      />
+      <ElSkeleton :loading="loading" animated>
+        <template #template>
+          <div class="bg-white dark:bg-gray-800 rounded-lg border">
+            <!-- 表头骨架 -->
+            <div class="border-b p-4 bg-gray-50 dark:bg-gray-700">
+              <div class="grid grid-cols-6 gap-4">
+                <ElSkeletonItem variant="text" style="width: 60%" />
+                <ElSkeletonItem variant="text" style="width: 70%" />
+                <ElSkeletonItem variant="text" style="width: 80%" />
+                <ElSkeletonItem variant="text" style="width: 90%" />
+                <ElSkeletonItem variant="text" style="width: 85%" />
+                <ElSkeletonItem variant="text" style="width: 75%" />
+              </div>
+            </div>
+
+            <!-- 表格行骨架 -->
+            <div class="p-4 space-y-3">
+              <div v-for="n in 18" :key="n" class="grid grid-cols-6 gap-4 py-2">
+                <ElSkeletonItem variant="text" style="width: 80%" />
+                <ElSkeletonItem variant="text" style="width: 60%" />
+                <ElSkeletonItem variant="text" style="width: 90%" />
+                <ElSkeletonItem variant="text" style="width: 70%" />
+                <ElSkeletonItem variant="text" style="width: 85%" />
+                <ElSkeletonItem variant="text" style="width: 65%" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template #default>
+          <StockTable
+            :table-data="dataList"
+            :loading="loading"
+            :table-type="props.tableType"
+            :enable-selection="true"
+            table-height="calc(100vh - 240px)"
+            @selection-change="handleSelectionChange"
+          />
+        </template>
+      </ElSkeleton>
     </div>
 
     <!-- 分页区域 -->
@@ -450,15 +480,49 @@ onMounted(() => {
 
     <ElRow :gutter="20">
       <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
-        <StockSummaryTable
-          :table-data="summaryList"
-          :loading="loading"
-          :table-type="props.tableType"
-          table-height="500px"
-        />
+        <!-- 表格区域 -->
+        <div :class="`${prefixCls}__table`" class="flex-1 mb-4">
+          <ElSkeleton :loading="loading" animated>
+            <template #template>
+              <div class="bg-white dark:bg-gray-800 rounded-lg border">
+                <!-- 表头骨架 -->
+                <div class="border-b p-4 bg-gray-50 dark:bg-gray-700">
+                  <div class="grid grid-cols-6 gap-4">
+                    <ElSkeletonItem variant="text" style="width: 60%" />
+                    <ElSkeletonItem variant="text" style="width: 70%" />
+                    <ElSkeletonItem variant="text" style="width: 80%" />
+                    <ElSkeletonItem variant="text" style="width: 90%" />
+                    <ElSkeletonItem variant="text" style="width: 85%" />
+                    <ElSkeletonItem variant="text" style="width: 75%" />
+                  </div>
+                </div>
+
+                <!-- 表格行骨架 -->
+                <div class="p-4 space-y-3">
+                  <div v-for="n in 18" :key="n" class="grid grid-cols-6 gap-4 py-2">
+                    <ElSkeletonItem variant="text" style="width: 80%" />
+                    <ElSkeletonItem variant="text" style="width: 60%" />
+                    <ElSkeletonItem variant="text" style="width: 90%" />
+                    <ElSkeletonItem variant="text" style="width: 70%" />
+                    <ElSkeletonItem variant="text" style="width: 85%" />
+                    <ElSkeletonItem variant="text" style="width: 65%" />
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <template #default>
+              <StockSummaryTable
+                :table-data="summaryList"
+                :table-type="props.tableType"
+                table-height="500px"
+              />
+            </template>
+          </ElSkeleton>
+        </div>
       </ElCol>
       <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24">
-        <StockSummaryBarChart :summary-list="summaryList" />
+        <StockSummaryPieChart :summary-list="summaryList" />
       </ElCol>
     </ElRow>
 

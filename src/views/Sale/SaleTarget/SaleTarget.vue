@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick, PropType } from 'vue'
+import { ref, watch, nextTick, PropType } from 'vue'
 import { useTable } from '@/hooks/web/useTable'
 import {
   ElInput,
@@ -10,7 +10,9 @@ import {
   ElButton,
   ElDivider,
   ElMessage,
-  ElMessageBox
+  ElMessageBox,
+  ElSkeleton,
+  ElSkeletonItem
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import ResizeDialog from '@/components/Dialog/src/ResizeDialog.vue'
@@ -356,96 +358,111 @@ watch(createDialogVisible, (newValue) => {
     })
   }
 })
-
-onMounted(() => {
-  getList()
-})
 </script>
 
 <template>
   <div :class="prefixCls">
-    <!-- 快速搜索区域 -->
-    <div :class="`${prefixCls}__search`" class="mb-2">
-      <div class="flex items-center gap-2">
-        <!-- 主搜索框 -->
-        <div class="flex-2">
-          <ElInput
-            v-model="quickSearch"
-            placeholder="搜索销售员..."
-            size="small"
-            @keyup.enter="handleSearch"
+    <div :class="`${prefixCls}__search`" class="flex justify-between items-center mb-2">
+      <div class="flex-1">
+        <ElInput
+          v-model="quickSearch"
+          placeholder="搜索销售员..."
+          @keyup.enter="handleSearch"
+          style="max-width: 200px"
+        >
+          <template #prefix>
+            <Icon icon="vi-ep:search" />
+          </template>
+        </ElInput>
+      </div>
+
+      <div class="items-center gap-3">
+        <!-- 高级搜索 -->
+        <ElButton type="primary" plain @click="drawerVisible = true" style="max-width: 100px">
+          <Icon icon="vi-ep:filter" class="mr-2" />
+          高级搜索
+          <span
+            v-if="getActiveAdvancedFilters() > 0"
+            class="ml-1 px-1 bg-red-500 text-white text-xs rounded"
           >
-            <template #prefix>
-              <Icon icon="vi-ep:search" />
-            </template>
-          </ElInput>
-        </div>
+            {{ getActiveAdvancedFilters() }}
+          </span>
+        </ElButton>
 
-        <!-- 操作按钮组 -->
-        <div class="flex-2">
-          <!-- 高级搜索 -->
-          <ElButton type="primary" size="small" plain @click="drawerVisible = true" class="w-25">
-            <Icon icon="vi-ep:filter" class="mr-2" />
-            高级搜索
-            <span
-              v-if="getActiveAdvancedFilters() > 0"
-              class="ml-1 px-1 bg-red-500 text-white text-xs rounded"
-            >
-              {{ getActiveAdvancedFilters() }}
-            </span>
-          </ElButton>
+        <!-- 下载模板按钮 -->
+        <ElButton @click="handleDownloadTemplate" style="max-width: 100px" :loading="downloading">
+          <Icon icon="vi-ep:download" class="mr-2" />
+          下载模板
+        </ElButton>
 
-          <!-- 下载模板按钮 -->
-          <ElButton
-            size="small"
-            @click="handleDownloadTemplate"
-            class="w-25"
-            type="primary"
-            :loading="downloading"
-          >
-            <Icon icon="vi-ep:download" class="mr-2" />
-            下载模板
-          </ElButton>
+        <!-- 批量删除按钮 -->
+        <ElButton
+          type="danger"
+          plain
+          :disabled="selectedRows.length === 0"
+          @click="handleBatchDelete"
+          style="max-width: 120px"
+        >
+          <Icon icon="vi-ep:delete" class="mr-2" />
+          批量删除 ({{ selectedRows.length }})
+        </ElButton>
 
-          <!-- 批量删除按钮 -->
-          <ElButton
-            size="small"
-            type="danger"
-            plain
-            :disabled="selectedRows.length === 0"
-            @click="handleBatchDelete"
-            class="w-25"
-          >
-            <Icon icon="vi-ep:delete" class="mr-2" />
-            批量删除 ({{ selectedRows.length }})
-          </ElButton>
+        <!-- 新建按钮 -->
+        <ElButton @click="handleCreateRequirement" style="max-width: 100px" type="primary">
+          <Icon icon="vi-ep:plus" class="mr-2" />
+          新建目标
+        </ElButton>
 
-          <!-- 新建按钮 -->
-          <ElButton size="small" @click="handleCreateRequirement" class="w-25" type="primary">
-            <Icon icon="vi-ep:plus" class="mr-2" />
-            新建目标
-          </ElButton>
-
-          <!-- 上传Excel按钮 -->
-          <ElButton size="small" @click="handleUploadExcel" class="w-25" type="warning">
-            <Icon icon="vi-ep:upload-filled" class="mr-2" />
-            上传Excel
-          </ElButton>
-        </div>
+        <!-- 上传Excel按钮 -->
+        <ElButton @click="handleUploadExcel" style="max-width: 100px" type="warning">
+          <Icon icon="vi-ep:upload-filled" class="mr-2" />
+          上传Excel
+        </ElButton>
       </div>
     </div>
 
     <!-- 表格区域 -->
     <div :class="`${prefixCls}__table`" class="flex-1 mb-4">
-      <SaleTargetTable
-        :table-data="dataList"
-        :loading="loading"
-        :table-type="props.tableType"
-        :enable-selection="true"
-        table-height="calc(100vh - 240px)"
-        @selection-change="handleSelectionChange"
-        @delete-click="handleDeleteClick"
-      />
+      <ElSkeleton :loading="loading" animated>
+        <template #template>
+          <div class="bg-white dark:bg-gray-800 rounded-lg border">
+            <!-- 表头骨架 -->
+            <div class="border-b p-4 bg-gray-50 dark:bg-gray-700">
+              <div class="grid grid-cols-6 gap-4">
+                <ElSkeletonItem variant="text" style="width: 60%" />
+                <ElSkeletonItem variant="text" style="width: 70%" />
+                <ElSkeletonItem variant="text" style="width: 80%" />
+                <ElSkeletonItem variant="text" style="width: 90%" />
+                <ElSkeletonItem variant="text" style="width: 85%" />
+                <ElSkeletonItem variant="text" style="width: 75%" />
+              </div>
+            </div>
+
+            <!-- 表格行骨架 -->
+            <div class="p-4 space-y-3">
+              <div v-for="n in 18" :key="n" class="grid grid-cols-6 gap-4 py-2">
+                <ElSkeletonItem variant="text" style="width: 80%" />
+                <ElSkeletonItem variant="text" style="width: 60%" />
+                <ElSkeletonItem variant="text" style="width: 90%" />
+                <ElSkeletonItem variant="text" style="width: 70%" />
+                <ElSkeletonItem variant="text" style="width: 85%" />
+                <ElSkeletonItem variant="text" style="width: 65%" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template #default>
+          <SaleTargetTable
+            :table-data="dataList"
+            :table-type="props.tableType"
+            :enable-selection="true"
+            table-height="calc(100vh - 240px)"
+            @selection-change="handleSelectionChange"
+            @delete-click="handleDeleteClick"
+          />
+        </template>
+      </ElSkeleton>
     </div>
 
     <!-- 分页区域 -->

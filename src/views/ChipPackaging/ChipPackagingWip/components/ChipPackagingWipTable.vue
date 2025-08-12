@@ -19,10 +19,6 @@ const props = defineProps({
     type: String as PropType<'detail' | 'summary'>,
     default: 'detail'
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
   enableSelection: {
     type: Boolean,
     default: false
@@ -44,7 +40,7 @@ const detailColumns = [
   {
     prop: 'docNo',
     label: '订单号',
-    minWidth: 80,
+    minWidth: 100,
     fixed: 'left',
     headerAlign: 'center',
     align: 'center'
@@ -52,7 +48,7 @@ const detailColumns = [
   {
     prop: 'itemCode',
     label: '晶圆名称',
-    minWidth: 150,
+    minWidth: 200,
     headerAlign: 'center',
     align: 'center',
     fixed: 'left'
@@ -120,6 +116,14 @@ const detailColumns = [
     headerAlign: 'center',
     align: 'center',
     fixed: 'right'
+  },
+  {
+    prop: 'supplier',
+    label: '供应商',
+    minWidth: 250,
+    headerAlign: 'center',
+    align: 'center',
+    fixed: 'right'
   }
 ]
 
@@ -180,7 +184,6 @@ const getStatusType = (currentProcess: string): 'info' | 'warning' | 'primary' |
   const upperCurrentProcess = currentProcess.toUpperCase()
   if (upperCurrentProcess === '已完成') return 'info'
   if (upperCurrentProcess === 'STOCK') return 'primary'
-  if (upperCurrentProcess === '需确认') return 'warning'
   return 'success'
 }
 
@@ -213,7 +216,6 @@ const handleSelectionChange = (selection: ChipPackagingWip[]) => {
   >
     <ElTable
       :data="tableData"
-      :loading="loading"
       :height="tableHeight"
       border
       stripe

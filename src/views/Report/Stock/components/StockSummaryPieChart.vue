@@ -3,7 +3,7 @@ import { PropType, reactive, onMounted, watch } from 'vue'
 import { Echart } from '@/components/Echart'
 import { EChartsOption } from 'echarts'
 import { StockSummary } from '@/api/report/types'
-import { generateStockSummaryBarChartOptions } from './StockSummaryBarChart'
+import { generateStockSummaryPieChartOptions } from './StockSummaryPieChart'
 import { useDesign } from '@/hooks/web/useDesign'
 
 const { getPrefixCls } = useDesign()
@@ -20,7 +20,7 @@ const props = defineProps({
 const amountYearGaugeOptionsData = reactive<EChartsOption>({}) as EChartsOption
 
 const updateChart = () => {
-  Object.assign(amountYearGaugeOptionsData, generateStockSummaryBarChartOptions(props.summaryList))
+  Object.assign(amountYearGaugeOptionsData, generateStockSummaryPieChartOptions(props.summaryList))
 }
 
 watch(

@@ -19,10 +19,6 @@ const props = defineProps({
     type: String as PropType<'detail' | 'summary'>,
     default: 'detail'
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
   enableSelection: {
     type: Boolean,
     default: false
@@ -189,6 +185,7 @@ const summaryColumns = [
     prop: 'warehouse',
     label: '仓库',
     minWidth: 120,
+    fixed: 'right',
     align: 'center',
     headerAlign: 'center'
   }
@@ -244,7 +241,6 @@ const calculateSelectionSummary = (selection: StockReport[]) => {
   >
     <ElTable
       :data="tableData"
-      :loading="loading"
       :height="tableHeight"
       border
       stripe

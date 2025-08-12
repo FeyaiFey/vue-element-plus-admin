@@ -5,8 +5,8 @@ export const getEmptyPieOptions = (): EChartsOption => {
   return {
     title: {
       text: '产品各仓库库存占比',
-      left: '0',
-      top: '0'
+      left: '20%',
+      top: '10%'
     },
     legend: {
       orient: 'vertical',
@@ -40,7 +40,7 @@ export const getEmptyPieOptions = (): EChartsOption => {
 }
 
 // 生成产品线销售额占比饼图选项
-export const generateStockSummaryBarChartOptions = (data: any[]): EChartsOption => {
+export const generateStockSummaryPieChartOptions = (data: any[]): EChartsOption => {
   if (!data || !Array.isArray(data) || data.length === 0) {
     return getEmptyPieOptions()
   }
@@ -57,8 +57,8 @@ export const generateStockSummaryBarChartOptions = (data: any[]): EChartsOption 
     animationDuration: 2500,
     title: {
       text: '产品各仓库库存占比',
-      left: '0',
-      top: '0'
+      left: '10%',
+      top: '3%'
     },
     tooltip: {
       trigger: 'item',

@@ -19,10 +19,6 @@ const props = defineProps({
     type: String as PropType<'detail' | 'summary'>,
     default: 'detail'
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
   enableSelection: {
     type: Boolean,
     default: false
@@ -189,7 +185,6 @@ const handleWipQtyClick = (remark: string) => {
   >
     <ElTable
       :data="tableData"
-      :loading="loading"
       :height="tableHeight"
       border
       stripe

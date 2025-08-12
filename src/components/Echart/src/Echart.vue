@@ -15,6 +15,10 @@ const prefixCls = getPrefixCls('echart')
 
 const appStore = useAppStore()
 
+const emit = defineEmits<{
+  (e: 'click', params: any): void
+}>()
+
 const props = defineProps({
   options: {
     type: Object as PropType<EChartsOption>,
@@ -58,6 +62,11 @@ const initChart = () => {
   if (unref(elRef) && props.options) {
     echartRef = echarts.init(unref(elRef) as HTMLElement)
     echartRef?.setOption(unref(options))
+
+    // 绑定点击事件
+    echartRef?.on('click', (params) => {
+      emit('click', params)
+    })
   }
 }
 

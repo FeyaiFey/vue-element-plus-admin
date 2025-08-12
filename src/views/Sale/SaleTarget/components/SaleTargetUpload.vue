@@ -481,8 +481,6 @@ const downloadErrorReport = () => {
 </template>
 
 <style scoped lang="less">
-
-
 // 响应式设计
 @media (width <= 768px) {
   .@{prefix-cls} {
@@ -497,7 +495,9 @@ const downloadErrorReport = () => {
       align-items: stretch;
     }
   }
-}.@{prefix-cls} {
+}
+
+.@{prefix-cls} {
   min-height: 400px;
   padding: 20px;
 

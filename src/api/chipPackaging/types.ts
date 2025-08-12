@@ -204,3 +204,65 @@ export interface ChipPackagingRequirementAddOrders {
   packagingOrders: string
   remarkB?: string
 }
+
+export interface ChipPackagingAnalysisPannel {
+  thisMonthChipPackagingReceipt: number
+  lastMonthChipPackagingReceipt: number
+  chipPackagingWip: number
+  thisSeasonAverageDeliveryDays: number
+  thisSeasonAverageGoodRate: number
+  thisMonthChipPackagingReceiptCompleteRate: number
+  thisMonthChipPackagingReceiptTarget: number
+}
+
+export interface ChipPackagingAnalysisPannelResponse {
+  list: ChipPackagingAnalysisPannel[]
+}
+
+export interface hisemiLoading {
+  Date: string
+  SOP8_12R: number
+  SOP8: number
+  DFN8: number
+  SOP16_12R: number
+  SOP16: number
+  SOP14_12R: number
+  SOP14: number
+  TSSOP20: number
+  SOT26: number
+  SOT25_20R: number
+  SOT25_14R: number
+  SSOP24: number
+  ESSOP10: number
+  QFN20: number
+  LQFP32: number
+}
+
+export interface hisemiLoadingQuery {
+  rangeType: string
+}
+
+export interface hisemiLoadingResponse {
+  list: hisemiLoading[]
+}
+
+export interface chipPackagingYearTrend {
+  qty: number
+  packageType: string
+  year: number
+}
+
+export interface chipPackagingYearTrendResponse {
+  list: chipPackagingYearTrend[]
+}
+
+export interface chipPackagingSupplyAnalysis {
+  supplier: string
+  dataRowCount: number
+  totalOrderQty: number
+  packageTypeCount: number
+}
+
+export interface chipPackagingSupplyAnalysisResponse {
+  list: chipPackagingSupplyAnalysis[]
+}

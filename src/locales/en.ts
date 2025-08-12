@@ -217,7 +217,15 @@ export default {
     report: 'Report management',
     stock: 'Stock report',
     global: 'Comprehensive report (original weekly report)',
-    sop: 'S&OP production and sales coordination report'
+    sop: 'S&OP production and sales coordination report',
+    stockUpPlan: 'Stock up plan',
+    saleData: 'Sale data',
+    saleTarget: 'Sale target',
+    saleDataSummary: 'Sale data summary',
+    saleDataSummaryAnalysis: 'Sale data summary analysis',
+    stockOld: 'Stock query',
+    file: 'File management',
+    invoice: 'Invoice management'
   },
   permission: {
     hasPermission: 'Please set the operation permission value'

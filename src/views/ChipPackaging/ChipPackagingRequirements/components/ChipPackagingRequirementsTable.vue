@@ -19,10 +19,6 @@ const props = defineProps({
     type: String as PropType<'detail' | 'summary'>,
     default: 'detail'
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
   enableSelection: {
     type: Boolean,
     default: false
@@ -194,12 +190,27 @@ const detailColumns = [
 
 const summaryColumns = [
   {
-    prop: 'itemCode',
-    label: '品号',
+    prop: 'id',
+    label: 'ID',
+    minWidth: 80,
+    fixed: 'left',
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'itemName',
+    label: '品名',
     minWidth: 250,
     headerAlign: 'center',
     align: 'center',
     fixed: 'left'
+  },
+  {
+    prop: 'businessQty',
+    label: '业务数量',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'right'
   },
   {
     prop: 'abtr',
@@ -209,11 +220,53 @@ const summaryColumns = [
     align: 'center'
   },
   {
-    prop: 'businessQty',
-    label: '业务数量',
+    prop: 'requirementType',
+    label: '需求类型',
     minWidth: 120,
-    align: 'right',
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'emergency',
+    label: '紧急程度',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'sales',
+    label: '销售员',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'isEmailNoticed',
+    label: '邮件通知',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'remark',
+    label: '销售备注',
+    minWidth: 120,
+    align: 'left',
     headerAlign: 'center'
+  },
+  {
+    prop: 'createBy',
+    label: '创建人',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'createdAt',
+    label: '创建时间',
+    minWidth: 200,
+    headerAlign: 'center',
+    align: 'center'
   }
 ]
 
@@ -344,13 +397,9 @@ const formatFieldValue = (value: string | number, field: string) => {
 </script>
 
 <template>
-  <div
-    :class="prefixCls"
-    class="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg overflow-hidden"
-  >
+  <div :class="prefixCls">
     <ElTable
       :data="tableData"
-      :loading="loading"
       :height="tableHeight"
       border
       stripe

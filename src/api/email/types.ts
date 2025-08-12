@@ -12,3 +12,19 @@ export interface EmailConfigBase {
 export interface EmailPasswordUpdateRequest {
   SpecialPassword: string
 }
+
+export interface EmailAttachment {
+  filename: string
+  content: string
+  content_type: string
+}
+
+export interface EmailSendRequest {
+  packagingRequirementsIds?: number[]
+  to?: string[]
+  cc?: string[]
+  bcc?: string[]
+  subject?: string
+  content?: string
+  attachments?: EmailAttachment[]
+}

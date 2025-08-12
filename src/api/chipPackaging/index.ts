@@ -10,7 +10,12 @@ import {
   ChipPackagingRequirementQuery,
   ChipPackagingRequirementCreate,
   ChipPackagingRequirementCancel,
-  ChipPackagingRequirementAddOrders
+  ChipPackagingRequirementAddOrders,
+  ChipPackagingAnalysisPannelResponse,
+  hisemiLoadingResponse,
+  chipPackagingYearTrendResponse,
+  chipPackagingSupplyAnalysisResponse,
+  hisemiLoadingQuery
 } from './types'
 
 export const getChipPackagingListApi = (data: ChipPackagingQuery) => {
@@ -83,5 +88,30 @@ export const addOrdersChipPackagingRequirementApi = (data: ChipPackagingRequirem
   return request.post<any>({
     url: '/chipPackaging/requirement/addOrders',
     data
+  })
+}
+
+export const getChipPackagingAnalysisPannelApi = () => {
+  return request.get<ChipPackagingAnalysisPannelResponse>({
+    url: '/chipPackaging/analysis/pannel'
+  })
+}
+
+export const getChipPackagingHemiLoadingApi = (data: hisemiLoadingQuery) => {
+  return request.get<hisemiLoadingResponse>({
+    url: '/chipPackaging/hisemi/loading',
+    params: data
+  })
+}
+
+export const getChipPackagingYearTrendApi = () => {
+  return request.get<chipPackagingYearTrendResponse>({
+    url: '/chipPackaging/year/trend'
+  })
+}
+
+export const getChipPackagingSupplyAnalysisApi = () => {
+  return request.get<chipPackagingSupplyAnalysisResponse>({
+    url: '/chipPackaging/supply/analysis'
   })
 }

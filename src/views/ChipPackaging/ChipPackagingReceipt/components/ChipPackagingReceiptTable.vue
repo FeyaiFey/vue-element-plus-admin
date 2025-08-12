@@ -19,10 +19,6 @@ const props = defineProps({
     type: String as PropType<'detail' | 'summary'>,
     default: 'detail'
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
   enableSelection: {
     type: Boolean,
     default: false
@@ -222,7 +218,6 @@ const calculateSelectionSummary = (selection: ChipPackagingReceipt[]) => {
   >
     <ElTable
       :data="tableData"
-      :loading="loading"
       :height="tableHeight"
       border
       stripe

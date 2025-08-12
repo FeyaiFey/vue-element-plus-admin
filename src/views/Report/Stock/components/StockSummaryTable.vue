@@ -19,11 +19,6 @@ const props = defineProps({
     type: String as PropType<'detail' | 'summary'>,
     default: 'detail'
   },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-
   tableHeight: {
     type: String,
     default: 'auto'
@@ -165,7 +160,6 @@ const getSummary = (param: any) => {
   >
     <ElTable
       :data="tableData"
-      :loading="loading"
       :height="tableHeight"
       border
       stripe

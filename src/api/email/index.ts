@@ -1,5 +1,5 @@
 import request from '@/axios'
-import type { EmailConfigBase, EmailPasswordUpdateRequest } from './types'
+import type { EmailConfigBase, EmailPasswordUpdateRequest, EmailSendRequest } from './types'
 
 export const getUserEmailInfoApi = (userId: string) => {
   return request.get<EmailConfigBase>({
@@ -10,6 +10,13 @@ export const getUserEmailInfoApi = (userId: string) => {
 export const updateUserEmailPasswordApi = (userId: string, data: EmailPasswordUpdateRequest) => {
   return request.put<EmailConfigBase>({
     url: `/email/${userId}/password`,
+    data
+  })
+}
+
+export const sendEmailApi = (data: EmailSendRequest) => {
+  return request.post<any>({
+    url: `/email/send/chipPackagingRequirements`,
     data
   })
 }

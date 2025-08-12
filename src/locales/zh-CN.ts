@@ -213,7 +213,16 @@ export default {
     report: '报表管理',
     stock: '库存报表',
     global: '外协报表',
-    sop: 'S&OP产销协同报表'
+    sop: 'S&OP产销协同报表',
+    stockUpPlan: '备货计划',
+    saleDataList: '销售数据',
+    saleData: '销售报表',
+    saleTarget: '销售目标',
+    saleDataSummary: '销售数据概览',
+    saleDataSummaryAnalysis: '销售数据分析',
+    stockOld: '库存查询',
+    file: '文件管理',
+    invoice: '发票管理'
   },
   permission: {
     hasPermission: '请设置操作权限值'

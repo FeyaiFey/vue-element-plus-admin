@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, PropType } from 'vue'
+import { ref, PropType } from 'vue'
 import { useTable } from '@/hooks/web/useTable'
 import {
   ElInput,
@@ -10,7 +10,9 @@ import {
   ElDrawer,
   ElButton,
   ElDivider,
-  ElMessage
+  ElMessage,
+  ElSkeleton,
+  ElSkeletonItem
 } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -318,10 +320,6 @@ const handleDownload = async () => {
     downloadProgress.value = 0
   }
 }
-
-onMounted(() => {
-  getList()
-})
 </script>
 
 <template>
@@ -380,14 +378,46 @@ onMounted(() => {
 
     <!-- 表格区域 -->
     <div :class="`${prefixCls}__table`" class="flex-1 mb-4">
-      <CpReceiptTable
-        :table-data="dataList"
-        :loading="loading"
-        :table-type="props.tableType"
-        :enable-selection="true"
-        table-height="calc(100vh - 240px)"
-        @selection-change="handleSelectionChange"
-      />
+      <ElSkeleton :loading="loading" animated>
+        <template #template>
+          <div class="bg-white dark:bg-gray-800 rounded-lg border">
+            <!-- 表头骨架 -->
+            <div class="border-b p-4 bg-gray-50 dark:bg-gray-700">
+              <div class="grid grid-cols-6 gap-4">
+                <ElSkeletonItem variant="text" style="width: 60%" />
+                <ElSkeletonItem variant="text" style="width: 70%" />
+                <ElSkeletonItem variant="text" style="width: 80%" />
+                <ElSkeletonItem variant="text" style="width: 90%" />
+                <ElSkeletonItem variant="text" style="width: 85%" />
+                <ElSkeletonItem variant="text" style="width: 75%" />
+              </div>
+            </div>
+
+            <!-- 表格行骨架 -->
+            <div class="p-4 space-y-3">
+              <div v-for="n in 18" :key="n" class="grid grid-cols-6 gap-4 py-2">
+                <ElSkeletonItem variant="text" style="width: 80%" />
+                <ElSkeletonItem variant="text" style="width: 60%" />
+                <ElSkeletonItem variant="text" style="width: 90%" />
+                <ElSkeletonItem variant="text" style="width: 70%" />
+                <ElSkeletonItem variant="text" style="width: 85%" />
+                <ElSkeletonItem variant="text" style="width: 65%" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template #default>
+          <CpReceiptTable
+            :table-data="dataList"
+            :loading="loading"
+            :table-type="props.tableType"
+            :enable-selection="true"
+            table-height="calc(100vh - 240px)"
+            @selection-change="handleSelectionChange"
+          />
+        </template>
+      </ElSkeleton>
     </div>
 
     <!-- 分页区域 -->

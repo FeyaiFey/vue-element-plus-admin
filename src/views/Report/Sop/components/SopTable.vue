@@ -374,8 +374,6 @@ const getInventoryGapLevel = (value: number) => {
 </template>
 
 <style scoped lang="less">
-
-
 @keyframes blink-critical {
   0%,
   100% {

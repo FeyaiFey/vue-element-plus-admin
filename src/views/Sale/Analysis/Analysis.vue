@@ -162,15 +162,15 @@ onMounted(() => {
     </ElCol>
   </ElRow>
   <ElRow :gutter="20" :class="`${prefixCls}__chart-row`">
-    <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24" :class="`${prefixCls}__row-item`">
+    <ElCol :xl="16" :lg="16" :md="24" :sm="24" :xs="24" :class="`${prefixCls}__row-item`">
       <ForecastVsActual
-        :componentHeight="'850px'"
+        :componentHeight="'880px'"
         :tableData="forecastVsActualData"
         @search="handleForecastVsActualDataSearch"
       />
     </ElCol>
-    <ElCol :xl="12" :lg="12" :md="24" :sm="24" :xs="24" :class="`${prefixCls}__row-item`">
-      <CompleteRateBarChart :auto-load="true" :componentHeight="'850px'" />
+    <ElCol :xl="8" :lg="8" :md="24" :sm="24" :xs="24" :class="`${prefixCls}__row-item`">
+      <CompleteRateBarChart :auto-load="true" :componentHeight="'880px'" />
     </ElCol>
   </ElRow>
   <ElRow :gutter="20" :class="`${prefixCls}__chart-row`">

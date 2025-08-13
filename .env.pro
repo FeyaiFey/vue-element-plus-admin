@@ -26,7 +26,7 @@ VITE_APP_TITLE=华芯微
 VITE_USE_BUNDLE_ANALYZER=true
 
 # 是否全量引入element-plus样式
-VITE_USE_ALL_ELEMENT_PLUS_STYLE=false
+VITE_USE_ALL_ELEMENT_PLUS_STYLE=true
 
 # 是否开启mock
 VITE_USE_MOCK=false
@@ -35,7 +35,7 @@ VITE_USE_MOCK=false
 VITE_USE_CSS_SPLIT=true
 
 # 是否使用在线图标
-VITE_USE_ONLINE_ICON=false
+VITE_USE_ONLINE_ICON=true
 
 # 是否隐藏全局设置按钮
 VITE_HIDE_GLOBAL_SETTING=true

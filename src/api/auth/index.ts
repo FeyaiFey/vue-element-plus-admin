@@ -35,3 +35,9 @@ export const logoutApi = (user_id?: string) => {
     }
   })
 }
+
+export const getUserInfoApi = () => {
+  return request.get({
+    url: '/auth/userInfo'
+  })
+}

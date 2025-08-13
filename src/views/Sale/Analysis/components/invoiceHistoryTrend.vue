@@ -132,8 +132,6 @@ onMounted(() => {
 </template>
 
 <style lang="less" scoped>
-
-
 // 响应式设计
 @media (width <= 768px) {
   .@{prefix-cls} {
@@ -156,5 +154,6 @@ onMounted(() => {
 .chart-container {
   width: 100%;
   height: 100%;
-}@prefix-cls: ~'@{adminNamespace}-invoice-history-trend';
+}
+@prefix-cls: ~'@{adminNamespace}-invoice-history-trend';
 </style>

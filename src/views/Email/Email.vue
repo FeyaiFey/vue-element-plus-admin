@@ -237,8 +237,6 @@ const handleFileUpload = (uploadFile: UploadFile) => {
 </template>
 
 <style lang="less" scoped>
-
-
 // 深色模式支持
 @media (prefers-color-scheme: dark) {
   .email-form-container {

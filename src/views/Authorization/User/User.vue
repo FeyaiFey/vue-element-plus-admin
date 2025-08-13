@@ -102,49 +102,46 @@ const crudSchemas = reactive<CrudSchema[]>([
     }
   },
   {
-    field: 'DepartmentName',
+    field: 'DepartmentId',
     label: t('userDemo.department'),
     detail: {
       hidden: true
-      // slots: {
-      //   default: (data: DepartmentUserItem) => {
-      //     return <>{data.department.departmentName}</>
-      //   }
-      // }
     },
     search: {
       hidden: true
     },
     form: {
-      component: 'TreeSelect',
+      component: 'Select',
       componentProps: {
-        nodeKey: 'id',
-        props: {
-          label: 'departmentName'
-        }
+        placeholder: '请选择部门'
       },
       optionApi: async () => {
         const res = await getDepartmentListApi()
-        return res.data.list
+        return res.data.list.map((v) => ({
+          label: v.departmentName,
+          value: v.id
+        }))
       }
     },
     table: {
-      hidden: true
+      hidden: false,
+      slots: {
+        default: (data: any) => {
+          return <>{data.row.DepartmentName}</>
+        }
+      }
     }
   },
   {
-    field: 'RoleName',
+    field: 'RoleId',
     label: t('userDemo.role'),
     search: {
       hidden: true
     },
     form: {
       component: 'Select',
-      value: [],
       componentProps: {
-        multiple: true,
-        collapseTags: true,
-        maxCollapseTags: 1
+        placeholder: '请选择角色'
       },
       optionApi: async () => {
         const res = await getRoleListApi({})
@@ -152,6 +149,14 @@ const crudSchemas = reactive<CrudSchema[]>([
           label: v.RoleName,
           value: v.Id
         }))
+      }
+    },
+    table: {
+      hidden: false,
+      slots: {
+        default: (data: any) => {
+          return <>{data.row.RoleName}</>
+        }
       }
     }
   },
@@ -283,7 +288,7 @@ const delData = async (row?: UserInfo) => {
 const action = (row: UserInfo, type: string) => {
   dialogTitle.value = t(type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail')
   actionType.value = type
-  currentRow.value = { ...row, DepartmentId: unref(treeEl)?.getCurrentNode() || {} }
+  currentRow.value = { ...row }
   dialogVisible.value = true
 }
 

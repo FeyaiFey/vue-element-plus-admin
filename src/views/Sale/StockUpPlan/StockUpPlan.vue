@@ -296,8 +296,6 @@ onMounted(() => {
 </template>
 
 <style scoped lang="less">
-
-
 // 小屏幕优化
 @media (width <= 480px) {
   .search-form {
@@ -375,5 +373,6 @@ onMounted(() => {
 
 .detail-chart-wrapper {
   padding-top: 34px; /* 与表格标题保持对齐 */
-}@prefix-cls: ~'@{adminNamespace}-sale-stock-up-plan';
+}
+@prefix-cls: ~'@{adminNamespace}-sale-stock-up-plan';
 </style>

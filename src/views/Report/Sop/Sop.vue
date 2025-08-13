@@ -113,27 +113,27 @@ const selectedRows = ref<SopData[]>([])
 const unEmailNoticedSelectedRows = ref<ChipPackagingRequirement[]>([])
 
 // 邮件默认配置
-// const emailDefaults = {
-//   to: ['fanlm@h-sun.com'], // 默认收件人
-//   cc: [
-//     'liury@h-sun.com',
-//     'lib@h-sun.com',
-//     'zhengxm@h-sun.com',
-//     'wangkf@h-sun.com',
-//     'panyb@h-sun.com',
-//     'wuz@h-sun.com',
-//     'shenlj@h-sun.com',
-//     'fangmr@h-sun.com',
-//     'wxb1@h-sun.com',
-//     'wanghq@h-sun.com'
-//   ], // 默认抄送
-//   subjectPrefix: '【封装需求通知】'
-// }
 const emailDefaults = {
-  to: ['wxb1@h-sun.com'], // 默认收件人
-  cc: ['wxb1@h-sun.com'], // 默认抄送
+  to: ['fanlm@h-sun.com'], // 默认收件人
+  cc: [
+    'liury@h-sun.com',
+    'lib@h-sun.com',
+    'zhengxm@h-sun.com',
+    'wangkf@h-sun.com',
+    'panyb@h-sun.com',
+    'wuz@h-sun.com',
+    'shenlj@h-sun.com',
+    'fangmr@h-sun.com',
+    'wxb1@h-sun.com',
+    'wanghq@h-sun.com'
+  ], // 默认抄送
   subjectPrefix: '【封装需求通知】'
 }
+// const emailDefaults = {
+//   to: ['wxb1@h-sun.com'], // 默认收件人
+//   cc: ['wxb1@h-sun.com'], // 默认抄送
+//   subjectPrefix: '【封装需求通知】'
+// }
 
 // 邮件发送相关状态
 const emailDialogVisible = ref(false)

@@ -42,23 +42,25 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       VueJsx(),
       ServerUrlCopy(),
       progress(),
-      env.VITE_USE_ALL_ELEMENT_PLUS_STYLE === 'false'
-        ? createStyleImportPlugin({
-            resolves: [ElementPlusResolve()],
-            libs: [
-              {
-                libraryName: 'element-plus',
-                esModule: true,
-                resolveStyle: (name) => {
-                  if (name === 'click-outside') {
-                    return ''
-                  }
-                  return `element-plus/es/components/${name.replace(/^el-/, '')}/style/css`
-                }
-              }
-            ]
-          })
-        : undefined,
+      // 临时禁用按需导入，解决构建问题
+      // env.VITE_USE_ALL_ELEMENT_PLUS_STYLE === 'false'
+      //   ? createStyleImportPlugin({
+      //       resolves: [ElementPlusResolve()],
+      //       libs: [
+      //         {
+      //           libraryName: 'element-plus',
+      //           esModule: true,
+      //           resolveStyle: (name) => {
+      //             if (name === 'click-outside') {
+      //               return ''
+      //             }
+      //             // 修复样式路径解析问题
+      //             return `element-plus/es/components/${name}/style/index`
+      //           }
+      //         }
+      //       ]
+      //     })
+      //   : undefined,
       EslintPlugin({
         cache: false,
         failOnWarning: false,

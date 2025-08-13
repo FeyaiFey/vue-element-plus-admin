@@ -95,7 +95,7 @@ export const generateAllDrillDownOptions = (
       },
       grid: {
         left: '1%',
-        right: '5%',
+        right: '12%',
         bottom: '5%',
         top: '20%',
         containLabel: true

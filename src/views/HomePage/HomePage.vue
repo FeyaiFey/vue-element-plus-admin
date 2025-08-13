@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Icon } from '@/components/Icon'
 import { useDesign } from '@/hooks/web/useDesign'
+import { getUserInfoApi } from '@/api/auth'
 
 const { getPrefixCls } = useDesign()
 const router = useRouter()
@@ -109,6 +110,11 @@ const dateString = computed(() => {
 setInterval(() => {
   currentTime.value = new Date()
 }, 1000)
+
+const userInfo = ref<any>(null)
+getUserInfoApi().then((res) => {
+  userInfo.value = res.data
+})
 </script>
 
 <template>
@@ -160,8 +166,6 @@ setInterval(() => {
 </template>
 
 <style lang="less" scoped>
-
-
 // 响应式断点
 @media (width <= 1024px) {
   .entries-grid {
@@ -247,7 +251,6 @@ setInterval(() => {
     font-size: 2.5rem;
     font-weight: 700;
     background: linear-gradient(45deg, #fff, #f0f0f0);
-    background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 

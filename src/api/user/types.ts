@@ -82,10 +82,10 @@ export interface UserDeleteRequest {
 
 /** 权限模块：创建/编辑用户请求模型 */
 export interface UserSaveRequest {
-  id?: string
-  username?: string
-  email?: string
-  departmentId?: string
-  roleId?: string
-  status?: string
+  Id?: string
+  UserName?: string
+  Email?: string
+  DepartmentId?: string
+  RoleId?: string
+  Status?: string
 }

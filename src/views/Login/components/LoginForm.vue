@@ -166,6 +166,7 @@ const signIn = async () => {
 
       try {
         const res = await loginApi(formData)
+        console.log(res)
 
         if (res.data) {
           // 解构登录响应数据

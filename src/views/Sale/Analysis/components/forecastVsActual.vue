@@ -45,46 +45,46 @@ const tableData = computed(() => props.tableData)
 // 根据表格类型定义显示的列
 const detailColumns = [
   {
-    prop: 'departmentName',
-    label: '部门',
-    minWidth: 120,
-    headerAlign: 'center',
-    align: 'center',
-    fixed: 'left'
-  },
-  {
     prop: 'employeeName',
     label: '业务员',
-    minWidth: 80,
+    minWidth: 70,
     headerAlign: 'center',
     align: 'center',
-    fixed: 'left'
+    fixed: 'left',
+    showOverflowTooltip: true
   },
   {
     prop: 'qtySum',
-    label: '实际销售量',
-    minWidth: 150,
+    label: '实际销售量(万颗)',
+    minWidth: 100,
     headerAlign: 'center',
     align: 'right'
   },
   {
     prop: 'targetSum',
-    label: '预测销售额',
-    minWidth: 150,
+    label: '预测销售额(万元)',
+    minWidth: 100,
     headerAlign: 'center',
     align: 'right'
   },
   {
     prop: 'amountSum',
-    label: '实际销售额',
-    minWidth: 150,
+    label: '实际销售额(万元)',
+    minWidth: 100,
     headerAlign: 'center',
     align: 'right'
   },
   {
+    prop: 'departmentName',
+    label: '部门',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
     prop: 'completeRate',
     label: '完成率',
-    minWidth: 200,
+    minWidth: 100,
     headerAlign: 'center',
     align: 'center',
     fixed: 'right'
@@ -162,8 +162,11 @@ const isMaxPriceAmountGroup = (row: any): boolean => {
 
 // 格式化数字
 const formatNumber = (value: number): string => {
-  if (value === null || value === undefined) return '0'
-  return value.toLocaleString()
+  if (value === null || value === undefined) return '0.00'
+  return (value / 10000).toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 }
 
 // 格式化金额
@@ -251,7 +254,7 @@ const getRowClass = (row: SaleDataSummary): string => {
           :min-width="column.minWidth"
           :fixed="column.fixed"
           :align="column.align || 'left'"
-          show-overflow-tooltip
+          :show-overflow-tooltip="true"
         >
           <template #default="{ row }">
             <!-- 数量字段格式化 -->

@@ -40,10 +40,17 @@ const currentLevelIndex = ref(0)
 const getSaleAmountBarChart = async () => {
   loading.value = true
   try {
-    const res = await getSaleAnalysisBarChartDrillApi({
-      year: Number(queryForm.value.year),
-      month: Number(queryForm.value.month)
-    })
+    // 构建请求参数，月份为空时不提交月份参数
+    const requestParams: any = {
+      year: Number(queryForm.value.year)
+    }
+
+    // 只有当月份不为空时才添加月份参数
+    if (queryForm.value.month && queryForm.value.month.trim() !== '') {
+      requestParams.month = Number(queryForm.value.month)
+    }
+
+    const res = await getSaleAnalysisBarChartDrillApi(requestParams)
     if (res && res.data) {
       // console.log('API返回的原始数据:', res.data)
 

@@ -190,8 +190,6 @@ const handleCancelUpload = () => {
 </template>
 
 <style scoped lang="less">
-
-
 // 旋转动画
 @keyframes rotate {
   from {
@@ -320,7 +318,7 @@ const handleCancelUpload = () => {
       border-color: var(--el-border-color-darker);
     }
   }
-}// 响应式设计
-
+}
+// 响应式设计
 @prefix-cls: ~'@{adminNamespace}-sale-target-upload';
 </style>

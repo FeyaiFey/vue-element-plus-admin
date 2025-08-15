@@ -138,17 +138,9 @@ const tableData = computed(() => {
 // 表格列定义
 const detailColumns = [
   {
-    prop: 'departmentName',
-    label: '部门',
-    minWidth: 120,
-    headerAlign: 'center',
-    align: 'center',
-    fixed: 'left'
-  },
-  {
     prop: 'employeeName',
     label: '业务员',
-    minWidth: 80,
+    minWidth: 70,
     headerAlign: 'center',
     align: 'center',
     fixed: 'left'
@@ -156,7 +148,7 @@ const detailColumns = [
   {
     prop: 'amountInvoice',
     label: '实际开票额',
-    minWidth: 150,
+    minWidth: 120,
     headerAlign: 'center',
     align: 'right',
     sortable: 'custom',
@@ -169,7 +161,7 @@ const detailColumns = [
   {
     prop: 'amountCollection',
     label: '实际回款额',
-    minWidth: 150,
+    minWidth: 120,
     headerAlign: 'center',
     align: 'right',
     sortable: 'custom',
@@ -182,7 +174,7 @@ const detailColumns = [
   {
     prop: 'completeRate',
     label: '完成率',
-    minWidth: 200,
+    minWidth: 120,
     headerAlign: 'center',
     align: 'right',
     fixed: 'right',
@@ -192,6 +184,13 @@ const detailColumns = [
       if (isTotalRow(a) || isTotalRow(b)) return 0
       return (a.completeRate || 0) - (b.completeRate || 0)
     }
+  },
+  {
+    prop: 'departmentName',
+    label: '部门',
+    minWidth: 120,
+    headerAlign: 'center',
+    align: 'center'
   }
 ]
 

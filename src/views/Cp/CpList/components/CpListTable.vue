@@ -164,6 +164,20 @@ const summaryColumns = [
     align: 'center'
   },
   {
+    prop: 'programName',
+    label: '测试程序',
+    minWidth: 150,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    prop: 'progressName',
+    label: '测试流程',
+    minWidth: 100,
+    align: 'right',
+    headerAlign: 'center'
+  },
+  {
     prop: 'businessQty',
     label: '业务数量',
     minWidth: 150,
@@ -182,21 +196,8 @@ const summaryColumns = [
     label: '在制数量',
     minWidth: 100,
     align: 'right',
-    headerAlign: 'center'
-  },
-  {
-    prop: 'progressName',
-    label: '测试流程',
-    minWidth: 100,
-    align: 'right',
-    headerAlign: 'center'
-  },
-  {
-    prop: 'programName',
-    label: '测试程序',
-    minWidth: 150,
     headerAlign: 'center',
-    align: 'center'
+    fixed: 'right'
   },
   {
     prop: 'supplier',

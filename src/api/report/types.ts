@@ -5,7 +5,7 @@ export interface StockReportQuery {
   burningProgram?: string
   testingProgram?: string
   featureGroupName?: string
-  warehouse?: string
+  warehouseName?: string
 }
 
 export interface StockReport {

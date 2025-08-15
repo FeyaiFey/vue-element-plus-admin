@@ -50,7 +50,7 @@ const searchParams = ref<StockReportQuery>({
   burningProgram: undefined,
   testingProgram: undefined,
   featureGroupName: undefined,
-  warehouse: undefined
+  warehouseName: undefined
 })
 
 // 抽屉相关
@@ -61,14 +61,14 @@ const advancedSearchParams = ref<{
   burningProgram?: string | undefined
   testingProgram?: string | undefined
   featureGroupName?: string | undefined
-  warehouse?: string | undefined
+  warehouseName?: string | undefined
 }>({
   itemName: undefined,
   lotCode: undefined,
   burningProgram: undefined,
   testingProgram: undefined,
   featureGroupName: undefined,
-  warehouse: undefined
+  warehouseName: undefined
 })
 
 // 主要搜索条件（品名）
@@ -154,7 +154,7 @@ const handleResetAdvanced = () => {
     burningProgram: undefined,
     testingProgram: undefined,
     featureGroupName: undefined,
-    warehouse: undefined
+    warehouseName: undefined
   }
 
   // 清空主搜索参数中的高级搜索部分
@@ -163,7 +163,7 @@ const handleResetAdvanced = () => {
   searchParams.value.burningProgram = undefined
   searchParams.value.testingProgram = undefined
   searchParams.value.featureGroupName = undefined
-  searchParams.value.warehouse = undefined
+  searchParams.value.warehouseName = undefined
 
   // 清空快速搜索
   quickSearch.value = ''
@@ -563,7 +563,11 @@ const handleDownload = async () => {
           </ElFormItem>
 
           <ElFormItem label="仓库">
-            <ElInput v-model="advancedSearchParams.warehouse" placeholder="请输入仓库" clearable />
+            <ElInput
+              v-model="advancedSearchParams.warehouseName"
+              placeholder="请输入仓库"
+              clearable
+            />
           </ElFormItem>
         </ElForm>
 
